@@ -15,6 +15,7 @@ KISSY.add(function(S,Node,Base) {
         var self = this;
         //调用父类构造函数
         Queue.superclass.constructor.call(self,config);
+        //队列目标
         self.set('target',$(target));
     }
     S.mix(Queue,/**@lends Queue*/ {
@@ -22,7 +23,7 @@ KISSY.add(function(S,Node,Base) {
              * 模板
              */
             tpl : {
-                DEFAULT:'<li id="files{id}" class="f-l" data-url="{url}" data-name="{name}" data-size="{size}">' +
+                DEFAULT:'<li id="queue-file-{id}" class="clearfix" data-name="{name}">' +
                             '<div class="f-l sprite file-icon"></div>' +
                             '<div class="f-l">{name}</div>' +
                             '<div class="f-l loading J_Loading"></div>' +
@@ -34,7 +35,7 @@ KISSY.add(function(S,Node,Base) {
              */
             event : {
                 //添加完一个文件后的事件
-                ADD_ITEM : 'addItem',
+                ADD : 'add',
                 //添加多个文件后的事件
                 ADD_ALL : 'addAll',
                 //删除文件后触发
@@ -59,6 +60,31 @@ KISSY.add(function(S,Node,Base) {
                 return self;
             },
             /**
+             * 向上传队列添加文件
+             * @param {Object} file 文件信息
+             * @return {NodeList} 文件节点
+             */
+            add : function(file){
+                var self = this,$target = self.get('target'),event = Queue.event,hFile,$file,
+                    //预置文件id
+                    autoId = self.get('id'),
+                    //文件信息显示模板
+                    tpl = self.get('tpl'),
+                    files = self.get('files');
+                //设置文件唯一id
+                file.id = autoId;
+                hFile = S.substitute(tpl,file);
+                //将文件添加到队列之中
+                $file = $(hFile).appendTo($target).data('data-file',file);
+                files[autoId] = file;
+                self.set('files',files);
+                //增加文件id编号
+                autoId ++;
+                self.set('id', autoId);
+                self.fire(event.ADD,{file : file,target : $file.getDOMNode()});
+                return $file;
+            },
+            /**
              * 获取指定索引值的队列中的文件
              * @param index
              */
@@ -72,7 +98,8 @@ KISSY.add(function(S,Node,Base) {
              */
             tpl : { value : Queue.tpl.DEFAULT },
             target : {value : EMPTY},
-            length : {value : 0}
+            id : {value : 0},
+            files : {value : []}
     }});
     
     return Queue;

@@ -124,9 +124,10 @@ KISSY.add(function(S, Base, Node,UrlsInput,IframeType,AjaxType) {
              */
             _select : function(ev){
                 var self = this,autoUpload = self.get('autoUpload'),
+                    queue = self.get('queue'),
                     oFile = {name : ev.name,input : ev.input};
                 self.fire(Uploader.event.SELECT);
-                //self._appendToQueue(ev);
+                queue.add(oFile);
                 autoUpload && self.upload(oFile);
             },
             /**
@@ -143,13 +144,6 @@ KISSY.add(function(S, Base, Node,UrlsInput,IframeType,AjaxType) {
                 return queue;
             },
             /**
-             * 将文件添加到队列
-             */
-            _appendToQueue : function(fileObj){
-                var self = this,queue = self.get('queue');
-                queue.add();
-            },
-            /**
              * 向上传按钮容器内增加用于存储文件路径的input
              */
             _renderUrlsInput : function(){
@@ -163,13 +157,16 @@ KISSY.add(function(S, Base, Node,UrlsInput,IframeType,AjaxType) {
              * 当上传完毕后返回结果集的处理
              */
             _uploadCompleteHanlder : function(ev){
-                var self = this,result = ev.result,status,event = Uploader.event;
+                var self = this,result = ev.result,status,event = Uploader.event,
+                    queue = self.get('queue');
                 if(!S.isObject(result)) return false;
+                //文件上传状态
                 status = result.status;
                 if(status){
+                    
                     self.fire(event.SUCCESS);
                 }else{
-                    self.fire(event.ERROR);
+                    self.fire(event.ERROR,{status : status});
                 }
                 self.fire(event.COMPLETE);
             }
