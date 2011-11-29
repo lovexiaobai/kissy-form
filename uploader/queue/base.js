@@ -1,106 +1,178 @@
 /**
- * 文件上传队列列表显示和处理
- * @author: 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
+ * @fileoverview 文件上传队列列表显示和处理
+ * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add(function(S,Node,Base) {
+KISSY.add(function(S, Node, Base, Status) {
     var EMPTY = '',$ = Node.all;
+
     /**
      * @name Queue
      * @class 文件上传队列
      * @constructor
      * @extends Base
-     * @requires Node
+     * @requires Node,Status
      */
-    function Queue(target,config){
+    function Queue(target, config) {
         var self = this;
         //调用父类构造函数
-        Queue.superclass.constructor.call(self,config);
+        Queue.superclass.constructor.call(self, config);
         //队列目标
-        self.set('target',$(target));
+        self.set('target', $(target));
     }
-    S.mix(Queue,/**@lends Queue*/ {
-            /**
-             * 模板
-             */
-            tpl : {
-                DEFAULT:'<li id="queue-file-{id}" class="clearfix" data-name="{name}">' +
-                            '<div class="f-l sprite file-icon"></div>' +
-                            '<div class="f-l">{name}</div>' +
-                            '<div class="f-l loading J_Loading"></div>' +
-                            '<div class="f-l uploader-controller J_UploaderController"><a href="#deleteFile()" class="g-u J_DeleteFile">删除</a></div>' +
-                        '</li>'
-            },
-            /**
-             * 支持的事件
-             */
-            event : {
-                //添加完一个文件后的事件
-                ADD : 'add',
-                //添加多个文件后的事件
-                ADD_ALL : 'addAll',
-                //删除文件后触发
-                REMOVE_ITEM : 'removeItem',
-                // 队列满时触发
-                QUEUE_FULL: 'queueFull'
-            },
-            //样式
-            cls : {
-                QUEUE : 'ks-uploader-queue'
-            }
+
+    S.mix(Queue, /**@lends Queue*/ {
+        /**
+         * 模板
+         */
+        tpl : {
+            DEFAULT:'<li id="queue-file-{id}" class="clearfix" data-name="{name}">' +
+                '<div class="f-l sprite file-icon"></div>' +
+                '<div class="f-l">{name}</div>' +
+                '<div class="f-l file-status J_FileStatus"></div>' +
+                '<div class="f-l uploader-controller J_UploaderController">' +
+                '<a href="#deleteFile()" class="g-u J_DeleteFile">删除</a>' +
+                '</div>' +
+                '</li>'
+        },
+        /**
+         * 支持的事件
+         */
+        event : {
+            //添加完一个文件后的事件
+            ADD : 'add',
+            //添加多个文件后的事件
+            ADD_ALL : 'addAll',
+            //删除文件后触发
+            REMOVE_ITEM : 'removeItem',
+            // 队列满时触发
+            QUEUE_FULL: 'queueFull'
+        },
+        /**
+         * 文件的状态
+         */
+        status : {
+            WAITING : 'waiting',
+            START : 'start',
+            UPLOADING : 'uploading',
+            SUCCESS : 'success',
+            ERROR : 'error'
+        },
+        //样式
+        cls : {
+            QUEUE : 'ks-uploader-queue'
+        },
+        hook : {
+            //状态
+            STATUS : '.J_FileStatus'
+        }
     });
     //继承于Base，属性getter和setter委托于Base处理
     S.extend(Queue, Base, /** @lends Queue.prototype*/{
-            /**
-             * 运行组件
-             * @return {Queue}
-             */
-            render: function(){
-                var self = this,$target = self.get('target');
-                $target.addClass(Queue.cls.QUEUE);
-                return self;
-            },
-            /**
-             * 向上传队列添加文件
-             * @param {Object} file 文件信息
-             * @return {NodeList} 文件节点
-             */
-            add : function(file){
-                var self = this,$target = self.get('target'),event = Queue.event,hFile,$file,
-                    //预置文件id
-                    autoId = self.get('id'),
-                    //文件信息显示模板
-                    tpl = self.get('tpl'),
-                    files = self.get('files');
-                //设置文件唯一id
-                file.id = autoId;
-                hFile = S.substitute(tpl,file);
-                //将文件添加到队列之中
-                $file = $(hFile).appendTo($target).data('data-file',file);
-                files[autoId] = file;
+        /**
+         * 运行组件
+         * @return {Queue}
+         */
+        render: function() {
+            var self = this,$target = self.get('target');
+            $target.addClass(Queue.cls.QUEUE);
+            return self;
+        },
+        /**
+         * 向上传队列添加文件
+         * @param {Object} file 文件信息
+         * @return {NodeList} 文件节点
+         */
+        add : function(file) {
+            var self = this,$target = self.get('target'),event = Queue.event,hFile,elFile,
+                //预置文件id
+                autoId = self.get('id'),
+                //文件信息显示模板
+                tpl = self.get('tpl'),
+                files = self.get('files');
+            //设置文件唯一id
+            file.id = autoId;
+            hFile = S.substitute(tpl, file);
+            //将文件添加到队列之中
+            elFile = $(hFile).appendTo($target).data('data-file', file);
+            //文件层
+            file.target = elFile;
+            //状态实例
+            file.status = self._renderStatus(file);
+            files[autoId] = file;
+            self.set('files', files);
+            //设置文件状态为等待上传
+            self.fileStatus(autoId, Queue.status.WAITING);
+            //增加文件id编号
+            self.set('id', autoId + 1);
+            self.fire(event.ADD, {id : autoId,file : file,target : file.target});
+            return autoId;
+        },
+        /**
+         * 删除队列中指定id的文件
+         * @param {Number} id 文件id
+         */
+        remove : function(id){
+            var self = this,files = self.get('files'),file = files[id],$file;
+            if(S.isObject(file)){
+                $file = file.target;
+                $file.slideUp(0.2,function(){
+                    $file.remove();
+                });
+                delete files[id];
                 self.set('files',files);
-                //增加文件id编号
-                autoId ++;
-                self.set('id', autoId);
-                self.fire(event.ADD,{file : file,target : $file.getDOMNode()});
-                return $file;
-            },
-            /**
-             * 获取指定索引值的队列中的文件
-             * @param index
-             */
-            getFile : function(index){
-                
             }
-    },{ATTRS : /** @lends Queue*/{
-            /**
-             * 模板
-             * @type String
-             */
-            tpl : { value : Queue.tpl.DEFAULT },
-            target : {value : EMPTY},
-            id : {value : 0},
-            files : {value : []}
+        },
+        /**
+         * 获取或设置文件状态
+         * @param {Number} id 文件id
+         * @param {String} status 文件状态
+         * @return {String}
+         */
+        fileStatus : function(id, status) {
+            if (!S.isNumber(id)) return false;
+            var self = this,files = self.get('files'),file = self.getFile(id),
+                st = Queue.status,oStatus;
+            if (!S.isPlainObject(file)) return false;
+            //状态实例
+            oStatus = file['status'];
+            if(status) oStatus.set('curType',status);
+            return  oStatus.get('curType');
+        },
+        /**
+         * 获取指定索引值的队列中的文件
+         * @param  {Number} id 文件id
+         * @return {Object}
+         */
+        getFile : function(id) {
+            if (!S.isNumber(id)) return false;
+            var self = this,files = self.get('files'),
+                file = files[id];
+            if (!S.isPlainObject(file)) file = false;
+            return file;
+        },
+        /**
+         * 运行Status
+         * @param {Object} file  文件数据
+         * @return {Status} 状态实例
+         */
+        _renderStatus : function(file) {
+            var self = this,$file = file.target,hook = Queue.hook.STATUS,elStatus;
+            if (!$file.length) return false;
+            //状态层
+            elStatus = $file.children(hook);
+            //实例化状态类
+            return new Status(elStatus,{queue : self,file : file});
+        }
+    }, {ATTRS : /** @lends Queue*/{
+        /**
+         * 模板
+         * @type String
+         */
+        tpl : { value : Queue.tpl.DEFAULT },
+        target : {value : EMPTY},
+        id : {value : 0},
+        files : {value : []}
     }});
-    
+
     return Queue;
-},{requires:['node','base']});
+}, {requires:['node','base','./status']});
