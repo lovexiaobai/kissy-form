@@ -10,7 +10,7 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
      * @class 异步文件上传组件，目前是使用ajax+iframe的方案，日后会加入flash方案
      * @constructor
      * @extends Base
-     * @requires Node,IframeUploader,AjaxUploader
+     * @requires Node,UrlsInput,IframeType,AjaxType
      */
     function Uploader(config) {
         var self = this;
@@ -54,9 +54,10 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             var self = this,serverConfig = self.get('serverConfig'),
                 UploadType = self.getUploadType(),uploadType;
             if (!UploadType) return false;
+            //路径input实例
+            self.set('urlsInput',self._renderUrlsInput());
             self._renderQueue();
             self._renderButton();
-            self._renderUrlsInput();
             uploadType = new UploadType(serverConfig);
             //监听上传器上传完成事件
             uploadType.on(uploadType.constructor.event.COMPLETE, self._uploadCompleteHanlder, self);
@@ -140,11 +141,16 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
          * @return {Queue} 队列实例
          */
         _renderQueue : function() {
-            var self = this,queue = self.get('queue'),button = self.get('button');
+            var self = this,queue = self.get('queue'),
+                urlsInput = self.get('urlsInput');
             if (!S.isObject(queue)) {
                 S.log(LOG_PREFIX + 'queue参数不合法');
                 return false;
             }
+            //监听队列的删除事件
+            queue.on(queue.constructor.event.REMOVE,function(ev){
+                urlsInput.remove(ev.id);
+            });
             queue.render();
             return queue;
         },
@@ -178,22 +184,34 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             var self = this,result = ev.result,status,event = Uploader.event,
                 queue = self.get('queue'),id = self.get('curUploadId'),
                 file = queue.getFile(id);
-            //置空当前上传id
-            self.set('curUploadId', EMPTY);
             if (!S.isObject(result)) return false;
             //文件上传状态
             status = result.status;
             if (status) {
                 //修改队列中文件的状态为success（上传完成）
                 queue.fileStatus(id, queue.constructor.status.SUCCESS);
+                self._success(result.data);
                 self.fire(event.SUCCESS);
             } else {
                 //修改队列中文件的状态为error（上传失败）
                 queue.fileStatus(id, queue.constructor.status.ERROR);
                 self.fire(event.ERROR, {status : status});
             }
+            //置空当前上传id
             self.set('curUploadId', EMPTY);
             self.fire(event.COMPLETE);
+        },
+        _success : function(data){
+            if(!S.isObject(data)) return false;
+            var self = this,url = data.url,
+                urlsInput = self.get('urlsInput'),
+                fileId = self.get('curUploadId');
+            if(!S.isString(url) || !S.isObject(urlsInput)) return false;
+            //向路径隐藏域添加路径
+            urlsInput.add(fileId,url);
+        },
+        _error : function(){
+
         }
 
     }, {ATTRS : /** @lends Uploader*/{
@@ -227,7 +245,8 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
         urlsInputName : {value : EMPTY},
         //当前上传的id
         curUploadId : {value : EMPTY},
-        uploadType : {value : {}}
+        uploadType : {value : {}},
+        urlsInput : {value : EMPTY}
     }});
     return Uploader;
 }, {requires:['base','node','./urlsInput','./type/iframe','./type/ajax']});

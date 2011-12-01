@@ -43,7 +43,7 @@ KISSY.add(function(S, Node, Base, Status) {
             //添加多个文件后的事件
             ADD_ALL : 'addAll',
             //删除文件后触发
-            REMOVE_ITEM : 'removeItem',
+            REMOVE : 'remove',
             // 队列满时触发
             QUEUE_FULL: 'queueFull'
         },
@@ -120,6 +120,7 @@ KISSY.add(function(S, Node, Base, Status) {
                 });
                 delete files[id];
                 self.set('files',files);
+                self.fire(Queue.event.REMOVE,{id : id,file : file});
             }
         },
         /**

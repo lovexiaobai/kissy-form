@@ -70,7 +70,7 @@ KISSY.add(function(S, Node, Base) {
             //取消链接
             $cancel = $content.children('.J_UploadCancel');
             $cancel.on('click', function(ev) {
-
+                
             })
         },
         /**
