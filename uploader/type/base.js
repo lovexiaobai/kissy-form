@@ -7,7 +7,7 @@ KISSY.add(function(S, Node, Base) {
 
     /**
      * @name UploadType
-     * @class iframe方案上传
+     * @class 上传方式类的基类
      * @constructor
      * @extends Base
      * @requires Node

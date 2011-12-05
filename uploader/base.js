@@ -16,7 +16,6 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
         var self = this;
         //调用父类构造函数
         Uploader.superclass.constructor.call(self, config);
-
     }
 
     S.mix(Uploader, /** @lends Uploader*/{

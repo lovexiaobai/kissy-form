@@ -108,7 +108,7 @@ KISSY.add(function(S, Node, Base) {
          */
         tpl : {value : {
             start : '<img class="f-l loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" />' +
-                ' <a class="f-l" href="#uploadCancel" class="J_UploadCancel upload-cancel">取消</a> ',
+                    ' <a class="f-l" href="#uploadCancel" class="J_UploadCancel upload-cancel">取消</a> ',
             success : '<a href="#fileDel" class="J_FileDel">删除</a> ',
             error : '上传失败！'
         } },
