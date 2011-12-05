@@ -9,7 +9,7 @@ KISSY.add(function(S, Node, UploadType) {
      * @name IframeType
      * @class iframe方案上传
      * @constructor
-     * @extends Base
+     * @extends UploadType
      * @requires Node
      */
     function IframeType(config) {
@@ -30,20 +30,12 @@ KISSY.add(function(S, Node, UploadType) {
         /**
          * 事件列表
          */
-        event : {
-            //开始上传后触发
-            START : 'start',
-            //停止上传后触发
-            STOP : 'stop',
-            //iframe加载完成后触发
-            COMPLETE : 'complete',
-            //上传失败后触发
-            ERROR : 'error',
-            //创建iframe和form后触发
+        event : S.mix(UploadType.event,{
+              //创建iframe和form后触发
             CREATE : 'create',
             //删除form后触发
             REMOVE : 'remove'
-        }
+        })
     });
     //继承于Base，属性getter和setter委托于Base处理
     S.extend(IframeType, UploadType, /** @lends IframeType.prototype*/{
@@ -143,7 +135,7 @@ KISSY.add(function(S, Node, UploadType) {
                 S.log(LOG_PREFIX + 'json数据格式不合法！');
                 self.fire(errorEvent, {msg : '数据：' + result + '不是合法的json数据'});
             }
-            self.fire(IframeType.event.COMPLETE, {result : result});
+            self.fire(IframeType.event.SUCCESS, {result : result});
             self._remove();
         },
         /**

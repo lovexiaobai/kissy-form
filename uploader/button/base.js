@@ -237,7 +237,7 @@ KISSY.add(function(S, DOM, Base, Event) {
                 if (value == EMPTY) return false;
                 //文件名称
                 fileName = Button.getFileName(value);
-                self.fire(Button.event.CHANGE, {name : fileName,input : fileInput});
+                self.fire(Button.event.CHANGE, {name : fileName,files : ev.target.files,input : fileInput});
             },
             /**
              * 鼠标滑过/移开按钮

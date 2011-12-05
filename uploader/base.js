@@ -60,7 +60,7 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             self._renderButton();
             uploadType = new UploadType(serverConfig);
             //监听上传器上传完成事件
-            uploadType.on(uploadType.constructor.event.COMPLETE, self._uploadCompleteHanlder, self);
+            uploadType.on(uploadType.constructor.event.SUCCESS, self._uploadCompleteHanlder, self);
             self.set('uploadType', uploadType);
             self.fire(Uploader.event.RENDER);
             return self;
@@ -99,7 +99,7 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
         },
         /**
          * 获取上传方式类（iframe方案或ajax方案）
-         * @return {IframeWay|AjaxWay}
+         * @return {IframeType|AjaxType}
          */
         getUploadType : function() {
             var self = this,type = self.get('type'),types = Uploader.type,
@@ -160,7 +160,9 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
         _select : function(ev) {
             var self = this,autoUpload = self.get('autoUpload'),
                 queue = self.get('queue'),
-                oFile = {name : ev.name,input : ev.input},
+                //ev.files为文件域值改变触发返回的文件对象数组，默认是数组，由于不支持多选，这里只需要获取第一个文件即可
+                file = ev.files[0],
+                oFile = {name : ev.name,input : ev.input,file : file},
                 fileId;
             self.fire(Uploader.event.SELECT);
             //向队列添加文件
