@@ -15,16 +15,6 @@ KISSY.add(function(S, Node, Button) {
      */
     function HtmlButton(config){
         var self = this;
-        /**
-         * 对应的表单上传域
-         * @type HTMLElement
-         */
-        self.fileInput = EMPTY;
-        /**
-         * 表单上传域的容器
-         * @type HTMLElement
-         */
-        self.inputContainer = EMPTY;
         //调用父类构造函数
         HtmlButton.superclass.constructor.call(self, config);
     }
@@ -61,7 +51,7 @@ KISSY.add(function(S, Node, Button) {
             show : function(){
                 var self = this,
                 	target = self.target,
-                	input = self.fileInput,
+                	input = self.get('fileInput'),
                 	show = self.fire(self.event.beforeShow);
                 if(show === false){
                 	S.log(LOG_PREFIX + 'show button event was prevented.');
@@ -78,7 +68,7 @@ KISSY.add(function(S, Node, Button) {
             hide : function(){
                 var self = this,
                 	target = self.target,
-                	input = self.fileInput,
+                	input = self.get('fileInput'),
                 	hide = self.fire(self.event.beforeHide);
                 if(hide === false){
                 	S.log(LOG_PREFIX + 'hide button event was prevented.');
@@ -95,11 +85,11 @@ KISSY.add(function(S, Node, Button) {
              */
             _reset : function() {
                 var self = this,
-                	inputContainer = self.inputContainer;
+                	inputContainer = self.get('inputContainer');
                 //移除表单上传域容器
                 $(inputContainer).remove();
-                self.inputContainer = EMPTY;
-                self.fileInput = EMPTY;
+                self.set('inputContainer', EMPTY);
+                self.set('fileInput', EMPTY);
                 //重新创建表单上传域
                 self._createInput();
                 return self;
@@ -122,18 +112,18 @@ KISSY.add(function(S, Node, Button) {
                 html = S.substitute(tpl, {
                 	'name' : name
                 });
-                // TODO inputContainer = DOM.create(html);
+                // TODO: inputContainer = DOM.create(html);
                 inputContainer = $(html);
                 //向body添加表单文件上传域
                 $(inputContainer).appendTo(self.target);
                 fileInput = $(inputContainer, 'input').children()[0];
-                //TODO 开启多选上传
+                // TODO: 开启多选上传
                 // multiple && DOM.attr('multiple', 'multiple');
                 //上传框的值改变后触发
                 $(fileInput).on('change', self._changeHandler, self);
                 //DOM.hide(fileInput);
-                self.fileInput = fileInput;
-                self.inputContainer = inputContainer;
+                self.set('fileInput', fileInput);
+                self.set('inputContainer', inputContainer);
                 // self.resetContainerCss();
                 return inputContainer;
             },
@@ -141,7 +131,7 @@ KISSY.add(function(S, Node, Button) {
              * 创建一个隐藏域，用于放上传文件的url路径
              * @return {HTMLElement}
              */
-            // TODO 应该放在base里面
+            // TODO: 应该放在base里面
             _createUrlsInput : function() {
                 var self = this,
                 	target = self.target,
@@ -151,7 +141,7 @@ KISSY.add(function(S, Node, Button) {
                 if (!S.isString(tpl) || !S.isString(name)){
                 	return false;
                 }
-                // TODO Node 调用create方法
+                // TODO: Node 调用create方法
                 input = $(tpl, {'name':name});
                 // input = DOM.create(tpl, {'name':name});
                 $(input).insertAfter(target);
@@ -163,7 +153,7 @@ KISSY.add(function(S, Node, Button) {
              */
             _changeHandler : function(ev) {
                 var self = this,
-                	fileInput = self.fileInput,
+                	fileInput = self.get('fileInput'),
                 	value = $(fileInput).val(),
                 	fileName;
                 if (value == EMPTY){
@@ -177,6 +167,16 @@ KISSY.add(function(S, Node, Button) {
             }
     },{
     	ATTRS : /** @lends Button*/{
+    		/**
+    		 * 对应的表单上传域
+     		 * @type HTMLElement
+    		 */
+    		fileInput: {
+    			value: EMPTY
+    		},
+    		inputContainer: {
+    			value: EMPTY
+    		},
     		/**
              * 隐藏的表单上传域的模板
              * @type String
