@@ -34,7 +34,7 @@ foreach($files_name_arr as $k=>$v){
 
 $arr = array(
 	'status' => 1,
-    'result' => array('name' => $_FILES[$fileInput]['name'],
+    'data' => array('name' => $_FILES[$fileInput]['name'],
                       'url' => $dir.$_FILES[$fileInput]['name'])
 );
 
