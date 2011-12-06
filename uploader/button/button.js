@@ -152,7 +152,7 @@ KISSY.add(function(S, Node, Button) {
                 	return false;
                 }
                 // TODO Node 调用create方法
-                input = DOM.create(tpl, {'name':name});
+                input = $(tpl, {'name':name});
                 // input = DOM.create(tpl, {'name':name});
                 $(input).insertAfter(target);
                 return self.urlsInput = input;
@@ -169,7 +169,9 @@ KISSY.add(function(S, Node, Button) {
                 if (value == EMPTY){
                 	return false;
                 }
-                self.fire(self.event.CHANGE);
+                self.fire(self.event.CHANGE, {
+                	'eventTarget': ev
+                });
                 // change完之后reset按钮，防止选择同一个文件无法触发change事件
                 self._reset();
             }
