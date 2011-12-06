@@ -175,6 +175,26 @@ KISSY.add(function(S, Node, Button) {
             }
     },{
     	ATTRS : /** @lends Button*/{
+    		/**
+             * 隐藏的表单上传域的模板
+             * @type String
+             */
+	        tpl : {
+	            value : '<div class="ks-ajax-uploader-input-container"><input type="file" name="{name}" hidefoucs="true" class="ks-ajax-uploader-input" /></div>'
+	        },
+	        /**
+	         * 隐藏的表单上传域的name值
+	         * @type String
+	         */
+	        name : {
+	            value : 'fileInput',
+	            setter : function(v) {
+	                if (this.fileInput) {
+	                    DOM.attr(this.fileInput, 'name', v);
+	                }
+	                return v;
+	            }
+	        },
 	        /**
 	         * 是否可用,false为可用
 	         * @type Boolean
