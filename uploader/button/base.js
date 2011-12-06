@@ -43,17 +43,40 @@ KISSY.add(function(S, Node, Base) {
     });
         
     S.extend(Button, Base, /** @lends Button.prototype*/{
-    	render : function(){
+    	/**
+    	 * 显示按钮
+    	 */
+    	show: function(){
     		
     	},
-    	show: function(){
-    		// TODO
-    	},
+    	/**
+    	 * 隐藏按钮
+    	 */
     	hide: function(){
-    		// TODO
+    		
     	}
     },{
     	ATTRS : /** @lends Button */{
+		    /**
+             * 隐藏的表单上传域的模板
+             * @type String
+             */
+	        tpl : {
+	            value : '<div class="ks-ajax-uploader-input-container"><input type="file" name="{name}" hidefoucs="true" class="ks-ajax-uploader-input" /></div>'
+	        },
+	        /**
+	         * 隐藏的表单上传域的name值
+	         * @type String
+	         */
+	        name : {
+	            value : 'fileInput',
+	            setter : function(v) {
+	                if (this.fileInput) {
+	                    DOM.attr(this.fileInput, 'name', v);
+	                }
+	                return v;
+	            }
+	        },
             /**
 	         * 隐藏的文件路径隐藏域模板
 	         * @type String
@@ -74,6 +97,13 @@ KISSY.add(function(S, Node, Base) {
 	         */
 	        multiple : {
 	            value : false
+	        },
+	        /**
+	         * 是否可用,false为可用
+	         * @type Boolean
+	         */
+	        disabled : {
+	            value : false,
 	        }
     	}
     });
