@@ -60,6 +60,8 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             uploadType = new UploadType(serverConfig);
             //监听上传器上传完成事件
             uploadType.on(uploadType.constructor.event.SUCCESS, self._uploadCompleteHanlder, self);
+            //监听上传器上传停止事件
+            uploadType.on(uploadType.constructor.event.STOP, self._uploadStopHanlder, self);
             self.set('uploadType', uploadType);
             self.fire(Uploader.event.RENDER);
             return self;
@@ -88,6 +90,13 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             queue.fileStatus(fileId, queue.constructor.status.START);
             //开始上传
             uploadType.upload(fileInput);
+        },
+        /**
+         * 取消上传
+         */
+        cancel : function(){
+            var self = this,uploadType = self.get('uploadType');
+            uploadType.stop();
         },
         /**
          * 是否支持ajax方案上传
@@ -201,6 +210,14 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             //置空当前上传id
             self.set('curUploadId', EMPTY);
             self.fire(event.COMPLETE);
+        },
+        /**
+         * 取消上传后调用的方法
+         */
+        _uploadStopHanlder : function(){
+            var self = this,queue = self.get('queue'),
+                id = self.get('curUploadId');
+            queue.fileStatus(id, queue.constructor.status.CANCEL);
         },
         _success : function(data){
             if(!S.isObject(data)) return false;

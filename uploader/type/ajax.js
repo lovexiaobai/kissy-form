@@ -90,7 +90,7 @@ KISSY.add(function(S, Node, UploadType) {
                  * @param {String} textStatus
                  */
                 error : function(n,textStatus){
-                    self.fire(AjaxType.event.ERROR, {textStatus : textStatus,msg : 'ajax请求失败，原因：' + textStatus});
+                    self.fire(AjaxType.event.ERROR, {status : textStatus,msg : '上传失败，原因：' + textStatus});
                 }
             });
             self.set('ajaxConfig',ajaxConfig);

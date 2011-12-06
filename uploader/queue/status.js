@@ -27,6 +27,7 @@ KISSY.add(function(S, Node, Base) {
             WAITING : 'waiting',
             START : 'start',
             SUCCESS : 'success',
+            CANCEL : 'cancel',
             ERROR : 'error'
         },
         tpl : {
@@ -91,6 +92,12 @@ KISSY.add(function(S, Node, Base) {
                 //删除队列中的文件
                 queue.remove(id);
             })
+        },
+        /**
+         * 取消上传后改成状态层内容
+         */
+        _cancel : function(){
+
         },
         /**
          * 上传失败后改成状态层内容
