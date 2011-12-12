@@ -192,7 +192,7 @@ KISSY.add(function(S, Node, Button) {
 	            value : 'fileInput',
 	            setter : function(v) {
 	                if (this.fileInput) {
-	                    DOM.attr(this.fileInput, 'name', v);
+	                    $(this.fileInput).attr('name', v);
 	                }
 	                return v;
 	            }
@@ -204,13 +204,16 @@ KISSY.add(function(S, Node, Button) {
 	        disabled : {
 	            value : false,
 	            setter : function(v) {
-	                var self = this,target = self.target,cls = self.get('cls').disabled,fileInput = self.fileInput;
+	                var self = this,
+	                	target = self.target,
+	                	cls = self.get('cls').disabled,
+	                	fileInput = self.fileInput;
 	                if (v) {
-	                    DOM.addClass(target, cls);
-	                    DOM.hide(fileInput);
+	                    $(target).addClass(cls);
+	                    $(fileInput).hide();
 	                } else {
-	                    DOM.removeClass(target, cls);
-	                    DOM.show(fileInput);
+	                    $(target).removeClass(cls);
+	                    $(fileInput).show();
 	                }
 	                return v;
 	            }
