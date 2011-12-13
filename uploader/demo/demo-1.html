@@ -6,8 +6,15 @@
 <script src="../../kissy/kissy.js"></script>
 <link href="../uploader.css" rel="stylesheet"/>
 <style>
-    .demo-wrapper{
+    body{
+        font-size: 12px;
+        color:#404040;
+    }
+    .demo-wrapper {
         margin-top: 20px;
+    }
+    .btn-wrapper{
+        margin-top:10px;
     }
 </style>
 </head>
@@ -18,20 +25,39 @@
     <p>为了简化demo去掉了上传验证类的初始化，目前组件效果和可用性上还有些问题，代码和API还在重构中，欢迎反馈问题:)</p>
     <div class="demo-wrapper">
         <form action="test.php">
-        <a id="J_UploaderBtn" class="g-u uploader-button uploader-button-focus" data-config='{"type" : "auto","serverConfig":{"action":"upload.php","data":{"dir":"files/"},"dataType" : "json"},"name":"Filedata","urlsInputName":"attachments"}' href="#uploaderFile()">
-                    选择要上传的图片
-        </a>
-        <ul id="J_UploaderQueue">
+            <a id="J_UploaderBtn" class="g-u uploader-button uploader-button-focus" data-config='{"type" : "auto","serverConfig":{"action":"upload.php","data":{"dir":"files/"},"dataType" : "json"},"name":"Filedata","urlsInputName":"attachments"}' href="#uploaderFile()">
+                选择要上传的图片
+            </a>
+            <ul id="J_UploaderQueue">
 
-        </ul>
-
+            </ul>
+            <div class="btn-wrapper">
+                <p class="row">
+                    <input name="autoUpload[]" class="J_AutoUpload" value="1" type="radio" checked>
+                    <label>自动上传</label>
+                    <input name="autoUpload[]" class="J_AutoUpload" value="0" type="radio">
+                    <label>不自动上传</label>
+                </p>
+                <input id="J_UploadAll" type="button" value="上传所有等待的文件">
+            </div>
         </form>
     </div>
     <script>
         KISSY.Config.base = '../../../';
-        KISSY.use('form/uploader/render', function(S, RenderUploader) {
-            var renderUploader = new RenderUploader('#J_UploaderBtn','#J_UploaderQueue');
-        })
+        KISSY.use('node',function(S,Node){
+            var $ = Node.all;
+            KISSY.use('form/uploader/render', function(S, RenderUploader) {
+                var renderUploader = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue'),
+                        uploader = renderUploader.get('uploader');
+                $('.J_AutoUpload').on('click',function(ev){
+                    var val = Number($(ev.target).val());
+                    uploader.set('autoUpload',val);
+                });
+                $('#J_UploadAll').on('click',function(ev){
+                    uploader.uploadWaitFiles();
+                })
+            })
+        });
     </script>
 </article>
 </body>

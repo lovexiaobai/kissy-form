@@ -1,74 +1,75 @@
 /**
- * @fileoverview Òì²½ÎÄ¼şÉÏ´«×é¼ş
- * @author ½£Æ½£¨Ã÷ºÓ£©<minghe36@126.com>,×ÏÓ¢<daxingplay@gmail.com>
+ * @fileoverview å¼‚æ­¥æ–‡ä»¶ä¸Šä¼ ç»„ä»¶
+ * @author å‰‘å¹³ï¼ˆæ˜æ²³ï¼‰<minghe36@126.com>,ç´«è‹±<daxingplay@gmail.com>
  **/
 KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
     var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploader]:';
 
     /**
      * @name Uploader
-     * @class Òì²½ÎÄ¼şÉÏ´«×é¼ş£¬Ä¿Ç°ÊÇÊ¹ÓÃajax+iframeµÄ·½°¸£¬ÈÕºó»á¼ÓÈëflash·½°¸
+     * @class å¼‚æ­¥æ–‡ä»¶ä¸Šä¼ ç»„ä»¶ï¼Œç›®å‰æ˜¯ä½¿ç”¨ajax+iframeçš„æ–¹æ¡ˆï¼Œæ—¥åä¼šåŠ å…¥flashæ–¹æ¡ˆ
      * @constructor
      * @extends Base
      * @requires Node,UrlsInput,IframeType,AjaxType
      */
     function Uploader(config) {
         var self = this;
-        //µ÷ÓÃ¸¸Àà¹¹Ôìº¯Êı
+        //è°ƒç”¨çˆ¶ç±»æ„é€ å‡½æ•°
         Uploader.superclass.constructor.call(self, config);
     }
 
     S.mix(Uploader, /** @lends Uploader*/{
         /**
-         * ÉÏ´«·½Ê½
+         * ä¸Šä¼ æ–¹å¼
          */
         type : {AUTO : 'auto',IFRAME : 'iframe',AJAX : 'ajax'},
         /**
-         * ÊÂ¼ş
+         * äº‹ä»¶
          */
         event : {
-            //ÔËĞĞ
+            //è¿è¡Œ
             RENDER : 'render',
-            //Ñ¡ÔñÍêÎÄ¼şºó´¥·¢
+            //é€‰æ‹©å®Œæ–‡ä»¶åè§¦å‘
             SELECT : 'select',
-            //¿ªÊ¼ÉÏ´«
+            //å¼€å§‹ä¸Šä¼ 
             START : 'start',
-            // ÉÏ´«ÖĞ
+            // ä¸Šä¼ ä¸­
             UPLOADING: 'uploading',
-            //ÉÏ´«Íê³É£¨ÔÚÉÏ´«³É¹¦»òÉÏ´«Ê§°Üºó¶¼»á´¥·¢£©
+            //ä¸Šä¼ å®Œæˆï¼ˆåœ¨ä¸Šä¼ æˆåŠŸæˆ–ä¸Šä¼ å¤±è´¥åéƒ½ä¼šè§¦å‘ï¼‰
             COMPLETE :'complete',
-            //ÉÏ´«³É¹¦
+            //ä¸Šä¼ æˆåŠŸ
             SUCCESS : 'success',
-            //ÉÏ´«Ê§°Ü
+            //ä¸Šä¼ å¤±è´¥
             ERROR : 'error'
         }
     });
-    //¼Ì³ĞÓÚBase£¬ÊôĞÔgetterºÍsetterÎ¯ÍĞÓÚBase´¦Àí
+    //ç»§æ‰¿äºBaseï¼Œå±æ€§getterå’Œsetterå§”æ‰˜äºBaseå¤„ç†
     S.extend(Uploader, Base, /** @lends Uploader.prototype*/{
         /**
-         * ÔËĞĞ
+         * è¿è¡Œ
          * @return {Uploader}
          */
         render : function() {
             var self = this,serverConfig = self.get('serverConfig'),
                 UploadType = self.getUploadType(),uploadType;
             if (!UploadType) return false;
-            //Â·¾¶inputÊµÀı
+            //è·¯å¾„inputå®ä¾‹
             self.set('urlsInput',self._renderUrlsInput());
             self._renderQueue();
             self._renderButton();
+            //å®ä¾‹åŒ–ä¸Šä¼ æ–¹å¼ç±»
             uploadType = new UploadType(serverConfig);
-            //¼àÌıÉÏ´«Æ÷ÉÏ´«Íê³ÉÊÂ¼ş
+            //ç›‘å¬ä¸Šä¼ å™¨ä¸Šä¼ å®Œæˆäº‹ä»¶
             uploadType.on(uploadType.constructor.event.SUCCESS, self._uploadCompleteHanlder, self);
-            //¼àÌıÉÏ´«Æ÷ÉÏ´«Í£Ö¹ÊÂ¼ş
+            //ç›‘å¬ä¸Šä¼ å™¨ä¸Šä¼ åœæ­¢äº‹ä»¶
             uploadType.on(uploadType.constructor.event.STOP, self._uploadStopHanlder, self);
             self.set('uploadType', uploadType);
             self.fire(Uploader.event.RENDER);
             return self;
         },
         /**
-         * ÉÏ´«ÎÄ¼ş
-         * @param {Number} fileId ÎÄ¼şË÷ÒıÖµ
+         * ä¸Šä¼ æ–‡ä»¶
+         * @param {Number} fileId æ–‡ä»¶ç´¢å¼•å€¼
          */
         upload : function(fileId) {
             if (!S.isNumber(fileId)) return false;
@@ -77,36 +78,66 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
                 file = queue.get('files')[fileId],
                 fileInput;
             if (!S.isPlainObject(file)) {
-                S.log(LOG_PREFIX + '¶ÓÁĞÖĞ²»´æÔÚidÎª' + fileId + 'µÄÎÄ¼ş');
+                S.log(LOG_PREFIX + 'é˜Ÿåˆ—ä¸­ä¸å­˜åœ¨idä¸º' + fileId + 'çš„æ–‡ä»¶');
                 return false;
             }
-            //ÎÄ¼şÉÏ´«Óò
+            //å¦‚æœæœ‰æ–‡ä»¶æ­£åœ¨ä¸Šä¼ ï¼Œäºˆä»¥é˜»æ­¢ä¸Šä¼ 
+            if(self.get('curUploadId') != EMPTY){
+                alert('æœ‰æ–‡ä»¶æ­£åœ¨ä¸Šä¼ ï¼Œè¯·ä¸Šä¼ å®Œåå†æ“ä½œï¼');
+                return false;
+            }
+            //æ–‡ä»¶ä¸Šä¼ åŸŸ
             fileInput = file.input;
-            //´¥·¢ÎÄ¼şÉÏ´«Ç°ÊÂ¼ş
+            //è§¦å‘æ–‡ä»¶ä¸Šä¼ å‰äº‹ä»¶
             self.fire(Uploader.event.START, {id : fileId,file : file});
-            //ÉèÖÃµ±Ç°ÉÏ´«µÄÎÄ¼şid
+            //è®¾ç½®å½“å‰ä¸Šä¼ çš„æ–‡ä»¶id
             self.set('curUploadId', fileId);
-            //¸Ä±äÎÄ¼şÉÏ´«×´Ì¬Îªstart
+            //æ”¹å˜æ–‡ä»¶ä¸Šä¼ çŠ¶æ€ä¸ºstart
             queue.fileStatus(fileId, queue.constructor.status.START);
-            //¿ªÊ¼ÉÏ´«
+            //å¼€å§‹ä¸Šä¼ 
             uploadType.upload(fileInput);
         },
         /**
-         * È¡ÏûÉÏ´«
+         * å–æ¶ˆä¸Šä¼ 
          */
         cancel : function(){
             var self = this,uploadType = self.get('uploadType');
             uploadType.stop();
+            //å–æ¶ˆä¸Šä¼ ååˆ·æ–°çŠ¶æ€ï¼Œæ›´æ”¹è·¯å¾„ç­‰æ“ä½œè¯·çœ‹_uploadStopHanlder()
+            return self;
         },
         /**
-         * ÊÇ·ñÖ§³Öajax·½°¸ÉÏ´«
+         * ä¸Šä¼ ç­‰å¾…ä¸­çš„æ–‡ä»¶
+         */
+        uploadWaitFile : function(){
+            var self = this,queue = self.get('queue'),
+                waitFileIds = queue.getWaitFileIds();
+            //æ²¡æœ‰ç­‰å¾…ä¸Šä¼ çš„æ–‡ä»¶
+            if(!waitFileIds.length){
+                self.set('isUploadWaitFiles',false);
+                return false;
+            }
+            //å¼€å§‹ä¸Šä¼ ç­‰å¾…ä¸­çš„æ–‡ä»¶
+            self.upload(waitFileIds[0]);
+        },
+        /**
+         * ä¸Šä¼ ç­‰å¾…ä¸­çš„æ–‡ä»¶
+         */
+        uploadWaitFiles : function(){
+            var self = this;
+            //ä¸Šä¼ æ‰€æœ‰ç­‰å¾…ä¸­çš„æ–‡ä»¶
+            self.set('isUploadWaitFiles',true);
+            self.uploadWaitFile();
+        },
+        /**
+         * æ˜¯å¦æ”¯æŒajaxæ–¹æ¡ˆä¸Šä¼ 
          * @return {Boolean}
          */
         isSupportAjax : function() {
             return S.isObject(FormData);
         },
         /**
-         * »ñÈ¡ÉÏ´«·½Ê½Àà£¨iframe·½°¸»òajax·½°¸£©
+         * è·å–ä¸Šä¼ æ–¹å¼ç±»ï¼ˆiframeæ–¹æ¡ˆæˆ–ajaxæ–¹æ¡ˆï¼‰
          * @return {IframeType|AjaxType}
          */
         getUploadType : function() {
@@ -123,62 +154,70 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
                     UploadType = AjaxType;
                     break;
                 default :
-                    S.log(LOG_PREFIX + 'type²ÎÊı²»ºÏ·¨£¬Ö»ÔÊĞíÅäÖÃÖµÎª' + types.AUTO + ',' + types.IFRAME + ',' + types.AJAX);
+                    S.log(LOG_PREFIX + 'typeå‚æ•°ä¸åˆæ³•ï¼Œåªå…è®¸é…ç½®å€¼ä¸º' + types.AUTO + ',' + types.IFRAME + ',' + types.AJAX);
                     return false;
             }
             return UploadType;
         },
         /**
-         * ÔËĞĞButtonÉÏ´«°´Å¥×é¼ş
+         * è¿è¡ŒButtonä¸Šä¼ æŒ‰é’®ç»„ä»¶
          * @return {Button}
          */
         _renderButton : function() {
             var self = this,button = self.get('button');
             if (!S.isObject(button)) {
-                S.log(LOG_PREFIX + 'button²ÎÊı²»ºÏ·¨£¡');
+                S.log(LOG_PREFIX + 'buttonå‚æ•°ä¸åˆæ³•ï¼');
                 return false;
             }
-            //¼àÌı°´Å¥¸Ä±äÊÂ¼ş
+            //ç›‘å¬æŒ‰é’®æ”¹å˜äº‹ä»¶
             button.on('change', self._select, self);
-            //ÔËĞĞ°´Å¥ÊµÀı
+            //è¿è¡ŒæŒ‰é’®å®ä¾‹
             button.render();
             return button;
         },
         /**
-         * ÔËĞĞQueue¶ÓÁĞ×é¼ş
-         * @return {Queue} ¶ÓÁĞÊµÀı
+         * è¿è¡ŒQueueé˜Ÿåˆ—ç»„ä»¶
+         * @return {Queue} é˜Ÿåˆ—å®ä¾‹
          */
         _renderQueue : function() {
             var self = this,queue = self.get('queue'),
                 urlsInput = self.get('urlsInput');
             if (!S.isObject(queue)) {
-                S.log(LOG_PREFIX + 'queue²ÎÊı²»ºÏ·¨');
+                S.log(LOG_PREFIX + 'queueå‚æ•°ä¸åˆæ³•');
                 return false;
             }
-            //¼àÌı¶ÓÁĞµÄÉ¾³ıÊÂ¼ş
+            //å°†ä¸Šä¼ ç»„ä»¶å®ä¾‹ä¼ ç»™é˜Ÿåˆ—ï¼Œæ–¹ä¾¿é˜Ÿåˆ—å†…éƒ¨æ‰§è¡Œå–æ¶ˆã€é‡æ–°ä¸Šä¼ çš„æ“ä½œ
+            queue.set('uploader',self);
+            //ç›‘å¬é˜Ÿåˆ—çš„åˆ é™¤äº‹ä»¶
             queue.on(queue.constructor.event.REMOVE,function(ev){
+                //åˆ é™¤è¯¥æ–‡ä»¶è·¯å¾„
                 urlsInput.remove(ev.id);
             });
             queue.render();
             return queue;
         },
         /**
-         * Ñ¡ÔñÍêÎÄ¼şºó
+         * é€‰æ‹©å®Œæ–‡ä»¶å
          */
         _select : function(ev) {
             var self = this,autoUpload = self.get('autoUpload'),
                 queue = self.get('queue'),
-                //ev.filesÎªÎÄ¼şÓòÖµ¸Ä±ä´¥·¢·µ»ØµÄÎÄ¼ş¶ÔÏóÊı×é£¬Ä¬ÈÏÊÇÊı×é£¬ÓÉÓÚ²»Ö§³Ö¶àÑ¡£¬ÕâÀïÖ»ĞèÒª»ñÈ¡µÚÒ»¸öÎÄ¼ş¼´¿É
+                curId = self.get('curUploadId'),
+                //ev.filesä¸ºæ–‡ä»¶åŸŸå€¼æ”¹å˜è§¦å‘è¿”å›çš„æ–‡ä»¶å¯¹è±¡æ•°ç»„ï¼Œé»˜è®¤æ˜¯æ•°ç»„ï¼Œç”±äºä¸æ”¯æŒå¤šé€‰ï¼Œè¿™é‡Œåªéœ€è¦è·å–ç¬¬ä¸€ä¸ªæ–‡ä»¶å³å¯
                 file = ev.files[0],
+                //æ–‡ä»¶å¯¹è±¡
                 oFile = {name : ev.name,input : ev.input,file : file},
                 fileId;
             self.fire(Uploader.event.SELECT);
-            //Ïò¶ÓÁĞÌí¼ÓÎÄ¼ş
+            //å‘é˜Ÿåˆ—æ·»åŠ æ–‡ä»¶
             fileId = queue.add(oFile);
-            autoUpload && self.upload(fileId);
+            //å¦‚æœä¸å­˜åœ¨æ­£åœ¨ä¸Šä¼ çš„æ–‡ä»¶ï¼Œä¸”å…è®¸è‡ªåŠ¨ä¸Šä¼ ï¼Œä¸Šä¼ è¯¥æ–‡ä»¶
+            if(curId === EMPTY){
+                autoUpload && self.upload(fileId);
+            }
         },
         /**
-         * ÏòÉÏ´«°´Å¥ÈİÆ÷ÄÚÔö¼ÓÓÃÓÚ´æ´¢ÎÄ¼şÂ·¾¶µÄinput
+         * å‘ä¸Šä¼ æŒ‰é’®å®¹å™¨å†…å¢åŠ ç”¨äºå­˜å‚¨æ–‡ä»¶è·¯å¾„çš„input
          */
         _renderUrlsInput : function() {
             var self = this,button = self.get('button'),inputWrapper = button.target,
@@ -188,44 +227,53 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             return urlsInput;
         },
         /**
-         * µ±ÉÏ´«Íê±Ïºó·µ»Ø½á¹û¼¯µÄ´¦Àí
+         * å½“ä¸Šä¼ å®Œæ¯•åè¿”å›ç»“æœé›†çš„å¤„ç†
          */
         _uploadCompleteHanlder : function(ev) {
             var self = this,result = ev.result,status,event = Uploader.event,
                 queue = self.get('queue'),id = self.get('curUploadId'),
                 file = queue.getFile(id);
             if (!S.isObject(result)) return false;
-            //ÎÄ¼şÉÏ´«×´Ì¬
+            //æ–‡ä»¶ä¸Šä¼ çŠ¶æ€
             status = result.status;
             if (status) {
-                //ĞŞ¸Ä¶ÓÁĞÖĞÎÄ¼şµÄ×´Ì¬Îªsuccess£¨ÉÏ´«Íê³É£©
+                //ä¿®æ”¹é˜Ÿåˆ—ä¸­æ–‡ä»¶çš„çŠ¶æ€ä¸ºsuccessï¼ˆä¸Šä¼ å®Œæˆï¼‰
                 queue.fileStatus(id, queue.constructor.status.SUCCESS);
                 self._success(result.data);
                 self.fire(event.SUCCESS);
             } else {
-                //ĞŞ¸Ä¶ÓÁĞÖĞÎÄ¼şµÄ×´Ì¬Îªerror£¨ÉÏ´«Ê§°Ü£©
+                //ä¿®æ”¹é˜Ÿåˆ—ä¸­æ–‡ä»¶çš„çŠ¶æ€ä¸ºerrorï¼ˆä¸Šä¼ å¤±è´¥ï¼‰
                 queue.fileStatus(id, queue.constructor.status.ERROR);
                 self.fire(event.ERROR, {status : status});
             }
-            //ÖÃ¿Õµ±Ç°ÉÏ´«id
+            //ç½®ç©ºå½“å‰ä¸Šä¼ id
             self.set('curUploadId', EMPTY);
             self.fire(event.COMPLETE);
+            //æ˜¯å¦ä¸Šä¼ ç­‰å¾…ä¸­çš„æ–‡ä»¶
+            if(self.get('isUploadWaitFiles')) self.uploadWaitFile();
         },
         /**
-         * È¡ÏûÉÏ´«ºóµ÷ÓÃµÄ·½·¨
+         * å–æ¶ˆä¸Šä¼ åè°ƒç”¨çš„æ–¹æ³•
          */
         _uploadStopHanlder : function(){
             var self = this,queue = self.get('queue'),
                 id = self.get('curUploadId');
+            //æ›´æ”¹å–æ¶ˆä¸Šä¼ åçš„çŠ¶æ€
             queue.fileStatus(id, queue.constructor.status.CANCEL);
+            //é‡ç½®å½“å‰ä¸Šä¼ æ–‡ä»¶id
+            self.set('curUploadId',EMPTY);
         },
+        /**
+         * ä¸Šä¼ æˆåŠŸåæ‰§è¡Œçš„å›è°ƒå‡½æ•°
+         * @param {Object} data æœåŠ¡å™¨ç«¯è¿”å›çš„æ•°æ®
+         */
         _success : function(data){
             if(!S.isObject(data)) return false;
             var self = this,url = data.url,
                 urlsInput = self.get('urlsInput'),
                 fileId = self.get('curUploadId');
             if(!S.isString(url) || !S.isObject(urlsInput)) return false;
-            //ÏòÂ·¾¶Òş²ØÓòÌí¼ÓÂ·¾¶
+            //å‘è·¯å¾„éšè—åŸŸæ·»åŠ è·¯å¾„
             urlsInput.add(fileId,url);
         },
         _error : function(){
@@ -234,37 +282,39 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
 
     }, {ATTRS : /** @lends Uploader*/{
         /**
-         * Button°´Å¥µÄÊµÀı
+         * ButtonæŒ‰é’®çš„å®ä¾‹
          */
         button : {value : {}},
         /**
-         * Queue¶ÓÁĞµÄÊµÀı
+         * Queueé˜Ÿåˆ—çš„å®ä¾‹
          */
         queue : {value : {}},
         /**
-         * ²ÉÓÃµÄÉÏ´«·½°¸£¬auto£º¸ù¾İä¯ÀÀÆ÷×Ô¶¯Ñ¡Ôñ£¬iframe£º²ÉÓÃiframe·½°¸£¬ajax£º²ÉÓÃajax·½°¸
+         * é‡‡ç”¨çš„ä¸Šä¼ æ–¹æ¡ˆï¼Œautoï¼šæ ¹æ®æµè§ˆå™¨è‡ªåŠ¨é€‰æ‹©ï¼Œiframeï¼šé‡‡ç”¨iframeæ–¹æ¡ˆï¼Œajaxï¼šé‡‡ç”¨ajaxæ–¹æ¡ˆ
          */
         type : {value : Uploader.type.AUTO},
         /**
-         * ·şÎñÆ÷¶ËÅäÖÃ
+         * æœåŠ¡å™¨ç«¯é…ç½®
          */
         serverConfig : {value : {action : EMPTY,data : {},dataType : 'json'}},
         /**
-         * ÊÇ·ñÔÊĞíÉÏ´«ÎÄ¼ş
+         * æ˜¯å¦å…è®¸ä¸Šä¼ æ–‡ä»¶
          */
         isAllowUpload : {value : true},
         /**
-         * ÊÇ·ñ×Ô¶¯ÉÏ´«
+         * æ˜¯å¦è‡ªåŠ¨ä¸Šä¼ 
          */
         autoUpload : {value : true},
         /**
-         * ´æ´¢ÎÄ¼şÂ·¾¶µÄÒş²ØÓòµÄnameÃû
+         * å­˜å‚¨æ–‡ä»¶è·¯å¾„çš„éšè—åŸŸçš„nameå
          */
         urlsInputName : {value : EMPTY},
-        //µ±Ç°ÉÏ´«µÄid
+        //å½“å‰ä¸Šä¼ çš„id
         curUploadId : {value : EMPTY},
         uploadType : {value : {}},
-        urlsInput : {value : EMPTY}
+        urlsInput : {value : EMPTY},
+        //æ˜¯å¦æ­£åœ¨ä¸Šä¼ ç­‰å¾…ä¸­çš„æ–‡ä»¶
+        isUploadWaitFiles : {value : false}
     }});
     return Uploader;
 }, {requires:['base','node','./urlsInput','./type/iframe','./type/ajax']});

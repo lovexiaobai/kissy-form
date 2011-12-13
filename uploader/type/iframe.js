@@ -61,7 +61,7 @@ KISSY.add(function(S, Node, UploadType) {
         stop : function() {
             var self = this,iframe = self.get('iframe');
             iframe.attr('src', 'javascript:"<html></html>";');
-            self.fire(IframeType.event.STOP, {iframe : iframe});
+            self.fire(IframeType.event.STOP);
             self.fire(IframeType.event.ERROR, {status : 'abort',msg : '上传失败，原因：abort'});
             return self;
         },

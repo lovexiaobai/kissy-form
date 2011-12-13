@@ -52,6 +52,16 @@ KISSY.add(function(S, Node, Base) {
             return b;
         },
         /**
+         * 改变状态层的DOM内容
+         * @return {NodeList} 内容层
+         */
+        _changeDom : function(content){
+            var self = this,$target = self.get('target'),$content;
+            $target.html(EMPTY);
+            $content = $(content).appendTo($target);
+            return $content;
+        },
+        /**
          * 等待上传时状态层内容
          */
         _waiting : function() {
@@ -62,30 +72,29 @@ KISSY.add(function(S, Node, Base) {
          * 开始上传后改成状态层内容
          */
         _start : function() {
-            var self = this,$target = self.get('target'),
-                tpl = self.get('tpl'),startTpl = tpl.start,
+            var self = this, tpl = self.get('tpl'),startTpl = tpl.start,
+                uploader = self.get('uploader'),
                 $content,$cancel;
             if (!S.isString(startTpl)) return false;
-            $target.html(EMPTY);
-            $content = $(startTpl).appendTo($target);
+            $content = self._changeDom(startTpl);
             //取消链接
             $cancel = $content.children('.J_UploadCancel');
             $cancel.on('click', function(ev) {
-                
+                ev.preventDefault();
+                if(!S.isObject(uploader)) return false;
+                uploader.cancel();
             })
         },
         /**
          * 成功上传后改成状态层内容
          */
         _success : function() {
-            var self = this,$target = self.get('target'),
-                tpl = self.get('tpl'),successTpl = tpl.success,
+            var self = this, tpl = self.get('tpl'),successTpl = tpl.success,
                 queue = self.get('queue'),
                 file = self.get('file'),id = file.id,
                 $content;
             if (!S.isString(successTpl)) return false;
-            $target.html(EMPTY);
-            $content = $(successTpl).appendTo($target);
+            $content = self._changeDom(successTpl);
             //点击删除
             $content.on('click',function(ev){
                 ev.preventDefault();
@@ -97,7 +106,18 @@ KISSY.add(function(S, Node, Base) {
          * 取消上传后改成状态层内容
          */
         _cancel : function(){
-
+            var self = this, tpl = self.get('tpl'),cancelTpl = tpl.cancel,
+                uploader = self.get('uploader'),
+                $content = self._changeDom(cancelTpl),
+                $reUpload = $content.children('.J_ReUpload'),
+                //文件id
+                file = self.get('file'),id = file.id;
+            //点击重新上传链接
+            $reUpload.on('click',function(ev){
+                ev.preventDefault();
+                if(!S.isObject(uploader)) return false;
+                uploader.upload(id);
+            });
         },
         /**
          * 上传失败后改成状态层内容
@@ -114,15 +134,20 @@ KISSY.add(function(S, Node, Base) {
          * 模板
          */
         tpl : {value : {
-            start : '<img class="f-l loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" />' +
-                    ' <a class="f-l" href="#uploadCancel" class="J_UploadCancel upload-cancel">取消</a> ',
+            start : '<div><img class="f-l loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" />' +
+                    ' <a class="f-l J_UploadCancel upload-cancel" href="#uploadCancel">取消</a></div> ',
             success : '<a href="#fileDel" class="J_FileDel">删除</a> ',
+            cancel : '<div>已经取消上传，<a href="#reUpload" class="J_ReUpload">点此重新上传</a> </div>',
             error : '上传失败！'
         } },
         /**
          * 队列实例
          */
         queue : {value : EMPTY},
+        /**
+         * 上传组件的实例
+         */
+        uploader : {value : EMPTY},
         /**
          * 文件对象
          */

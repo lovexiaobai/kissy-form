@@ -62,6 +62,7 @@ KISSY.add(function(S, Node, UploadType) {
             }
             //中止ajax请求，会触发error事件
             io.abort();
+            self.fire(AjaxType.event.STOP);
             return self;
         },
         /**

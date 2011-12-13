@@ -50,13 +50,7 @@ KISSY.add(function(S, Node, Base, Status) {
         /**
          * 文件的状态
          */
-        status : {
-            WAITING : 'waiting',
-            START : 'start',
-            UPLOADING : 'uploading',
-            SUCCESS : 'success',
-            ERROR : 'error'
-        },
+        status : Status.type,
         //样式
         cls : {
             QUEUE : 'ks-uploader-queue'
@@ -88,7 +82,8 @@ KISSY.add(function(S, Node, Base, Status) {
                 autoId = self.get('id'),
                 //文件信息显示模板
                 tpl = self.get('tpl'),
-                files = self.get('files');
+                files = self.get('files'),
+                uploader = self.get('uploader');
             //设置文件唯一id
             file.id = autoId;
             hFile = S.substitute(tpl, file);
@@ -98,6 +93,7 @@ KISSY.add(function(S, Node, Base, Status) {
             file.target = elFile;
             //状态实例
             file.status = self._renderStatus(file);
+            if(S.isObject(uploader)) file.status.set('uploader',uploader);
             files[autoId] = file;
             self.set('files', files);
             //设置文件状态为等待上传
@@ -127,7 +123,7 @@ KISSY.add(function(S, Node, Base, Status) {
          * 获取或设置文件状态
          * @param {Number} id 文件id
          * @param {String} status 文件状态
-         * @return {String}
+         * @return {Object}
          */
         fileStatus : function(id, status) {
             if (!S.isNumber(id)) return false;
@@ -137,7 +133,7 @@ KISSY.add(function(S, Node, Base, Status) {
             //状态实例
             oStatus = file['status'];
             if(status) oStatus.set('curType',status);
-            return  oStatus.get('curType');
+            return  oStatus;
         },
         /**
          * 获取指定索引值的队列中的文件
@@ -150,6 +146,24 @@ KISSY.add(function(S, Node, Base, Status) {
                 file = files[id];
             if (!S.isPlainObject(file)) file = false;
             return file;
+        },
+        /**
+         * 获取等待状态的文件id数组
+         */
+        getWaitFileIds : function(){
+            var self = this,files = self.get('files'),
+                status,waitFileIds = [];
+            if(!files.length) return waitFileIds;
+            S.each(files,function(file,index){
+                if(S.isObject(file)){
+                    status = file.status;
+                    //文件状态
+                    if(status.get('curType') == status.constructor.type.WAITING){
+                        waitFileIds.push(index);
+                    }
+                }
+            });
+            return waitFileIds;
         },
         /**
          * 运行Status
@@ -172,7 +186,9 @@ KISSY.add(function(S, Node, Base, Status) {
         tpl : { value : Queue.tpl.DEFAULT },
         target : {value : EMPTY},
         id : {value : 0},
-        files : {value : []}
+        files : {value : []},
+        //上传组件实例
+        uploader : {value : EMPTY}
     }});
 
     return Queue;
