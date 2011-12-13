@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="gbk" />
 		<title>Button Test</title>
-		<script src="http://a.tbcdn.cn/s/kissy/1.2.0/kissy-min.js"></script>
+		<script src="http://a.tbcdn.cn/s/kissy/1.2.0/kissy.js"></script>
 		<script src="http://127.0.0.1/kissy-form/uploader/button/base.js"></script>
 		<script src="http://127.0.0.1/kissy-form/uploader/button/button.js"></script>
 	</head>
@@ -25,10 +25,13 @@
 					'type': 'html',
 					'target': '#J_UploadBtn'
 				});
+				S.log(button.get('disabled'));
 				// button.render();
-				button.set('disabled', 'true');
-				// alert(button.get('disabled'));
-			})
+				// setTimeout(function(){
+					button.set('disabled', 'true');
+					S.log(button.get('disabled'));
+				// }, 1000);
+			});
 		</script>
 	</body>
 </html>

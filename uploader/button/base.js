@@ -35,6 +35,7 @@ KISSY.add('upload-btn', function(S, Node, Base){
 		}else{
 			S.log(LOG_PRE + 'button type does not exists.');
 		}
+		Button.superclass.constructor.call(self, self.config);
 	}
 	
 	S.mix(Button, {
@@ -95,16 +96,15 @@ KISSY.add('upload-btn', function(S, Node, Base){
 				setter: function(v){
 					var self = this,
 						inst = self.instance;
-					// if(v == false){
-						// self
-					// }
+					if(v == false){
+						self.instance.disable();
+					}else{
+						self.instance.enable();
+					}
 					// self.instance.disable();
-					S.log(LOG_PRE + '111');
-					self.instance.set('disabled', v);
+					// S.log(LOG_PRE + '111');
+					// self.instance.set('disabled', v);
 					return v;
-				},
-				getter: function(){
-					S.log(LOG_PRE + '1123124')
 				}
 			}
 		}

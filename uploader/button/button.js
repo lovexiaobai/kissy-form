@@ -88,16 +88,17 @@ KISSY.add('html-button', function(S, Node, ButtonBase){
 			self.fileInput = EMPTY;
 			S.log(LOG_PRE + 'File Input was reset.');
 			self._createInput();
+		},
+		disable: function(){
+			S.log(LOG_PRE + 'Button was disabled.');
+		},
+		enable: function(){
+			S.log(LOG_PRE + 'Button was enabled.');
 		}
 		
 	}, {
 		ATTRS: {
-			disabled: {
-				value: false,
-				setter: function(v){
-					S.log(LOG_PRE + ' The disabled is ' + v);
-				}
-			}
+			
 		}
 	})
 	
