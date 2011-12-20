@@ -235,5 +235,6 @@ KISSY.add(function(S, Node, Button) {
 	requires:[
 		'node',
 		'./base'
+
 	]
 });
