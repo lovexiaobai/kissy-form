@@ -37,6 +37,25 @@ KISSY.add(function(S, Node, Base) {
     //继承于Base，属性getter和setter委托于Base处理
     S.extend(Status, Base, /** @lends Status.prototype*/{
         /**
+         * 改变状态，调用对应的状态函数
+         * @param {String} status 状态名
+         * @param {Object} args 传递给状态函数的参数
+         */
+        change : function(status,args){
+            if (!S.isString(status)) return false;
+            var self = this,method;
+            if (!self.isSupport(status)) {
+                S.log(LOG_PREFIX + 'status参数为' + status + '，不支持的状态类型');
+                return false;
+            }
+            if(!args) args = {};
+            method = self['_' + status];
+            //改变状态层内容
+            method && method.call(self,args);
+            self.set('curType',status);
+            return self;
+        },
+        /**
          * 判断是不是允许的状态类型
          * @param {String} status
          * @return {Boolean}
@@ -55,7 +74,7 @@ KISSY.add(function(S, Node, Base) {
          * 改变状态层的DOM内容
          * @return {NodeList} 内容层
          */
-        _changeDom : function(content){
+        _changeDom : function(content) {
             var self = this,$target = self.get('target'),$content;
             $target.html(EMPTY);
             $content = $(content).appendTo($target);
@@ -65,8 +84,17 @@ KISSY.add(function(S, Node, Base) {
          * 等待上传时状态层内容
          */
         _waiting : function() {
-            var self = this,target = self.get('target');
-            target.html(EMPTY);
+            var self = this, tpl = self.get('tpl'),waitingTpl = tpl.waiting,
+                uploader = self.get('uploader'),
+                //文件id
+                file = self.get('file'),id = file.id,
+                $content = self._changeDom(waitingTpl),
+                $upload = $content.children('.J_Upload');
+            $upload.on('click',function(ev){
+                ev.preventDefault();
+                if (!S.isObject(uploader)) return false;
+                uploader.upload(id);
+            });
         },
         /**
          * 开始上传后改成状态层内容
@@ -81,7 +109,7 @@ KISSY.add(function(S, Node, Base) {
             $cancel = $content.children('.J_UploadCancel');
             $cancel.on('click', function(ev) {
                 ev.preventDefault();
-                if(!S.isObject(uploader)) return false;
+                if (!S.isObject(uploader)) return false;
                 uploader.cancel();
             })
         },
@@ -96,7 +124,7 @@ KISSY.add(function(S, Node, Base) {
             if (!S.isString(successTpl)) return false;
             $content = self._changeDom(successTpl);
             //点击删除
-            $content.on('click',function(ev){
+            $content.on('click', function(ev) {
                 ev.preventDefault();
                 //删除队列中的文件
                 queue.remove(id);
@@ -105,7 +133,7 @@ KISSY.add(function(S, Node, Base) {
         /**
          * 取消上传后改成状态层内容
          */
-        _cancel : function(){
+        _cancel : function() {
             var self = this, tpl = self.get('tpl'),cancelTpl = tpl.cancel,
                 uploader = self.get('uploader'),
                 $content = self._changeDom(cancelTpl),
@@ -113,17 +141,32 @@ KISSY.add(function(S, Node, Base) {
                 //文件id
                 file = self.get('file'),id = file.id;
             //点击重新上传链接
-            $reUpload.on('click',function(ev){
+            $reUpload.on('click', function(ev) {
                 ev.preventDefault();
-                if(!S.isObject(uploader)) return false;
+                if (!S.isObject(uploader)) return false;
                 uploader.upload(id);
             });
         },
         /**
          * 上传失败后改成状态层内容
          */
-        _error : function() {
-
+        _error : function(data) {
+            if(!S.isObject(data)){
+                data = {msg : '文件上传失败！'};
+            }
+            var self = this, tpl = self.get('tpl'),errorTpl = tpl.error,
+                html = S.substitute(errorTpl,data),
+                $content = self._changeDom(html),
+                $del = $content.children('.J_FileDel'),
+                queue = self.get('queue'),
+                //文件id
+                file = self.get('file'),id = file.id;
+            //点击重新上传链接
+            $del.on('click', function(ev) {
+                ev.preventDefault();
+                //删除队列中的文件
+                queue.remove(id);
+            });
         }
     }, {ATTRS : /** @lends Status*/{
         /**
@@ -134,11 +177,12 @@ KISSY.add(function(S, Node, Base) {
          * 模板
          */
         tpl : {value : {
+            waiting : '<div>等待上传，<a href="#Upload" class="J_Upload">点此上传</a> </div>',
             start : '<div><img class="f-l loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" />' +
-                    ' <a class="f-l J_UploadCancel upload-cancel" href="#uploadCancel">取消</a></div> ',
+                ' <a class="f-l J_UploadCancel upload-cancel" href="#uploadCancel">取消</a></div> ',
             success : '<a href="#fileDel" class="J_FileDel">删除</a> ',
             cancel : '<div>已经取消上传，<a href="#reUpload" class="J_ReUpload">点此重新上传</a> </div>',
-            error : '上传失败！'
+            error : '<div class="upload-error">{msg}<a href="#fileDel" class="J_FileDel">点此删除</a></div>'
         } },
         /**
          * 队列实例
@@ -155,21 +199,7 @@ KISSY.add(function(S, Node, Base) {
         /**
          * 当前状态类型
          */
-        curType : {
-            value : EMPTY,
-            setter : function(status) {
-                if (!S.isString(status)) return false;
-                var self = this,method;
-                if (!self.isSupport(status)) {
-                    S.log(LOG_PREFIX + 'status参数为' + status + '，不支持的状态类型');
-                    return false;
-                }
-                method = self['_' + status];
-                //改变状态层内容
-                method && method.call(self);
-                return status;
-            }
-        }
+        curType : { value : EMPTY }
     }});
     return Status;
 }, {requires : ['node','base']});

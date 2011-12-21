@@ -28,12 +28,19 @@ KISSY.add(function(S, Node, Base) {
          * 运行
          */
         render : function() {
-            var self = this,wrapper = self.get('wrapper');
-            if (!S.isObject(wrapper)) {
+            var self = this,$wrapper = self.get('wrapper'),
+                name = self.get('name'),
+                elInput = document.getElementsByName(name)[0];
+            if (!S.isObject($wrapper)) {
                 S.log(LOG_PREFIX + 'container参数不合法！');
                 return false;
             }
-            self._create();
+            //如果已经存在隐藏域，那么不自动创建
+            if(elInput){
+                self.set('input',$(elInput));
+            }else{
+                self._create();
+            }
         },
         /**
          * 向路径隐藏域添加路径

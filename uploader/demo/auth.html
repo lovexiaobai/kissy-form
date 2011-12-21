@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Uploader—异步文件上传demo</title>
+<script src="../../kissy/kissy.js"></script>
+<script src="../../kissy/validation.js"></script>
+<link href="../../kissy/validation/assets/base.css" rel="stylesheet"/>
+<link href="../uploader.css" rel="stylesheet"/>
+<style>
+    body {
+        font-size: 12px;
+        color: #404040;
+    }
+
+    .demo-wrapper {
+        margin-top: 20px;
+    }
+
+    .btn-wrapper {
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+
+<article id="main">
+    <h4>上传验证的demo</h4>
+    <div class="demo-wrapper">
+        <form action="test.php" id="J_Form">
+            <!-- 按钮 -->
+            <a id="J_UploaderBtn" class="g-u uploader-button uploader-button-focus"
+               data-config='{"type" : "auto","serverConfig":{"action":"upload.php","data":{"dir":"files/"},"dataType" : "json"},"name":"Filedata","urlsInputName":"imageUrls"}'
+               data-valid="{}"
+               href="#uploaderFile()">
+                选择要上传的图片
+            </a>
+            <div id="J_UploaderMsg" class="valid-under uploader-auth-msg" style="height: 24px;display: none;" id="msgbox"><p class="estate error"><span class="label">此项为必填项。</span></p></div>
+            <!-- 图片路径隐藏域 -->
+            <input type="hidden" value="" id="J_ImageUrls" name="imageUrls" data-valid="{messagebox:'#J_UploaderMsg','uploader-max' : [1]}">
+            <!-- 队列 -->
+            <ul id="J_UploaderQueue">
+
+            </ul>
+        </form>
+    </div>
+    <script>
+        KISSY.Config.base = '../../';
+        KISSY.use('node', function(S, Node) {
+            var $ = Node.all;
+            KISSY.use('uploader/render,validation,uploader/auth/base', function(S, RenderUploader, Validation, UploaderAuth) {
+                var renderUploader = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue'),
+                        uploader = renderUploader.get('uploader'),
+                        form = S.get('#J_Form'),
+                        check = new Validation(form, {
+                            isok:false,
+                            anim:0.3,
+                            style: "under"
+                        }),
+                        uploaderCheck = check.get("Filedata"),
+                        urlsCheck = check.get('J_ImageUrls'),
+                    //上传验证
+                        uploaderAuth = new UploaderAuth({fileField : uploaderCheck,uploader : uploader,urlsField : urlsCheck });
+                uploaderAuth.render();
+            })
+        });
+    </script>
+</article>
+</body>
+</html>

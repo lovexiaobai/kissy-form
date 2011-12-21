@@ -120,7 +120,7 @@ a{
 
 .ks-uploader-queue {
     color: #404040;
-    width: 280px;
+    width: 400px;
     margin: 0;
     padding: 0;
     margin-top:10px;
@@ -142,11 +142,6 @@ a{
 	background:url(http://img02.taobaocdn.com/tps/i2/T1XuOuXnBBXXXXXXXX-12-16.png) 0 0 no-repeat;
 }
 
-.ks-uploader-queue .uploader-controller {
-    margin-left: 5px;
-    display: none;
-}
-
 .ks-uploader-queue .loading {
     background: url("http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif") no-repeat scroll 0 1px transparent;
     width: 16px;
@@ -158,5 +153,14 @@ a{
 }
 .ks-uploader-queue .upload-cancel{
     margin-top:2px;
+}
+.ks-ajax-uploader-input-container .valid-under{
+    display: none !important;
+}
+.ks-uploader-queue .upload-error{
+    color:#FD7316;
+}
+.uploader-auth-msg .estate{
+    margin: 0;
 }
 /*--------- 文件上传 END ---------*/

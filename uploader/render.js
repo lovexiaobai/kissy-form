@@ -2,8 +2,9 @@
  * @fileoverview 运行文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add(function(S, Base, Node, Uploader, Button, Queue) {
-    var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploaderRender]:';
+KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
+    var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploaderRender]:',
+        dataName = {CONFIG : 'data-config',VALID : 'data-valid'};
 
     /**
      * 解析组件在页面中data-config成为组件的配置
@@ -12,7 +13,7 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue) {
      * @return {Object}
      */
     function parseConfig(hook, dataConfigName) {
-        var config = {},sConfig,DATA_CONFIG = dataConfigName || 'data-config';
+        var config = {},sConfig,DATA_CONFIG = dataConfigName || dataName.CONFIG;
         sConfig = $(hook).attr(DATA_CONFIG);
         if (!S.isString(sConfig)) return {};
         try {
@@ -56,7 +57,8 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue) {
             S.mix(uploaderConfig, {button : button,queue : queue});
             var uploader = new Uploader(uploaderConfig);
             uploader.render();
-            self.set('uploader',uploader);
+            self.set('uploader', uploader);
+            self._auth();
         },
         /**
          * 初始化模拟的上传按钮
@@ -74,6 +76,23 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue) {
         _initQueue : function() {
             var self = this,target = self.get('queueTarget');
             return new Queue(target);
+        },
+        /**
+         * 文件上传验证
+         */
+        _auth : function() {
+            var self = this,buttonTarget = self.get('buttonTarget'),
+                $btn = $(buttonTarget),
+                //Button的实例
+                button = self.get('button'),
+                //TODO:需要修改
+                fileInput = button.fileInput,
+                DATA_NAME = dataName.VALID, valid;
+            if(!$btn.length) return false;
+            valid = $btn.attr(DATA_NAME);
+            //不存在验证配置，直接退出
+            if(!valid) return false;
+            $(fileInput).attr(DATA_NAME,valid);
         }
     }, {
         ATTRS : {
@@ -101,4 +120,4 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue) {
         }
     });
     return RenderUploader;
-}, {requires:['base','node','./base','./button/base','./queue/base']});
+}, {requires:['base','node','./base','./button/base','./queue/base','./auth/base']});

@@ -90,6 +90,8 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             fileInput = file.input;
             //触发文件上传前事件
             self.fire(Uploader.event.START, {id : fileId,file : file});
+            //阻止文件上传
+            if(!self.get('isAllowUpload')) return false;
             //设置当前上传的文件id
             self.set('curUploadId', fileId);
             //改变文件上传状态为start
@@ -208,7 +210,10 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
                 //文件对象
                 oFile = {name : ev.name,input : ev.input,file : file},
                 fileId;
-            self.fire(Uploader.event.SELECT);
+            self.set('curFileData',oFile);
+            self.fire(Uploader.event.SELECT,oFile);
+            //阻止文件上传
+            if(!self.get('isAllowUpload')) return false;
             //向队列添加文件
             fileId = queue.add(oFile);
             //如果不存在正在上传的文件，且允许自动上传，上传该文件
@@ -311,6 +316,8 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
         urlsInputName : {value : EMPTY},
         //当前上传的id
         curUploadId : {value : EMPTY},
+        //当前文件数据，格式类似{name : 'test.jpg',input : HTMLElement,file : []}
+        curFileData : {value : {}},
         uploadType : {value : {}},
         urlsInput : {value : EMPTY},
         //是否正在上传等待中的文件

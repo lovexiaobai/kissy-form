@@ -3,7 +3,7 @@
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
 KISSY.add(function(S, Node, Base, Status) {
-    var EMPTY = '',$ = Node.all;
+    var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploader-queue]:';
 
     /**
      * @name Queue
@@ -29,9 +29,6 @@ KISSY.add(function(S, Node, Base, Status) {
                 '<div class="f-l sprite file-icon"></div>' +
                 '<div class="f-l">{name}</div>' +
                 '<div class="f-l file-status J_FileStatus"></div>' +
-                '<div class="f-l uploader-controller J_UploaderController">' +
-                '<a href="#deleteFile()" class="g-u J_DeleteFile">删除</a>' +
-                '</div>' +
                 '</li>'
         },
         /**
@@ -84,6 +81,10 @@ KISSY.add(function(S, Node, Base, Status) {
                 tpl = self.get('tpl'),
                 files = self.get('files'),
                 uploader = self.get('uploader');
+            if(!S.isObject(file)){
+                S.log(LOG_PREFIX + 'add()参数file不合法！');
+                return false;
+            }
             //设置文件唯一id
             file.id = autoId;
             hFile = S.substitute(tpl, file);
@@ -125,14 +126,14 @@ KISSY.add(function(S, Node, Base, Status) {
          * @param {String} status 文件状态
          * @return {Object}
          */
-        fileStatus : function(id, status) {
+        fileStatus : function(id, status,args) {
             if (!S.isNumber(id)) return false;
             var self = this,files = self.get('files'),file = self.getFile(id),
                 st = Queue.status,oStatus;
             if (!S.isPlainObject(file)) return false;
             //状态实例
             oStatus = file['status'];
-            if(status) oStatus.set('curType',status);
+            if(status) oStatus.change(status,args);
             return  oStatus;
         },
         /**
