@@ -62,7 +62,7 @@ KISSY.add(function(S, Node, Base) {
         show : function(){
             var self = this,
             	target = self.get('target'),
-            	diableCls = self.get('cls').disabled,
+            	disableCls = self.get('cls').disabled,
             	input = self.get('fileInput'),
             	show = self.fire(Button.event.beforeShow);
             if(show === false){
@@ -81,7 +81,7 @@ KISSY.add(function(S, Node, Base) {
         hide : function(){
             var self = this,
             	target = self.get('target'),
-            	diableCls = self.get('cls').disabled,
+            	disableCls = self.get('cls').disabled,
             	input = self.get('fileInput'),
             	hide = self.fire(Button.event.beforeHide);
             if(hide === false){
