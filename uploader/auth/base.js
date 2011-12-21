@@ -90,7 +90,8 @@ KISSY.add(function(S, Node, Base, Validation,Rule) {
         rules : {value : {
             'ext' : [
                 ['jpg','jpeg','png','gif','bmp','JPG','JPEG','PNG','GIF','BMP']
-            ]
+            ],
+            'exist' : []
         }
         }
     }});

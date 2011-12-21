@@ -120,4 +120,4 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
         }
     });
     return RenderUploader;
-}, {requires:['base','node','./base','./button/base','./queue/base','./auth/base']});
+}, {requires:['base','node','./base','./button/button','./queue/base','./auth/base']});

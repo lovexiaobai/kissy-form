@@ -62,8 +62,14 @@ KISSY.add(function(S, Node, Validation) {
             return arr[arr.length -1];
         }
     });
-    Rule.add('uploader-exist','该文件已经存在！',function(value){
-
+    Rule.add('uploader-exist','该文件已经存在！',function(value,text,uploader){
+        var queue = uploader.get('queue'),
+            curUploadId = queue.get('files').length - 1,
+            //文件数据
+            file = queue.getFile(curUploadId),
+            //文件名
+            fileName = file.name;
+        
     });
     Rule.add('uploader-require','必须至少上传一个文件！',function(value){
 
