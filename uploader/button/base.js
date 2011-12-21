@@ -1,17 +1,16 @@
 /**
- * @fileoverview 文件上传按钮
- * @author: 剑平（明河）<minghe36@126.com>
+ * @fileoverview 文件上传按钮base
+ * @author: 紫英(橘子)<daxingplay@gmail.com>, 剑平（明河）<minghe36@126.com>
  **/
-KISSY.add(function(S, DOM, Base, Event) {
-    var EMPTY = '',FILE = 'file',ID = 'id',
-        //控制台
-        console = console || S,LOG_PREFIX = '[ajaxUploader-button]:';
+KISSY.add(function(S, Node, Base) {
+    var EMPTY = '',
+        LOG_PREFIX = '[AjaxUploader-Button] ',
+        $ = Node.all;
 
     /**
      * 文件上传按钮
      * @class Button
      * @constructor
-     * @param {String} target 目标元素
      * @param {Object} config 配置对象
      */
     function Button(target, config) {
@@ -21,108 +20,18 @@ KISSY.add(function(S, DOM, Base, Event) {
         Button.superclass.constructor.call(self, config);
     }
 
-    //继承于KISSY.Base
-    S.extend(Button, Base);
     S.mix(Button, {
-            //模板
-            tpl : {
-                DEFAULT:'<div class="ks-ajax-uploader-input-container"><input type="file" id="{name}" name="{name}" hidefoucs="true" class="ks-ajax-uploader-input" /></div>',
-                URLS_INPUT : '<input type="hidden" value="" name="{name}" class="J_UploaderUrlsInput">'
-            },
-            //支持的事件
-            event : { RENDER : 'render', CHANGE : 'change',MOUSEOVER : 'mouseover',MOUSEOUT : 'MOUSEOUT',FOCUS : 'focus',BLUR : 'blur' },
-            /**
-             * 获取文件名称（从表单域的值中提取）
-             * @param {String} path 文件路径
-             * @return {String}
-             */
-            getFileName : function(path) {
-                return path.replace(/.*(\/|\\)/, "");
-            },
-            /**
-             * 获取文件扩展名
-             * @param fileName
-             * @return {String}
-             */
-            getExt : function(fileName) {
-                return -1 !== fileName.indexOf('.') && fileName.replace(/.*[.]/, '') || '';
-            }
-        });
-    /**
-     * 参数
-     */
-    Button.ATTRS = {
-        /**
-         * 隐藏的表单上传域的模板
-         * @type String
-         */
-        tpl : {
-            value : Button.tpl.DEFAULT
-        },
-        /**
-         * 隐藏的文件路径隐藏域模板
-         * @type String
-         */
-        urlsInputTpl : {
-            value : Button.tpl.URLS_INPUT
-        },
-        /**
-         * 隐藏的表单上传域的name值
-         * @type String
-         */
-        name : {
-            value : 'fileInput',
-            setter : function(v) {
-                if (this.fileInput) {
-                    DOM.attr(this.fileInput, 'name', v);
-                }
-                return v;
-            }
-        },
-        /**
-         * 多个文件时使用的分隔符
-         * @type String
-         */
-        urlDivision : {
-            value : ','
-        },
-        /**
-         * 是否开启多选支持
-         * @type Boolean
-         */
-        multiple : {
-            value : false
-        },
-        /**
-         * 是否可用,false为可用
-         * @type Boolean
-         */
-        disabled : {
-            value : false,
-            setter : function(v) {
-                var self = this,target = self.target,cls = self.get('cls').disabled,fileInput = self.fileInput;
-                if (v) {
-                    DOM.addClass(target, cls);
-                    DOM.hide(fileInput);
-                } else {
-                    DOM.removeClass(target, cls);
-                    DOM.show(fileInput);
-                }
-                return v;
-            }
-        },
-        /**
-         * 样式
-         * @type Object
-         */
-        cls : {
-            value : {
-                hover : 'uploader-button-hover',
-                focus : 'uploader-button-focus',
-                disabled : 'uploader-button-disabled'
-            }
+        //支持的事件
+        event : { 
+        	'beforeShow': 'beforeShow',
+        	'afterShow': 'afterShow',
+        	'beforeHide': 'beforeHide',
+        	'afterHide': 'afterHide',
+        	'beforeRender' : 'beforeRender', 
+        	'afterRender' : 'afterRender',
+        	'CHANGE' : 'change'
         }
-    };
+    });
         
     S.extend(Button, Base, /** @lends Button.prototype*/{
     	/**
@@ -220,7 +129,7 @@ KISSY.add(function(S, DOM, Base, Event) {
             inputContainer = $(html);
             //向body添加表单文件上传域
             $(inputContainer).appendTo(target);
-            fileInput = $(inputContainer, 'input').children()[0];
+            fileInput = $(inputContainer).children('input');
             // TODO: 开启多选上传
             // multiple && DOM.attr('multiple', 'multiple');
             //上传框的值改变后触发
@@ -244,9 +153,11 @@ KISSY.add(function(S, DOM, Base, Event) {
             	S.log(LOG_PREFIX + 'No file selected.');
             	return false;
             }
-            self.fire(self.event.CHANGE, {
-            	'eventTarget': ev
+            self.fire(Button.event.CHANGE, {
+            	files: ev.target.files,
+            	input: $(fileInput).clone()
             });
+            S.log(LOG_PREFIX + 'button change event was fired just now.');
             // change完之后reset按钮，防止选择同一个文件无法触发change事件
             self._reset();
         }
