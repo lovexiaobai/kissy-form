@@ -61,13 +61,15 @@ KISSY.add(function(S, Node, Base) {
          */
         show : function(){
             var self = this,
-            	target = self.target,
+            	target = self.get('target'),
+            	diableCls = self.get('cls').disabled,
             	input = self.get('fileInput'),
             	show = self.fire(Button.event.beforeShow);
             if(show === false){
             	S.log(LOG_PREFIX + 'show button event was prevented.');
             }else{
-            	$(target).show();
+            	// $(target).show();
+            	$(target).removeClass(disableCls);
                 $(input).show();
                 self.fire(Button.event.afterShow);
                 S.log(LOG_PREFIX + 'button showed.');
@@ -78,13 +80,15 @@ KISSY.add(function(S, Node, Base) {
          */
         hide : function(){
             var self = this,
-            	target = self.target,
+            	target = self.get('target'),
+            	diableCls = self.get('cls').disabled,
             	input = self.get('fileInput'),
             	hide = self.fire(Button.event.beforeHide);
             if(hide === false){
             	S.log(LOG_PREFIX + 'hide button event was prevented.');
             }else{
-            	$(target).hide();
+            	// $(target).hide();
+            	$(target).addClass(disableCls);
                 $(input).hide();
                 self.fire(Button.event.afterHide);
                 S.log(LOG_PREFIX + 'button showed.');
@@ -206,6 +210,12 @@ KISSY.add(function(S, Node, Base) {
 	        disabled : {
 	            value : false,
 	            setter : function(v) {
+	                var self = this;
+	                if (v) {
+	                	self.hide();
+	                } else {
+	                    self.show();
+	                }
 	                return v;
 	            }
 	        },
