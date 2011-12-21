@@ -159,7 +159,7 @@ KISSY.add(function(S, Node, Base) {
             }
             self.fire(Button.event.CHANGE, {
             	files: ev.target.files,
-            	input: $(fileInput).clone()
+            	input: $(fileInput).clone().getDOMNode()
             });
             S.log(LOG_PREFIX + 'button change event was fired just now.');
             // change完之后reset按钮，防止选择同一个文件无法触发change事件

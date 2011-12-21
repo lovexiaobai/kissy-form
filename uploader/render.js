@@ -81,7 +81,7 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
          * 文件上传验证
          */
         _auth : function() {
-            var self = this,buttonTarget = self.get('buttonTarget'),
+            /*var self = this,buttonTarget = self.get('buttonTarget'),
                 $btn = $(buttonTarget),
                 //Button的实例
                 button = self.get('button'),
@@ -92,7 +92,7 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
             valid = $btn.attr(DATA_NAME);
             //不存在验证配置，直接退出
             if(!valid) return false;
-            $(fileInput).attr(DATA_NAME,valid);
+            $(fileInput).attr(DATA_NAME,valid);*/
         }
     }, {
         ATTRS : {
@@ -120,4 +120,4 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
         }
     });
     return RenderUploader;
-}, {requires:['base','node','./base','./button/button','./queue/base','./auth/base']});
+}, {requires:['base','node','./base','./button/base','./queue/base']});
