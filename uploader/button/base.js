@@ -170,13 +170,6 @@ KISSY.add(function(S, Node, Base) {
     			value: null
     		},
 	        /**
-	         * 是否开启多选支持
-	         * @type Boolean
-	         */
-	        multiple : {
-	            value : false
-	        },
-	        /**
     		 * 对应的表单上传域
      		 * @type HTMLElement
     		 */
@@ -213,17 +206,6 @@ KISSY.add(function(S, Node, Base) {
 	        disabled : {
 	            value : false,
 	            setter : function(v) {
-	                var self = this,
-	                	target = self.target,
-	                	cls = self.get('cls').disabled,
-	                	fileInput = self.fileInput;
-	                if (v) {
-	                    $(target).addClass(cls);
-	                    $(fileInput).hide();
-	                } else {
-	                    $(target).removeClass(cls);
-	                    $(fileInput).show();
-	                }
 	                return v;
 	            }
 	        },
