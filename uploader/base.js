@@ -208,7 +208,7 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
                 //ev.files为文件域值改变触发返回的文件对象数组，默认是数组，由于不支持多选，这里只需要获取第一个文件即可
                 file = ev.files[0],
                 //文件对象
-                oFile = {name : ev.name,input : ev.input,file : file},
+                oFile = {name : file.fileName,input : ev.input,file : file},
                 fileId;
             self.set('curFileData',oFile);
             self.fire(Uploader.event.SELECT,oFile);
