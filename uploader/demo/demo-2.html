@@ -57,10 +57,10 @@
         </form>
     </div>
     <script>
-        KISSY.Config.base = '../../../';
+        KISSY.Config.base = '../../';
         KISSY.use('node', function(S, Node) {
             var $ = Node.all;
-            KISSY.use('kissy-form/uploader/render', function(S, RenderUploader) {
+            KISSY.use('uploader/render', function(S, RenderUploader) {
                 var renderUploader = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue'),
                         uploader = renderUploader.get('uploader');
                 $('.J_AutoUpload').on('change', function(ev) {
