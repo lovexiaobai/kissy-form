@@ -146,10 +146,12 @@ a{
     background: url("http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif") no-repeat scroll 0 1px transparent;
     width: 16px;
     height: 16px;
-    margin-right: 5px;
 }
 .ks-uploader-queue .file-status {
     margin-left:5px;
+}
+.ks-uploader-queue .file-status .uploader-progress{
+    margin-right: 5px;
 }
 .ks-uploader-queue .upload-cancel{
     margin-top:2px;
@@ -162,5 +164,17 @@ a{
 }
 .uploader-auth-msg .estate{
     margin: 0;
+}
+
+.ks-progress-bar{
+    border: 1px solid #FA9515;
+    height:10px;
+    background-color: #fff;
+    width:80px;
+}
+.ks-progress-bar .ks-progress-bar-value{
+    width:0;
+    height:100%;
+    background-color: #FA9515;
 }
 /*--------- 文件上传 END ---------*/

@@ -151,8 +151,7 @@ KISSY.add(function(S, Node, Base) {
         _changeHandler : function(ev) {
             var self = this,
             	fileInput = self.get('fileInput'),
-            	value = $(fileInput).val(),
-            	fileName;
+            	value = $(fileInput).val();
             if (value == EMPTY){
             	S.log(LOG_PREFIX + 'No file selected.');
             	return false;

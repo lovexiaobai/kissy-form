@@ -51,7 +51,8 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
          */
         render : function() {
             var self = this,serverConfig = self.get('serverConfig'),
-                UploadType = self.getUploadType(),uploadType;
+                UploadType = self.getUploadType(),uploadType,
+                uploaderTypeEvent = UploadType.event;
             if (!UploadType) return false;
             //路径input实例
             self.set('urlsInput',self._renderUrlsInput());
@@ -60,9 +61,11 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             //实例化上传方式类
             uploadType = new UploadType(serverConfig);
             //监听上传器上传完成事件
-            uploadType.on(uploadType.constructor.event.SUCCESS, self._uploadCompleteHanlder, self);
+            uploadType.on(uploaderTypeEvent.SUCCESS, self._uploadCompleteHanlder, self);
+            //监听上传器上传进度事件
+            if(uploaderTypeEvent.PROGRESS) uploadType.on(uploaderTypeEvent.PROGRESS,self._uploadProgressHandler,self);
             //监听上传器上传停止事件
-            uploadType.on(uploadType.constructor.event.STOP, self._uploadStopHanlder, self);
+            uploadType.on(uploaderTypeEvent.STOP, self._uploadStopHanlder, self);
             self.set('uploadType', uploadType);
             self.fire(Uploader.event.RENDER);
             return self;
@@ -148,6 +151,13 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             switch (type) {
                 case types.AUTO :
                     UploadType = isSupportAjax && AjaxType || IframeType;
+                    if(isSupportAjax){
+                        UploadType = AjaxType;
+                        self.set('type',Uploader.type.AJAX);
+                    }else{
+                        UploadType = IframeType;
+                        self.set('type',Uploader.type.IFRAME);
+                    }
                     break;
                 case types.IFRAME :
                     UploadType = IframeType;
@@ -207,8 +217,10 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
                 curId = self.get('curUploadId'),
                 //ev.files为文件域值改变触发返回的文件对象数组，默认是数组，由于不支持多选，这里只需要获取第一个文件即可
                 file = ev.files[0],
+                //chrome文件名属性名为fileName，而firefox为name
+                fileName = file.fileName || file.name,
                 //文件对象
-                oFile = {name : file.fileName || file.name,input : ev.input,file : file},
+                oFile = {name : fileName,input : ev.input,file : file},
                 fileId;
             self.set('curFileData',oFile);
             self.fire(Uploader.event.SELECT,oFile);
@@ -267,6 +279,14 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             queue.fileStatus(id, queue.constructor.status.CANCEL);
             //重置当前上传文件id
             self.set('curUploadId',EMPTY);
+        },
+        /**
+         * 上传进度监听器
+         */
+        _uploadProgressHandler : function(ev){
+            var self = this,queue = self.get('queue'),
+                            id = self.get('curUploadId');
+            queue.fileStatus(id, queue.constructor.status.PROGRESS,ev);
         },
         /**
          * 上传成功后执行的回调函数

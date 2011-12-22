@@ -1,150 +1,170 @@
 /**
- * @fileoverview ajax·½°¸ÉÏ´«
- * @author ½£Æ½£¨Ã÷ºÓ£©<minghe36@126.com>,×ÏÓ¢<daxingplay@gmail.com>
+ * @fileoverview ajaxæ–¹æ¡ˆä¸Šä¼ 
+ * @author å‰‘å¹³ï¼ˆæ˜æ²³ï¼‰<minghe36@126.com>,ç´«è‹±<daxingplay@gmail.com>
  **/
 KISSY.add(function(S, Node, UploadType) {
     var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploader-AjaxType]:';
 
     /**
      * @name AjaxType
-     * @class ajax·½°¸ÉÏ´«
+     * @class ajaxæ–¹æ¡ˆä¸Šä¼ 
      * @constructor
      * @extends UploadType
      * @requires Node
      */
     function AjaxType(config) {
         var self = this;
-        //µ÷ÓÃ¸¸Àà¹¹Ôìº¯Êı
+        //è°ƒç”¨çˆ¶ç±»æ„é€ å‡½æ•°
         AjaxType.superclass.constructor.call(self, config);
-        //´¦Àí´«µİ¸ø·şÎñÆ÷¶ËµÄ²ÎÊı
+        //å¤„ç†ä¼ é€’ç»™æœåŠ¡å™¨ç«¯çš„å‚æ•°
         self._processData();
     }
 
     S.mix(AjaxType, /** @lends AjaxType.prototype*/{
         /**
-         * ÊÂ¼şÁĞ±í
+         * äº‹ä»¶åˆ—è¡¨
          */
-        event : UploadType.event
+        event : S.merge(UploadType.event,{
+            PROGRESS : 'progress'
+        })
     });
-    //¼Ì³ĞÓÚBase£¬ÊôĞÔgetterºÍsetterÎ¯ÍĞÓÚBase´¦Àí
+    //ç»§æ‰¿äºBaseï¼Œå±æ€§getterå’Œsetterå§”æ‰˜äºBaseå¤„ç†
     S.extend(AjaxType, UploadType, /** @lends AjaxType.prototype*/{
         /**
-         * ÉÏ´«ÎÄ¼ş
-         * @param {HTMLElement} fileInput ÎÄ¼şinput
+         * ä¸Šä¼ æ–‡ä»¶
+         * @param {HTMLElement} fileInput æ–‡ä»¶input
          * @return {AjaxType}
          */
         upload : function(fileInput) {
-            //²»´æÔÚÎÄ¼şĞÅÏ¢¼¯ºÏÖ±½ÓÍË³ö
+            //ä¸å­˜åœ¨æ–‡ä»¶ä¿¡æ¯é›†åˆç›´æ¥é€€å‡º
             if (!fileInput) {
-                S.log(LOG_PREFIX + 'upload()£¬fileInput²ÎÊıÓĞÎó£¡');
+                S.log(LOG_PREFIX + 'upload()ï¼ŒfileInputå‚æ•°æœ‰è¯¯ï¼');
                 return false;
             }
             var self = this, files = fileInput.files, file;
-            //²»´æÔÚÎÄ¼şĞÅÏ¢¼¯ºÏÖ±½ÓÍË³ö
+            //ä¸å­˜åœ¨æ–‡ä»¶ä¿¡æ¯é›†åˆç›´æ¥é€€å‡º
             if (!files.length) {
-                S.log(LOG_PREFIX + 'upload()£¬²»´æÔÚÒªÉÏ´«µÄÎÄ¼ş£¡');
+                S.log(LOG_PREFIX + 'upload()ï¼Œä¸å­˜åœ¨è¦ä¸Šä¼ çš„æ–‡ä»¶ï¼');
                 return false;
             }
             file = files[0];
-            self._addFileData(fileInput,file);
+            self._addFileData(fileInput, file);
             self.send();
             return self;
         },
         /**
-         * Í£Ö¹ÉÏ´«
+         * åœæ­¢ä¸Šä¼ 
          * @return {AjaxType}
          */
-        stop : function(){
+        stop : function() {
             var self = this,io = self.get('io');
-            if(!S.isObject(io)){
-                S.log(LOG_PREFIX + 'stop()£¬ioÖµ´íÎó£¡');
+            if (!S.isObject(io)) {
+                S.log(LOG_PREFIX + 'stop()ï¼Œioå€¼é”™è¯¯ï¼');
                 return false;
             }
-            //ÖĞÖ¹ajaxÇëÇó£¬»á´¥·¢errorÊÂ¼ş
+            //ä¸­æ­¢ajaxè¯·æ±‚ï¼Œä¼šè§¦å‘erroräº‹ä»¶
             io.abort();
             self.fire(AjaxType.event.STOP);
             return self;
         },
         /**
-         * ·¢ËÍajaxÇëÇó
+         * å‘é€ajaxè¯·æ±‚
          * @return {AjaxType}
          */
-        send : function(){
+        send : function() {
             var self = this,ajaxConfig = self.get('ajaxConfig'),
-                //·şÎñÆ÷¶Ë´¦ÀíÎÄ¼şÉÏ´«µÄÂ·¾¶
+                //æœåŠ¡å™¨ç«¯å¤„ç†æ–‡ä»¶ä¸Šä¼ çš„è·¯å¾„
                 action = self.get('action'),
                 data = self.get('formData'),
                 io;
-            S.mix(ajaxConfig,{
+            S.mix(ajaxConfig, {
                 url : action,
                 data : data,
                 /**
-                 * ÇëÇó³É¹¦ºóµÄ»Øµ÷º¯Êı
+                 * è¯·æ±‚æˆåŠŸåçš„å›è°ƒå‡½æ•°
                  * @param {Object} result
                  */
-                success : function(result){
+                success : function(result, s, xhr) {
                     self.fire(AjaxType.event.SUCCESS, {result : result});
                 },
                 /**
-                 * ÇëÇóÊ§°ÜºóµÄ»Øµ÷º¯Êı
+                 * è¯·æ±‚å¤±è´¥åçš„å›è°ƒå‡½æ•°
                  * @param  {Null} n
                  * @param {String} textStatus
                  */
-                error : function(n,textStatus){
-                    self.fire(AjaxType.event.ERROR, {status : textStatus,msg : 'ÉÏ´«Ê§°Ü£¬Ô­Òò£º' + textStatus});
+                error : function(n, textStatus) {
+                    self.fire(AjaxType.event.ERROR, {status : textStatus,msg : 'ä¸Šä¼ å¤±è´¥ï¼ŒåŸå› ï¼š' + textStatus});
                 }
             });
-            self.set('ajaxConfig',ajaxConfig);
+            self.set('ajaxConfig', ajaxConfig);
             //ajax
-            io = S.io(ajaxConfig);
-            self.set('io',io);
+            /*io = S.io(ajaxConfig);
+             self.set('io',io);*/
+            var xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = function(ev){
+                self.fire(AjaxType.event.PROGRESS, { 'loaded': ev.loaded, 'total': ev.total });
+            };
+            xhr.onreadystatechange = function(ev){
+                var result = {};
+                try{
+                    result = S.JSON.parse(xhr.responseText);
+                }catch(e){
+                    S.log(LOG_PREFIX + 'ajaxè¿”å›ç»“æœé›†responseTextæ ¼å¼ä¸åˆæ³•ï¼');
+                }
+                self.fire(AjaxType.event.SUCCESS, {result : result});
+            };
+            xhr.open("POST", action, true);
+            //xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+            //xhr.setRequestHeader("X-File-Name", encodeURIComponent(name));
+            //xhr.setRequestHeader("Content-Type", "application/octet-stream");
+            xhr.send(data);
             return self;
         },
         /**
-         * ´¦Àí´«µİ¸ø·şÎñÆ÷¶ËµÄ²ÎÊı
+         * å¤„ç†ä¼ é€’ç»™æœåŠ¡å™¨ç«¯çš„å‚æ•°
          */
-        _processData : function(){
+        _processData : function() {
             var self = this,data = self.get('data'),
                 formData = self.get('formData');
-            S.each(data,function(val,key){
-                formData.append(key,val);
+            S.each(data, function(val, key) {
+                formData.append(key, val);
             });
-            self.set('formData',formData);
+            self.set('formData', formData);
         },
         /**
-         * ½«ÎÄ¼şĞÅÏ¢Ìí¼Óµ½FormDataÄÚ
-         * @param {HTMLElement} fileInput ÎÄ¼şÉÏ´«Óò
-         * @param {Object} file ÎÄ¼şĞÅÏ¢
+         * å°†æ–‡ä»¶ä¿¡æ¯æ·»åŠ åˆ°FormDataå†…
+         * @param {HTMLElement} fileInput æ–‡ä»¶ä¸Šä¼ åŸŸ
+         * @param {Object} file æ–‡ä»¶ä¿¡æ¯
          */
-        _addFileData : function(fileInput,file){
-            if(!S.isObject(file)){
-                S.log(LOG_PREFIX + '_addFileData()£¬file²ÎÊıÓĞÎó£¡');
+        _addFileData : function(fileInput, file) {
+            if (!S.isObject(file)) {
+                S.log(LOG_PREFIX + '_addFileData()ï¼Œfileå‚æ•°æœ‰è¯¯ï¼');
                 return false;
             }
             var self = this,
                 formData = self.get('formData'),
                 fileDataName = self.get('fileDataName');
-            if(fileDataName == EMPTY) {
+            if (fileDataName == EMPTY) {
                 fileDataName = $(fileInput).attr('name');
-                self.set('fileDataName',fileDataName);
+                self.set('fileDataName', fileDataName);
             }
-            formData.append(fileDataName,file);
-            self.set('formData',formData);
+            formData.append(fileDataName, file);
+            self.set('formData', formData);
         }
     }, {ATTRS : /** @lends AjaxType*/{
         /**
-         * ±íµ¥Êı¾İ¶ÔÏó
+         * è¡¨å•æ•°æ®å¯¹è±¡
          */
         formData : {value : new FormData()},
         /**
-         * ajaxÅäÖÃ
+         * ajaxé…ç½®
          */
         ajaxConfig : {value : {
-                type : 'post',
-                processData : false,
-                cache : false,
-                dataType : 'json',
-                contentType: false
+            type : 'post',
+            processData : false,
+            cache : false,
+            dataType : 'json',
+            contentType: false
         }
         },
         io : {value : EMPTY},

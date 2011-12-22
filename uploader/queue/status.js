@@ -2,7 +2,7 @@
  * @fileoverview 文件改变状态后改变状态元素的内容
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add(function(S, Node, Base) {
+KISSY.add(function(S, Node, Base,ProgressBar) {
     var EMPTY = '',$ = Node.all,LOG_PREFIX = '[queue-status]:';
 
     /**
@@ -26,6 +26,7 @@ KISSY.add(function(S, Node, Base) {
         type : {
             WAITING : 'waiting',
             START : 'start',
+            PROGRESS : 'progress',
             SUCCESS : 'success',
             CANCEL : 'cancel',
             ERROR : 'error'
@@ -99,9 +100,10 @@ KISSY.add(function(S, Node, Base) {
         /**
          * 开始上传后改成状态层内容
          */
-        _start : function() {
+        _start : function(data) {
             var self = this, tpl = self.get('tpl'),startTpl = tpl.start,
                 uploader = self.get('uploader'),
+                uploadType = uploader.get('type'),
                 $content,$cancel;
             if (!S.isString(startTpl)) return false;
             $content = self._changeDom(startTpl);
@@ -111,7 +113,21 @@ KISSY.add(function(S, Node, Base) {
                 ev.preventDefault();
                 if (!S.isObject(uploader)) return false;
                 uploader.cancel();
-            })
+            });
+            //如果是ajax异步上传，加入进度条
+            if(uploadType == 'ajax'){
+                var $progressBar = $content.children('.J_ProgressBar');
+                var progressBar = new ProgressBar($progressBar);
+                progressBar.render();
+                self.set('progressBar',progressBar);
+            }
+        },
+        _progress : function(data){
+            var self = this,loaded = data.loaded,total = data.total,
+                val = Math.ceil(loaded/total) * 100,
+                progressBar = self.get('progressBar');
+            if(!progressBar) return false;
+            progressBar.set('value',val);
         },
         /**
          * 成功上传后改成状态层内容
@@ -120,11 +136,21 @@ KISSY.add(function(S, Node, Base) {
             var self = this, tpl = self.get('tpl'),successTpl = tpl.success,
                 queue = self.get('queue'),
                 file = self.get('file'),id = file.id,
-                $content;
+                progressBar = self.get('progressBar'),
+                $target = self.get('target'),
+                $del;
             if (!S.isString(successTpl)) return false;
-            $content = self._changeDom(successTpl);
+            if(S.isObject(progressBar)){
+                var $wrapper =$target.children(),
+                    $cancel = $wrapper.children('.J_UploadCancel');
+                $cancel.remove();
+                $del = $(successTpl).appendTo($wrapper);
+            }else{
+                $del =  self._changeDom(successTpl);
+
+            }
             //点击删除
-            $content.on('click', function(ev) {
+            $del.on('click', function(ev) {
                 ev.preventDefault();
                 //删除队列中的文件
                 queue.remove(id);
@@ -178,9 +204,9 @@ KISSY.add(function(S, Node, Base) {
          */
         tpl : {value : {
             waiting : '<div>等待上传，<a href="#Upload" class="J_Upload">点此上传</a> </div>',
-            start : '<div><img class="f-l loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" />' +
+            start : '<div><div class="f-l  J_ProgressBar uploader-progress"><img class="loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" /></div>' +
                 ' <a class="f-l J_UploadCancel upload-cancel" href="#uploadCancel">取消</a></div> ',
-            success : '<a href="#fileDel" class="J_FileDel">删除</a> ',
+            success : ' <a href="#fileDel" class="J_FileDel">删除</a>  ',
             cancel : '<div>已经取消上传，<a href="#reUpload" class="J_ReUpload">点此重新上传</a> </div>',
             error : '<div class="upload-error">{msg}<a href="#fileDel" class="J_FileDel">点此删除</a></div>'
         } },
@@ -199,7 +225,9 @@ KISSY.add(function(S, Node, Base) {
         /**
          * 当前状态类型
          */
-        curType : { value : EMPTY }
+        curType : { value : EMPTY },
+        //进度条ProgressBar的实例，iframe上传时并不存在
+        progressBar : {value : EMPTY}
     }});
     return Status;
-}, {requires : ['node','base']});
+}, {requires : ['node','base','./progressBar']});
