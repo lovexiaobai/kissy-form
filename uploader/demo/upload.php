@@ -1,6 +1,6 @@
 <?php
 
-sleep(0.5);
+sleep(3);
 
 $files = array();
 

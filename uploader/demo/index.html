@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Uploader—异步文件上传</title>
+<link rel="stylesheet" type="text/css" href="http://docs.kissyui.com/kissy-dpl/base/build/css/dpl-pkg.css"/>
+<link rel="stylesheet" type="text/css" href="assets/demo.css"/>
+<script src="http://a.tbcdn.cn/s/kissy/1.2.0/kissy.js" charset="utf-8"></script>
+<script>
+    KISSY.ready(function(S) {
+        var frame = S.one("#mainframe");
+        S.all("#nav a").each(function() {
+            var url = this.attr("href");
+            this.attr("href", "index.html#" + url.replace(".html", ""));
+            this.on("click", function(ev) {
+                //ev.halt();
+                frame.attr("src", url);
+            });
+        });
+
+        if (window.location.hash) {
+            frame.attr("src", window.location.hash.replace("#", "") + ".html");
+        } else {
+            frame.attr("src", "home.html");
+        }
+
+
+        function reinitIframe() {
+            var iframe = document.getElementById("mainframe");
+            if (!iframe)return;
+            try {
+                var bHeight = iframe.contentWindow.document.body.scrollHeight;
+                var dHeight = iframe.contentWindow.document.documentElement.scrollHeight;
+                var height = Math.max(bHeight, dHeight);
+                iframe.height = height;
+            } catch (ex) {
+            }
+        }
+
+        window.setInterval(function() {
+            reinitIframe();
+        }, 1000);
+
+    });
+
+
+</script>
+
+
+</head>
+<body>
+
+<div id="page">
+
+
+    <div id="header">
+        <h1 class="logo"><a alt="KISSY" href="http://kissyui.com/"><img src="http://docs.kissyui.com/docs/html/static/logo.png"/></a></h1>
+        <p class="sub-title">Uploader—异步文件上传</p>
+        <ul class="navigation">
+            <li><a href="http://blog.kissyui.com/">博客</a></li>
+            <li><a href="http://github.com/kissyteam">源码</a></li>
+        </ul>
+    </div>
+
+
+    <div id="content">
+
+        <div class="layout grid-index">
+            <div class="col-main">
+                <div class="main-wrap">
+
+
+                    <iframe src="about:blank" frameborder="no" scrolling="no" width="100%" height="100" id="mainframe"></iframe>
+
+
+                </div>
+            </div>
+            <div class="col-sub">
+                <div id="nav">
+
+                    <dl>
+                        <dt>快速使用</dt>
+                        <dd><a href="home.html">功能介绍</a></dd>
+                        <dd><a href="use.html">如何调用</a></dd>
+                    </dl>
+                    <dl>
+                        <dt>组件配置</dt>
+                        <dd><a href="field-config-attr.html">伪属性</a></dd>
+                    </dl>
+                    <dl>
+                        <dt>上传验证</dt>
+                        <dd><a href="field-config-attr.html">伪属性</a></dd>
+                        <dd><a href="field-config-add.html">Validation.add方法</a></dd>
+                    </dl>
+
+                    <dl>
+                        <dt>其它</dt>
+                        <dd><a href="change.html">最近更新</a></dd>
+                        <dd><a href="faq.html">FAQ</a></dd>
+                        <dd><a href="qa.html">给我留言</a></dd>
+                    </dl>
+
+
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <div id="footer"> &copy; Copyright 2011—2011，作者： 明河（剑平）、紫英</div>
+</div>
+
+</body>
+</html>
+
