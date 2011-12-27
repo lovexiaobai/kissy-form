@@ -114,6 +114,15 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
         /**
          * 上传等待中的文件
          */
+        uploadAll : function(){
+            var self = this;
+            //上传所有等待中的文件
+            self.set('isUploadWaitFiles',true);
+            self.uploadWaitFile();
+        },
+        /**
+         * 上传等待中的文件
+         */
         uploadWaitFile : function(){
             var self = this,queue = self.get('queue'),
                 waitFileIds = queue.getWaitFileIds();
@@ -124,15 +133,6 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             }
             //开始上传等待中的文件
             self.upload(waitFileIds[0]);
-        },
-        /**
-         * 上传等待中的文件
-         */
-        uploadWaitFiles : function(){
-            var self = this;
-            //上传所有等待中的文件
-            self.set('isUploadWaitFiles',true);
-            self.uploadWaitFile();
         },
         /**
          * 是否支持ajax方案上传
