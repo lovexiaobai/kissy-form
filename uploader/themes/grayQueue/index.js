@@ -54,6 +54,8 @@ KISSY.add(function(S, Node, DefaultTheme,Queue) {
                 ev.preventDefault();
                 //如果不是禁用状态，上传所有等待中的文件
                 if(!$startUpload.hasClass( startUploadDisabledCls)){
+                    var progressBar = uploader.get('progressBar');
+                    if(progressBar) progressBar.show();
                     uploader.uploadAll();
                 }
             })
