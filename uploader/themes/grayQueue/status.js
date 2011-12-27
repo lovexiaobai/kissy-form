@@ -115,7 +115,7 @@ KISSY.add(function(S, Node,ProgressBar, StatusBase) {
             waiting : '<div>0%</div>',
             start : '<div class="clearfix"><div class="J_ProgressNum"><img class="loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" /></div>' +
                 '</div> ',
-            success : '<span>100%</span>',
+            success : '<div class="uploader-icon success-icon">100%</div>',
             cancel : '<div>已经取消上传，<a href="#reUpload" class="J_ReUpload">点此重新上传</a> </div>',
             error : '<div class="upload-error">{msg}<a href="#fileDel" class="J_FileDel">点此删除</a></div>'
         }

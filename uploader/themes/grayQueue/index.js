@@ -31,24 +31,24 @@ KISSY.add(function(S, Node, DefaultTheme,Queue) {
                 queue = uploader.get('queue'),
                 //开始上传按钮
                 $startUpload = $(self.get('elStartUpload')),
-                //按钮不可用时的样式名
-                btnDisabledCls = self.get('btnDisabledCls');
+                //上传按钮不可用时的样式名
+                startUploadDisabledCls = self.get('startUploadDisabledCls');
             //监听队列的添加文件后事件
             queue.on('add',function(ev){
-                $startUpload.removeClass( btnDisabledCls);
+                $startUpload.removeClass( startUploadDisabledCls);
             });
             //点击开始上传的按钮
             $startUpload.on('click',function(ev){
                 ev.preventDefault();
                 //如果不是禁用状态，上传所有等待中的文件
-                if(!$startUpload.hasClass( btnDisabledCls)){
+                if(!$startUpload.hasClass( startUploadDisabledCls)){
                     uploader.uploadAll();
                 }
             })
         }
     }, {ATTRS : /** @lends GrayQueue*/{
         elStartUpload : {value : '#J_StartUpload'},
-        btnDisabledCls : {value : 'uploader-button-disabled'}
+        startUploadDisabledCls : {value : 'start-upload-disabled'}
     }});
     return GrayQueue;
 }, {requires : ['node','../default/index','./queue','./style.css']});
