@@ -1,3 +1,4 @@
+/*--------- 榛樿妯℃澘 BY 鏄庢渤 ---------*/
 .clearfix:before, .clearfix:after {
     content: "";
     display: table;
@@ -26,7 +27,6 @@ a{
     color: #3366CC;
     text-decoration: none;
 }
-/*--------- 文件上传 START ---------*/
 .ks-uploader-queue a{
     color: #3366CC;
     text-decoration: none;
@@ -46,7 +46,7 @@ a{
     width: 110px;
     z-index: 500;
     margin-right:10px;
-    /*渐变*/
+    /*娓愬彉*/
     background: -webkit-gradient(linear, left top, left bottom, from(#FDFEFE), to(#DFE7EF));
     background: -moz-linear-gradient(top, #FDFEFE, #DFE7EF);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#FDFEFE', endColorstr = '#DFE7EF');
@@ -65,7 +65,7 @@ a{
     filter: none;
 }
 
-.uploader-button-disabled {
+.uploader-button-disabled,.uploader-button-disabled:hover {
     border: 1px solid #BFBFBF;
     color: #404040;
     background: -webkit-gradient(linear, left top, left bottom, from(#FAFAFA), to(#E5E5E5));
@@ -177,4 +177,3 @@ a{
     height:100%;
     background-color: #FA9515;
 }
-/*--------- 文件上传 END ---------*/

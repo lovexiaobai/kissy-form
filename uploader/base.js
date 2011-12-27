@@ -219,8 +219,10 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
                 file = ev.files[0],
                 //chrome文件名属性名为fileName，而firefox为name
                 fileName = file.fileName || file.name,
+                //文件大小，IE浏览器下不存在
+                fileSize = file.size || 0,
                 //文件对象
-                oFile = {name : fileName,input : ev.input,file : file},
+                oFile = {name : fileName,input : ev.input,file : file,size : fileSize},
                 fileId;
             self.set('curFileData',oFile);
             self.fire(Uploader.event.SELECT,oFile);

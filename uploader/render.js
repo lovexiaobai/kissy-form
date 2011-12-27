@@ -2,7 +2,7 @@
  * @fileoverview 运行文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
+KISSY.add(function(S, Base, Node, Uploader, Button, Auth) {
     var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploaderRender]:',
         dataName = {CONFIG : 'data-config',VALID : 'data-valid'};
 
@@ -34,7 +34,8 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
      */
     function RenderUploader(buttonTarget, queueTarget, config) {
         var self = this;
-        config = config || parseConfig(buttonTarget);
+        //合并配置
+        config = S.mix(parseConfig(buttonTarget),config);
         //超类初始化
         RenderUploader.superclass.constructor.call(self, config);
         self.set('buttonTarget', buttonTarget);
@@ -50,15 +51,18 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
         _init : function() {
             var self = this,uploaderConfig = self.get('uploaderConfig'),
                 button = self._initButton(),
-                queue = self._initQueue();
+                queue;
             self.set('button', button);
-            self.set('queue', queue);
-            //配置增加按钮实例和队列实例
-            S.mix(uploaderConfig, {button : button,queue : queue});
-            var uploader = new Uploader(uploaderConfig);
-            uploader.render();
-            self.set('uploader', uploader);
-            self._auth();
+            self._initThemes(function(theme){
+                queue = theme.get('queue');
+                //配置增加按钮实例和队列实例
+                S.mix(uploaderConfig, {button : button,queue : queue});
+                var uploader = new Uploader(uploaderConfig);
+                uploader.render();
+                self.set('uploader', uploader);
+                self._auth();
+                self.fire('init',{uploader : uploader});
+            });
         },
         /**
          * 初始化模拟的上传按钮
@@ -68,6 +72,14 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
             var self = this,target = self.get('buttonTarget'),name = self.get('name');
             //实例化上传按钮
             return new Button(target, {name : name});
+        },
+        _initThemes : function(callback){
+            var self = this,theme = self.get('theme');
+            S.use(theme + '/index',function(S,Theme){
+                var queueTarget = self.get('queueTarget'),
+                    theme = new Theme({queueTarget : queueTarget});
+                callback && callback.call(self,theme);
+            })
         },
         /**
          * 初始化上传文件队列
@@ -96,6 +108,7 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
         }
     }, {
         ATTRS : {
+            theme : {value : 'uploader/themes/default' },
             /**
              * 按钮目标元素
              */
@@ -120,4 +133,4 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Queue, Auth) {
         }
     });
     return RenderUploader;
-}, {requires:['base','node','./base','./button/base','./queue/base']});
+}, {requires:['base','node','./base','./button/base']});

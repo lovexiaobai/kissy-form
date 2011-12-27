@@ -1,7 +1,16 @@
 body {
     font-family: 'Microsoft YaHei';
+    font-size: 12px;
+    color: #404040;
 }
 
+.demo-wrapper {
+    margin-top: 20px;
+}
+
+.btn-wrapper {
+    margin-top: 10px;
+}
 #page {
     width: 98%;
     margin-left: auto;

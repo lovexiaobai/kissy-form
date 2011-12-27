@@ -87,6 +87,8 @@ KISSY.add(function(S, Node, Base, Status) {
             }
             //设置文件唯一id
             file.id = autoId;
+            //转换文件大小单位为（kb和mb）
+            if(file.size) file.textSize = Status.convertByteSize(file.size);
             hFile = S.substitute(tpl, file);
             //将文件添加到队列之中
             elFile = $(hFile).appendTo($target).data('data-file', file);

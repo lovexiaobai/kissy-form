@@ -75,36 +75,13 @@ KISSY.add(function(S, Node, UploadType) {
             var self = this,ajaxConfig = self.get('ajaxConfig'),
                 //服务器端处理文件上传的路径
                 action = self.get('action'),
-                data = self.get('formData'),
-                io;
-            S.mix(ajaxConfig, {
-                url : action,
-                data : data,
-                /**
-                 * 请求成功后的回调函数
-                 * @param {Object} result
-                 */
-                success : function(result, s, xhr) {
-                    self.fire(AjaxType.event.SUCCESS, {result : result});
-                },
-                /**
-                 * 请求失败后的回调函数
-                 * @param  {Null} n
-                 * @param {String} textStatus
-                 */
-                error : function(n, textStatus) {
-                    self.fire(AjaxType.event.ERROR, {status : textStatus,msg : '上传失败，原因：' + textStatus});
-                }
-            });
-            self.set('ajaxConfig', ajaxConfig);
-            //ajax
-            /*io = S.io(ajaxConfig);
-             self.set('io',io);*/
+                data = self.get('formData');
             var xhr = new XMLHttpRequest();
-            xhr.upload.onprogress = function(ev){
+            //TODO:如果使用onProgress存在第二次上传不触发progress事件的问题
+            xhr.upload.addEventListener('progress',function(ev){
                 self.fire(AjaxType.event.PROGRESS, { 'loaded': ev.loaded, 'total': ev.total });
-            };
-            xhr.onreadystatechange = function(ev){
+            });
+            xhr.onload = function(ev){
                 var result = {};
                 try{
                     result = S.JSON.parse(xhr.responseText);
@@ -114,9 +91,6 @@ KISSY.add(function(S, Node, UploadType) {
                 self.fire(AjaxType.event.SUCCESS, {result : result});
             };
             xhr.open("POST", action, true);
-            //xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-            //xhr.setRequestHeader("X-File-Name", encodeURIComponent(name));
-            //xhr.setRequestHeader("Content-Type", "application/octet-stream");
             xhr.send(data);
             return self;
         },

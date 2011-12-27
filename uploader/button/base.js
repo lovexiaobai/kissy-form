@@ -15,38 +15,38 @@ KISSY.add(function(S, Node, Base) {
      */
     function Button(target, config) {
         var self = this;
-        self.set('target', $(target));
         //超类初始化
         Button.superclass.constructor.call(self, config);
+        self.set('target', $(target));
     }
 
     S.mix(Button, {
         //支持的事件
-        event : { 
-        	'beforeShow': 'beforeShow',
-        	'afterShow': 'afterShow',
-        	'beforeHide': 'beforeHide',
-        	'afterHide': 'afterHide',
-        	'beforeRender' : 'beforeRender', 
-        	'afterRender' : 'afterRender',
-        	'CHANGE' : 'change'
+        event : {
+            'beforeShow': 'beforeShow',
+            'afterShow': 'afterShow',
+            'beforeHide': 'beforeHide',
+            'afterHide': 'afterHide',
+            'beforeRender' : 'beforeRender',
+            'afterRender' : 'afterRender',
+            'CHANGE' : 'change'
         }
     });
-        
+
     S.extend(Button, Base, /** @lends Button.prototype*/{
-    	/**
+        /**
          * 运行
          * @return {Object} Button的实例
          */
         render : function() {
             var self = this,
-            	target = self.get('target'),
-            	render = self.fire(Button.event.beforeRender);
-            if(render === false){
-            	S.log(LOG_PREFIX + 'button render was prevented.')
-            	return false;
-            }else{
-            	if (target == null) {
+                target = self.get('target'),
+                render = self.fire(Button.event.beforeRender);
+            if (render === false) {
+                S.log(LOG_PREFIX + 'button render was prevented.')
+                return false;
+            } else {
+                if (target == null) {
                     S.log(LOG_PREFIX + 'Cannot find target!');
                     return false;
                 }
@@ -59,17 +59,17 @@ KISSY.add(function(S, Node, Base) {
         /**
          * 显示按钮
          */
-        show : function(){
+        show : function() {
             var self = this,
-            	target = self.get('target'),
-            	disableCls = self.get('cls').disabled,
-            	input = self.get('fileInput'),
-            	show = self.fire(Button.event.beforeShow);
-            if(show === false){
-            	S.log(LOG_PREFIX + 'show button event was prevented.');
-            }else{
-            	// $(target).show();
-            	$(target).removeClass(disableCls);
+                target = self.get('target'),
+                disableCls = self.get('cls').disabled,
+                input = self.get('fileInput'),
+                show = self.fire(Button.event.beforeShow);
+            if (show === false) {
+                S.log(LOG_PREFIX + 'show button event was prevented.');
+            } else {
+                // $(target).show();
+                $(target).removeClass(disableCls);
                 $(input).show();
                 self.fire(Button.event.afterShow);
                 S.log(LOG_PREFIX + 'button showed.');
@@ -78,17 +78,17 @@ KISSY.add(function(S, Node, Base) {
         /**
          * 隐藏按钮
          */
-        hide : function(){
+        hide : function() {
             var self = this,
-            	target = self.get('target'),
-            	disableCls = self.get('cls').disabled,
-            	input = self.get('fileInput'),
-            	hide = self.fire(Button.event.beforeHide);
-            if(hide === false){
-            	S.log(LOG_PREFIX + 'hide button event was prevented.');
-            }else{
-            	// $(target).hide();
-            	$(target).addClass(disableCls);
+                target = self.get('target'),
+                disableCls = self.get('cls').disabled,
+                input = self.get('fileInput'),
+                hide = self.fire(Button.event.beforeHide);
+            if (hide === false) {
+                S.log(LOG_PREFIX + 'hide button event was prevented.');
+            } else {
+                // $(target).hide();
+                $(target).addClass(disableCls);
                 $(input).hide();
                 self.fire(Button.event.afterHide);
                 S.log(LOG_PREFIX + 'button showed.');
@@ -100,7 +100,7 @@ KISSY.add(function(S, Node, Base) {
          */
         _reset : function() {
             var self = this,
-            	inputContainer = self.get('inputContainer');
+                inputContainer = self.get('inputContainer');
             //移除表单上传域容器
             $(inputContainer).remove();
             self.set('inputContainer', EMPTY);
@@ -115,19 +115,19 @@ KISSY.add(function(S, Node, Base) {
          */
         _createInput : function() {
             var self = this,
-            	target = self.get('target'),
-            	name = self.get('name'),
-            	tpl = self.get('tpl'),
-            	multiple = self.get('multiple'),
+                target = self.get('target'),
+                name = self.get('name'),
+                tpl = self.get('tpl'),
+                multiple = self.get('multiple'),
                 html,
                 inputContainer,
                 fileInput;
-            if (!S.isString(name) || !S.isString(tpl)){
-            	S.log(LOG_PREFIX + 'No name or tpl specified.');
-            	return false;
+            if (!S.isString(name) || !S.isString(tpl)) {
+                S.log(LOG_PREFIX + 'No name or tpl specified.');
+                return false;
             }
             html = S.substitute(tpl, {
-            	'name' : name
+                'name' : name
             });
             // TODO: inputContainer = DOM.create(html);
             inputContainer = $(html);
@@ -150,91 +150,91 @@ KISSY.add(function(S, Node, Base) {
          */
         _changeHandler : function(ev) {
             var self = this,
-            	fileInput = self.get('fileInput'),
-            	value = $(fileInput).val();
-            if (value == EMPTY){
-            	S.log(LOG_PREFIX + 'No file selected.');
-            	return false;
+                fileInput = self.get('fileInput'),
+                value = $(fileInput).val();
+            if (value == EMPTY) {
+                S.log(LOG_PREFIX + 'No file selected.');
+                return false;
             }
             self.fire(Button.event.CHANGE, {
-            	files: ev.target.files,
-            	input: $(fileInput).clone().getDOMNode()
+                files: ev.target.files,
+                input: $(fileInput).clone().getDOMNode()
             });
             S.log(LOG_PREFIX + 'button change event was fired just now.');
             // change完之后reset按钮，防止选择同一个文件无法触发change事件
             self._reset();
         }
-    },{
-    	ATTRS : /** @lends Button */{
-    		/**
-    		 * target
-    		 */
-    		target: {
-    			value: null
-    		},
-	        /**
-    		 * 对应的表单上传域
-     		 * @type HTMLElement
-    		 */
-    		fileInput: {
-    			value: EMPTY
-    		},
-    		inputContainer: {
-    			value: EMPTY
-    		},
-    		/**
+    }, {
+        ATTRS : /** @lends Button */{
+            /**
+             * target
+             */
+            target: {
+                value: null
+            },
+            /**
+             * 对应的表单上传域
+             * @type HTMLElement
+             */
+            fileInput: {
+                value: EMPTY
+            },
+            inputContainer: {
+                value: EMPTY
+            },
+            /**
              * 隐藏的表单上传域的模板
              * @type String
              */
-	        tpl : {
-	            value : '<div class="ks-ajax-uploader-input-container"><input type="file" name="{name}" hidefoucs="true" class="ks-ajax-uploader-input" /></div>'
-	        },
-	        /**
-	         * 隐藏的表单上传域的name值
-	         * @type String
-	         */
-	        name : {
-	            value : 'fileInput',
-	            setter : function(v) {
-	                if (this.get('fileInput')) {
-	                    $(this.get('fileInput')).attr('name', v);
-	                }
-	                return v;
-	            }
-	        },
-	        /**
-	         * 是否可用,false为可用
-	         * @type Boolean
-	         */
-	        disabled : {
-	            value : false,
-	            setter : function(v) {
-	                var self = this;
-	                if (v) {
-	                	self.hide();
-	                } else {
-	                    self.show();
-	                }
-	                return v;
-	            }
-	        },
-	        /**
-	         * 样式
-	         * @type Object
-	         */
-	        cls : {
-	            value : {
-	                disabled : 'uploader-button-disabled'
-	            }
-	        }
-    	}
+            tpl : {
+                value : '<div class="ks-ajax-uploader-input-container"><input type="file" name="{name}" hidefoucs="true" class="ks-ajax-uploader-input" /></div>'
+            },
+            /**
+             * 隐藏的表单上传域的name值
+             * @type String
+             */
+            name : {
+                value : 'fileInput',
+                setter : function(v) {
+                    if (this.get('fileInput')) {
+                        $(this.get('fileInput')).attr('name', v);
+                    }
+                    return v;
+                }
+            },
+            /**
+             * 是否可用,false为可用
+             * @type Boolean
+             */
+            disabled : {
+                value : false,
+                setter : function(v) {
+                    var self = this;
+                    if (v) {
+                        self.hide();
+                    } else {
+                        self.show();
+                    }
+                    return v;
+                }
+            },
+            /**
+             * 样式
+             * @type Object
+             */
+            cls : {
+                value : {
+                    disabled : 'uploader-button-disabled'
+                }
+            }
+        }
     });
-    
+
     return Button;
-    
+
 }, {
-	requires:[
-		'node',
-		'base'
-	]
+    requires:[
+        'node',
+        'base'
+    ]
 });

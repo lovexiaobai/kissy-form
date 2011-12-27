@@ -33,6 +33,26 @@ KISSY.add(function(S, Node, Base,ProgressBar) {
         },
         tpl : {
             LOADING : '<img src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" />'
+        },
+        /**
+         * 转换文件大小字节数
+         * @param {Number} size 文件大小字节数
+         * @return {String} 文件大小
+         */
+        convertByteSize : function(size){
+            var byteSize = Math.round(size / 1024 * 100) * .01,
+            	suffix = 'kb';
+            if (byteSize > 1000) {
+                byteSize = Math.round(byteSize *.001 * 100) * .01;
+                suffix = 'mb';
+            }
+            sizeParts = byteSize.toString().split('.');
+            if (sizeParts.length > 1) {
+                byteSize = sizeParts[0] + '.' + sizeParts[1].substr(0,2);
+            } else {
+                byteSize = sizeParts[0];
+            }
+            return byteSize+ suffix;
         }
     });
     //继承于Base，属性getter和setter委托于Base处理
@@ -102,6 +122,7 @@ KISSY.add(function(S, Node, Base,ProgressBar) {
          */
         _start : function(data) {
             var self = this, tpl = self.get('tpl'),startTpl = tpl.start,
+                target = self.get('target'),
                 uploader = self.get('uploader'),
                 uploadType = uploader.get('type'),
                 $content,$cancel;
@@ -121,7 +142,13 @@ KISSY.add(function(S, Node, Base,ProgressBar) {
                 progressBar.render();
                 self.set('progressBar',progressBar);
             }
+            var $parent = target.parent();
+            $parent.addClass('current-upload-file');
         },
+        /**
+         * 正在上传时候刷新状态层的内容
+         * @param data
+         */
         _progress : function(data){
             var self = this,loaded = data.loaded,total = data.total,
                 val = Math.ceil(loaded/total) * 100,
@@ -134,6 +161,7 @@ KISSY.add(function(S, Node, Base,ProgressBar) {
          */
         _success : function() {
             var self = this, tpl = self.get('tpl'),successTpl = tpl.success,
+                target = self.get('target'),
                 queue = self.get('queue'),
                 file = self.get('file'),id = file.id,
                 progressBar = self.get('progressBar'),
@@ -147,14 +175,15 @@ KISSY.add(function(S, Node, Base,ProgressBar) {
                 $del = $(successTpl).appendTo($wrapper);
             }else{
                 $del =  self._changeDom(successTpl);
-
             }
             //点击删除
             $del.on('click', function(ev) {
                 ev.preventDefault();
                 //删除队列中的文件
                 queue.remove(id);
-            })
+            });
+            var $parent = target.parent();
+            $parent.addClass('current-upload-file');
         },
         /**
          * 取消上传后改成状态层内容
