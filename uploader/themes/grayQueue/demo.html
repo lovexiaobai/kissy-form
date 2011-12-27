@@ -49,12 +49,9 @@
     </div>
     <script>
         KISSY.Config.base = '../../../';
-        KISSY.use('node', function(S, Node) {
-            var $ = Node.all;
-            KISSY.use('uploader/render', function(S, RenderUploader) {
-                var renderUploader = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue');
-            })
-        });
+        KISSY.use('uploader/render', function(S, RenderUploader) {
+            var renderUploader = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue');
+        })
     </script>
 </article>
 </body>
