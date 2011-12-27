@@ -66,6 +66,8 @@ KISSY.add(function(S, Node,ProgressBar, StatusBase) {
                 $progressNum.html("0%");
                 self.set('elProgressNum',$progressNum);
             }
+            var $parent = target.parent();
+            $parent.addClass('current-upload-file');
         },
         /**
          * 正在上传时候刷新状态层的内容
@@ -82,9 +84,10 @@ KISSY.add(function(S, Node,ProgressBar, StatusBase) {
             if(!$elProgressNum.length || proccessBar == EMPTY) return false;
             $elProgressNum.html(val + '%');
             loaded += allFileLoaded;
-            val = parseInt(loaded/allFileTotal * 100);
+            val = Math.ceil(loaded/allFileTotal * 100);
             S.log(val);
             S.log(loaded);
+            S.log(allFileTotal);
             proccessBar.set('value',val);
             $('#J_TotalProgressNum').text(val + '%');
         },
@@ -98,6 +101,8 @@ KISSY.add(function(S, Node,ProgressBar, StatusBase) {
                 loaded = uploader.get('loaded');
             if (!S.isString(successTpl)) return false;
             self._changeDom(successTpl);
+            var $parent = target.parent();
+            $parent.removeClass('current-upload-file');
             if(!size) return false;
             loaded += size;
             uploader.set('loaded',loaded);

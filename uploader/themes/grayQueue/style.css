@@ -20,38 +20,51 @@
 .f-l {
     float: left;
 }
+.gray-queue {
+    width: 500px;
+    border: 1px solid #CDCDCD;
+    font-family: 'Microsoft YaHei';
+    font-size: 12px;
+    color: #404040;
+}
 /*--- 上传按钮 START ---*/
-.uploader-button {
-    border: 1px solid #C4DAED;
+.gray-queue .uploader-button {
     font-size: 12px;
     text-align: center;
-    line-height: 24px;
-    color: black;
+    line-height: 14px;
+    height:14px;
+    width:50px;
     display: block;
     position: relative;
-    width: 110px;
     z-index: 500;
-    margin-right:10px;
+    border: 1px solid #BABABA;
+    border-radius: 3px 3px 3px 3px;
+    color: #42454A;
+    margin-right: 4px;
+    outline: 0 none;
+    padding: 4px 8px 4px 20px;
+    text-decoration: none;
+    margin-top:4px;
     /*渐变*/
-    background: -webkit-gradient(linear, left top, left bottom, from(#FDFEFE), to(#DFE7EF));
-    background: -moz-linear-gradient(top, #FDFEFE, #DFE7EF);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#FDFEFE', endColorstr = '#DFE7EF');
+    background: -webkit-gradient(linear, left top, left bottom, from(#F7FEE7), to(#ECF3DC));
+    background: -moz-linear-gradient(top, #F7FEE7, #ECF3DC);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#F7FEE7', endColorstr = '#ECF3DC');
 }
 
-.uploader-button-hover, .uploader-button:hover {
+.gray-queue .uploader-button-hover,.gray-queue .uploader-button:hover {
     text-decoration: none;
     color: black;
-    background: -webkit-gradient(linear, left top, left bottom, from(#DFE7EF), to(#FDFEFE));
-    background: -moz-linear-gradient(top, #DFE7EF, #FDFEFE);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#DFE7EF', endColorstr = '#FDFEFE');
+    background: -webkit-gradient(linear, left top, left bottom, from(#ECF3DC), to(#F7FEE7));
+    background: -moz-linear-gradient(top, #ECF3DC, #F7FEE7);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#ECF3DC', endColorstr = '#F7FEE7');
 }
 
-.uploader-button:active {
+.gray-queue .uploader-button:active {
     background: #DFE7EF;
     filter: none;
 }
 
-.uploader-button-disabled,.uploader-button-disabled:hover {
+.gray-queue .uploader-button-disabled,.gray-queue  .uploader-button-disabled:hover {
     border: 1px solid #BFBFBF;
     color: #404040;
     background: -webkit-gradient(linear, left top, left bottom, from(#FAFAFA), to(#E5E5E5));
@@ -59,7 +72,7 @@
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#FAFAFA', endColorstr = '#E5E5E5');
 }
 
-.uploader-button input {
+.gray-queue  .uploader-button input {
     background: none repeat scroll 0 0 transparent;
     border: medium none;
     cursor: pointer;
@@ -80,14 +93,6 @@
 }
 
 /*--- 上传按钮 END ---*/
-
-.gray-queue {
-    width: 500px;
-    border: 1px solid #CDCDCD;
-    font-family: 'Microsoft YaHei';
-    font-size: 12px;
-    color: #404040;
-}
 
 .gray-queue .header-footer {
     line-height: 32px;
@@ -136,19 +141,6 @@
     background-position: 0 -81px;
 }
 
-.gray-queue .uploader-btn-wrapper .uploader-button {
-    border: 1px solid #BABABA;
-    border-radius: 3px 3px 3px 3px;
-    color: #42454A;
-    display: inline-block;
-    font: 12px sans-serif;
-    margin-right: 4px;
-    outline: 0 none;
-    padding: 4px 8px 4px 20px;
-    text-decoration: none;
-    width:50px;
-    margin-top:4px;
-}
 .gray-queue .uploader-btn-wrapper .uploader-button-disabled{
     border-color: #C5C5C5;
     color: #737373;
