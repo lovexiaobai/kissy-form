@@ -114,7 +114,7 @@ KISSY.add(function(S, Node, Base, Status) {
             var self = this,files = self.get('files'),file = files[id],$file;
             if(S.isObject(file)){
                 $file = file.target;
-                $file.slideUp(0.2,function(){
+                $file.fadeOut(0.3,function(){
                     $file.remove();
                 });
                 delete files[id];

@@ -22,10 +22,22 @@ KISSY.add(function(S, Node,ProgressBar, StatusBase) {
         _waiting : function() {
             var self = this, tpl = self.get('tpl'),waitingTpl = tpl.waiting,
                 uploader = self.get('uploader'),
+                queue = self.get('queue'),
                 file = self.get('file'),
+                id = file.id,
                 total = uploader.get('total'),
-                size = file.size;
-            self._changeDom(waitingTpl);
+                size = file.size,
+                $content = self._changeDom(waitingTpl),
+                $del = $content.children('.J_DelFile');
+            if($del.length){
+                $del.on('click',function(ev){
+                    //删除队列中的文件
+                    queue.remove(id);
+                    total  -= size;
+                    $('#J_TotalSize').text(StatusBase.convertByteSize(total));
+                    uploader.set('total',total);
+                })
+            }
             //不存在文件大小，直接退出
             if(!size) return false;
             if(!total){
@@ -57,11 +69,14 @@ KISSY.add(function(S, Node,ProgressBar, StatusBase) {
             });
             //如果是ajax异步上传，加入进度显示
             if (uploadType == 'ajax') {
+                var progressBar;
                 if(!uploader.get('progressBar')){
-                    var progressBar = new ProgressBar($('#J_ProgressBar'));
+                    progressBar = new ProgressBar($('#J_ProgressBar'));
                     progressBar.render();
                     uploader.set('progressBar',progressBar);
                 }
+                //清零进度条
+                uploader.get('progressBar').set('value',0);
                 var $progressNum = $content.children('.J_ProgressNum');
                 $progressNum.html("0%");
                 self.set('elProgressNum',$progressNum);
@@ -77,6 +92,7 @@ KISSY.add(function(S, Node,ProgressBar, StatusBase) {
             var self = this,loaded = data.loaded,total = data.total,
                 val = parseInt(loaded/total * 100),
                 uploader = self.get('uploader'),
+                //进度条
                 proccessBar = uploader.get('progressBar'),
                 allFileTotal = uploader.get('total'),
                 allFileLoaded = uploader.get('loaded'),
@@ -112,7 +128,7 @@ KISSY.add(function(S, Node,ProgressBar, StatusBase) {
          * 模板
          */
         tpl : {value : {
-            waiting : '<div>0%</div>',
+            waiting : '<div class="clearfix"><div class="f-l">0%</div><div class="f-l uploader-icon del-icon J_DelFile"></div></div>',
             start : '<div class="clearfix"><div class="J_ProgressNum"><img class="loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" /></div>' +
                 '</div> ',
             success : '<div class="uploader-icon success-icon">100%</div>',
