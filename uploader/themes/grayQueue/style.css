@@ -84,6 +84,9 @@
 .gray-queue {
     width: 500px;
     border: 1px solid #CDCDCD;
+    font-family: 'Microsoft YaHei';
+    font-size: 12px;
+    color: #404040;
 }
 
 .gray-queue .header-footer {

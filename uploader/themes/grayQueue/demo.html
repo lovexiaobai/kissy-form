@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>使用grayQueue模板的demo</title>
-<script src="../../kissy/kissy.js"></script>
-<link href="assets/demo.css" rel="stylesheet"/>
+<script src="http://a.tbcdn.cn/s/kissy/1.2.0/kissy.js"></script>
 </head>
 <body>
 
@@ -23,10 +22,19 @@
                 </ul>
                 <div class="clearfix header-footer gray-queue-footer">
                     <div class="f-l uploader-btn-wrapper">
-                        <a id="J_UploaderBtn" class="f-l uploader-button uploader-button-focus" data-config='{"theme" : "uploader/themes/grayQueue","autoUpload" : false,"type" : "auto","serverConfig":{"action":"upload.php","data":{"dir":"files/"},"dataType" : "json"},"name":"Filedata","urlsInputName":"fileUrls"}' href="#">
+                        <!-- 选择文件按钮，组件配置写在这里 -- >
+                        <a id="J_UploaderBtn" class="f-l uploader-button uploader-button-focus" data-config=
+                                '{"theme" : "uploader/themes/grayQueue",
+                                "autoUpload" : false,
+                                "type" : "auto",
+                                "serverConfig":{"action":"../../demo/upload.php","data":{"dir":"files/"},"dataType" : "json"},
+                                "name":"Filedata",
+                                "urlsInputName":"fileUrls"}'
+                           href="#">
                             选择文件
                         </a>
                         <a id="J_StartUpload" class="f-l uploader-button start-upload uploader-button-disabled" href="#">开始上传</a>
+                        <input type="hidden" name="fileUrls" value="" />
                     </div>
                     <div id="J_TotalProgressNum" class="f-r file-status clearfix">
                         0%
@@ -40,7 +48,7 @@
         </form>
     </div>
     <script>
-        KISSY.Config.base = '../../';
+        KISSY.Config.base = '../../../';
         KISSY.use('node', function(S, Node) {
             var $ = Node.all;
             KISSY.use('uploader/render', function(S, RenderUploader) {
