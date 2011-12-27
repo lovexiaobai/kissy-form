@@ -2,9 +2,9 @@
  * @fileoverview 运行文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add(function(S, Base, Node, Uploader, Button, Auth) {
-    var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploaderRender]:',
-        dataName = {CONFIG : 'data-config',VALID : 'data-valid'};
+KISSY.add(function (S, Base, Node, Uploader, Button, Auth) {
+    var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploaderRender]:',
+        dataName = {CONFIG:'data-config', VALID:'data-valid'};
 
     /**
      * 解析组件在页面中data-config成为组件的配置
@@ -13,12 +13,12 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Auth) {
      * @return {Object}
      */
     function parseConfig(hook, dataConfigName) {
-        var config = {},sConfig,DATA_CONFIG = dataConfigName || dataName.CONFIG;
+        var config = {}, sConfig, DATA_CONFIG = dataConfigName || dataName.CONFIG;
         sConfig = $(hook).attr(DATA_CONFIG);
         if (!S.isString(sConfig)) return {};
         try {
             config = JSON.parse(sConfig);
-        } catch(err) {
+        } catch (err) {
             S.log(LOG_PREFIX + '请检查' + hook + '上' + DATA_CONFIG + '属性内的json格式是否符合规范！');
         }
         return config;
@@ -35,7 +35,7 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Auth) {
     function RenderUploader(buttonTarget, queueTarget, config) {
         var self = this;
         //合并配置
-        config = S.mix(parseConfig(buttonTarget),config);
+        config = S.mix(parseConfig(buttonTarget), config);
         //超类初始化
         RenderUploader.superclass.constructor.call(self, config);
         self.set('buttonTarget', buttonTarget);
@@ -48,89 +48,89 @@ KISSY.add(function(S, Base, Node, Uploader, Button, Auth) {
         /**
          * 初始化组件
          */
-        _init : function() {
-            var self = this,uploaderConfig = self.get('uploaderConfig'),
+        _init:function () {
+            var self = this, uploaderConfig = self.get('uploaderConfig'),
                 button = self._initButton(),
                 queue;
             self.set('button', button);
-            self._initThemes(function(theme){
+            self._initThemes(function (theme) {
                 queue = theme.get('queue');
                 //配置增加按钮实例和队列实例
-                S.mix(uploaderConfig, {button : button,queue : queue});
+                S.mix(uploaderConfig, {button:button, queue:queue});
                 var uploader = new Uploader(uploaderConfig);
                 uploader.render();
                 self.set('uploader', uploader);
-                self._auth();
-                self.fire('init',{uploader : uploader});
+                if(theme.afterUploaderRender) theme.afterUploaderRender(uploader);
+                self.fire('init', {uploader:uploader});
             });
         },
         /**
          * 初始化模拟的上传按钮
          * @return {Button}
          */
-        _initButton : function() {
-            var self = this,target = self.get('buttonTarget'),name = self.get('name');
+        _initButton:function () {
+            var self = this, target = self.get('buttonTarget'), name = self.get('name');
             //实例化上传按钮
-            return new Button(target, {name : name});
+            return new Button(target, {name:name});
         },
-        _initThemes : function(callback){
-            var self = this,theme = self.get('theme');
-            S.use(theme + '/index',function(S,Theme){
+        _initThemes:function (callback) {
+            var self = this, theme = self.get('theme');
+            S.use(theme + '/index', function (S, Theme) {
                 var queueTarget = self.get('queueTarget'),
-                    theme = new Theme({queueTarget : queueTarget});
-                callback && callback.call(self,theme);
+                    theme = new Theme({queueTarget:queueTarget});
+                callback && callback.call(self, theme);
             })
         },
         /**
          * 初始化上传文件队列
          * @return {Queue}
          */
-        _initQueue : function() {
-            var self = this,target = self.get('queueTarget');
+        _initQueue:function () {
+            var self = this, target = self.get('queueTarget');
             return new Queue(target);
         },
         /**
          * 文件上传验证
          */
-        _auth : function() {
+        _auth:function () {
             /*var self = this,buttonTarget = self.get('buttonTarget'),
-                $btn = $(buttonTarget),
-                //Button的实例
-                button = self.get('button'),
-                //TODO:需要修改
-                fileInput = button.fileInput,
-                DATA_NAME = dataName.VALID, valid;
-            if(!$btn.length) return false;
-            valid = $btn.attr(DATA_NAME);
-            //不存在验证配置，直接退出
-            if(!valid) return false;
-            $(fileInput).attr(DATA_NAME,valid);*/
+             $btn = $(buttonTarget),
+             //Button的实例
+             button = self.get('button'),
+             //TODO:需要修改
+             fileInput = button.fileInput,
+             DATA_NAME = dataName.VALID, valid;
+             if(!$btn.length) return false;
+             valid = $btn.attr(DATA_NAME);
+             //不存在验证配置，直接退出
+             if(!valid) return false;
+             $(fileInput).attr(DATA_NAME,valid);*/
         }
     }, {
-        ATTRS : {
-            theme : {value : 'uploader/themes/default' },
+        ATTRS:{
+            theme:{value:'uploader/themes/default' },
             /**
              * 按钮目标元素
              */
-            buttonTarget : {value : EMPTY},
+            buttonTarget:{value:EMPTY},
             /**
              * 队列目标元素
              */
-            queueTarget : {value : EMPTY},
+            queueTarget:{value:EMPTY},
             /**
              * 上传组件配置
              */
-            uploaderConfig : {},
+            uploaderConfig:{},
             /**
              * Button（上传按钮）的实例
              */
-            button : {value : EMPTY},
+            button:{value:EMPTY},
             /**
              * Queue（上传队列）的实例
              */
-            queue : {value : EMPTY},
-            uploader : {value : EMPTY}
+            queue:{value:EMPTY},
+            uploader:{value:EMPTY}
         }
     });
     return RenderUploader;
-}, {requires:['base','node','./base','./button/base']});
+}, {requires:['base', 'node', './base', './button/base']});

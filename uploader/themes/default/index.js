@@ -22,6 +22,13 @@ KISSY.add(function(S, Node, Base,Queue) {
             var self = this,queueTarget = self.get('queueTarget'),queue;
             queue = new Queue(queueTarget);
             self.set('queue',queue);
+        },
+        /**
+         * 在上传组件运行完毕后执行的方法（对上传组件所有的控制都应该在这个函数内）
+         * @param {Uploader} uploader
+         */
+        afterUploaderRender : function(uploader){
+
         }
     }, {ATTRS : /** @lends DefaultTheme*/{
         queueTarget : {value : EMPTY},

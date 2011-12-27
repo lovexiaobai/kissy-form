@@ -1,4 +1,4 @@
-KISSY.add(function(S, Node, Base,Queue) {
+KISSY.add(function(S, Node, DefaultTheme,Queue) {
     var EMPTY = '',$ = Node.all;
 
     /**
@@ -12,11 +12,8 @@ KISSY.add(function(S, Node, Base,Queue) {
         var self = this;
         //调用父类构造函数
         GrayQueue.superclass.constructor.call(self, config);
-        self._init();
     }
-
-    //继承于Base，属性getter和setter委托于Base处理
-    S.extend(GrayQueue, Base, /** @lends GrayQueue.prototype*/{
+    S.extend(GrayQueue, DefaultTheme, /** @lends GrayQueue.prototype*/{
         /**
          * 初始化
          */
@@ -24,10 +21,21 @@ KISSY.add(function(S, Node, Base,Queue) {
             var self = this,queueTarget = self.get('queueTarget'),queue;
             queue = new Queue(queueTarget);
             self.set('queue',queue);
+        },
+        /**
+         * 在上传组件运行完毕后执行的方法（对上传组件所有的控制都应该在这个函数内）
+         * @param {Uploader} uploader
+         */
+        afterUploaderRender : function(uploader){
+            var self = this,
+                //开始上传按钮
+                $startUpload = $(self.get('elStartUpload'));
+            $startUpload.on('click',function(){
+                uploader.uploadWaitFiles();
+            })
         }
     }, {ATTRS : /** @lends GrayQueue*/{
-        queueTarget : {value : EMPTY},
-        queue : {value : EMPTY}
+        elStartUpload : {value : '#J_StartUpload'}
     }});
     return GrayQueue;
-}, {requires : ['node','base','./queue','./style.css']});
+}, {requires : ['node','../default/index','./queue','./style.css']});

@@ -44,14 +44,7 @@
         KISSY.use('node', function(S, Node) {
             var $ = Node.all;
             KISSY.use('uploader/render', function(S, RenderUploader) {
-                var renderUploader = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue'),
-                        uploader;
-                renderUploader.on('init',function(ev){
-                    uploader = ev.uploader;
-                    $('#J_StartUpload').on('click',function(){
-                        uploader.uploadWaitFiles();
-                    })
-                });
+                var renderUploader = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue');
             })
         });
     </script>
