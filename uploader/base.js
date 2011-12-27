@@ -33,12 +33,11 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             SELECT : 'select',
             //开始上传
             START : 'start',
-            // 上传中
-            UPLOADING: 'uploading',
             //上传完成（在上传成功或上传失败后都会触发）
             COMPLETE :'complete',
             //上传成功
             SUCCESS : 'success',
+            UPLOAD_ALL : 'uploadAll',
             //上传失败
             ERROR : 'error'
         }
@@ -129,6 +128,7 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             //没有等待上传的文件
             if(!waitFileIds.length){
                 self.set('isUploadWaitFiles',false);
+                self.fire(Uploader.event.UPLOAD_ALL);
                 return false;
             }
             //开始上传等待中的文件
