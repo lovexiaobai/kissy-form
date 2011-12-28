@@ -1,7 +1,4 @@
 <?php
-
-sleep(3);
-
 $files = array();
 
 $url = 'http://'.$_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/";
@@ -15,7 +12,7 @@ function uploadFile($file_label){
 	$this_file = $_FILES[$file_label];
 
 }
-// ÕâÀïÉèÖÃinputµÄname£¬Èç¹û²»ÐèÒª¶àÑ¡ÉÏ´«µÄ»°Ö»ÒªÉèÖÃÕâÒ»¸ö¾Í¹»ÁË¡£
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½inputï¿½ï¿½nameï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ñ¡ï¿½Ï´ï¿½ï¿½Ä»ï¿½Ö»Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Í¹ï¿½ï¿½Ë¡ï¿½
 $fileInput = 'Filedata';
 $dir = $_POST['dir'];
 $files_name_arr = array($fileInput);

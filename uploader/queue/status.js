@@ -183,7 +183,7 @@ KISSY.add(function(S, Node, Base,ProgressBar) {
                 queue.remove(id);
             });
             var $parent = target.parent();
-            $parent.addClass('current-upload-file');
+            $parent.removeClass('current-upload-file');
         },
         /**
          * 取消上传后改成状态层内容

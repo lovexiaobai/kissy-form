@@ -56,6 +56,20 @@ KISSY.add(function(S, Node, Base) {
             self.set('bar',self._create());
         },
         /**
+         * 显示进度条
+         */
+        show : function(){
+            var self = this,$wrapper = self.get('wrapper');
+            $wrapper.fadeIn(0.3);
+        },
+        /**
+         * 隐藏进度条
+         */
+        hide : function(){
+            var self = this,$wrapper = self.get('wrapper');
+            $wrapper.fadeOut(0.3);
+        },
+        /**
          * 创建进度条
          * @return {NodeList}
          */

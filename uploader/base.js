@@ -33,12 +33,11 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
             SELECT : 'select',
             //开始上传
             START : 'start',
-            // 上传中
-            UPLOADING: 'uploading',
             //上传完成（在上传成功或上传失败后都会触发）
             COMPLETE :'complete',
             //上传成功
             SUCCESS : 'success',
+            UPLOAD_ALL : 'uploadAll',
             //上传失败
             ERROR : 'error'
         }
@@ -114,25 +113,26 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
         /**
          * 上传等待中的文件
          */
+        uploadAll : function(){
+            var self = this;
+            //上传所有等待中的文件
+            self.set('isUploadWaitFiles',true);
+            self.uploadWaitFile();
+        },
+        /**
+         * 上传等待中的文件
+         */
         uploadWaitFile : function(){
             var self = this,queue = self.get('queue'),
                 waitFileIds = queue.getWaitFileIds();
             //没有等待上传的文件
             if(!waitFileIds.length){
                 self.set('isUploadWaitFiles',false);
+                self.fire(Uploader.event.UPLOAD_ALL);
                 return false;
             }
             //开始上传等待中的文件
             self.upload(waitFileIds[0]);
-        },
-        /**
-         * 上传等待中的文件
-         */
-        uploadWaitFiles : function(){
-            var self = this;
-            //上传所有等待中的文件
-            self.set('isUploadWaitFiles',true);
-            self.uploadWaitFile();
         },
         /**
          * 是否支持ajax方案上传
