@@ -57,13 +57,13 @@ KISSY.add(function(S, Node, UploadType) {
          * @return {AjaxType}
          */
         stop : function() {
-            var self = this,io = self.get('io');
-            if (!S.isObject(io)) {
+            var self = this,xhr = self.get('xhr');
+            if (!S.isObject(xhr)) {
                 S.log(LOG_PREFIX + 'stop()，io值错误！');
                 return false;
             }
             //中止ajax请求，会触发error事件
-            io.abort();
+            xhr.abort();
             self.fire(AjaxType.event.STOP);
             return self;
         },
@@ -92,6 +92,7 @@ KISSY.add(function(S, Node, UploadType) {
             };
             xhr.open("POST", action, true);
             xhr.send(data);
+            self.set('xhr',xhr);
             return self;
         },
         /**
@@ -100,6 +101,7 @@ KISSY.add(function(S, Node, UploadType) {
         _processData : function() {
             var self = this,data = self.get('data'),
                 formData = self.get('formData');
+            //将参数添加到FormData的实例内
             S.each(data, function(val, key) {
                 formData.append(key, val);
             });
@@ -141,7 +143,7 @@ KISSY.add(function(S, Node, UploadType) {
             contentType: false
         }
         },
-        io : {value : EMPTY},
+        xhr : {value : EMPTY},
         fileDataName : {value : EMPTY},
         form : {value : {}},
         fileInput : {value : EMPTY}

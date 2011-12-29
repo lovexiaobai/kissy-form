@@ -33,7 +33,6 @@ KISSY.add(function(S, Node, DefaultTheme,Queue) {
                 $startUpload = $(self.get('elStartUpload')),
                 //总进度数容器
                 $totalProgressNum = $(self.get('elTotalProgressNum')),
-                $totalSize = $(self.get('elTotalSize')),
                 //上传按钮不可用时的样式名
                 startUploadDisabledCls = self.get('startUploadDisabledCls');
             //监听队列的添加文件后事件
@@ -63,8 +62,7 @@ KISSY.add(function(S, Node, DefaultTheme,Queue) {
     }, {ATTRS : /** @lends GrayQueue*/{
         elStartUpload : {value : '#J_StartUpload'},
         startUploadDisabledCls : {value : 'start-upload-disabled'},
-        elTotalProgressNum : {value : '#J_TotalProgressNum'},
-        elTotalSize : {value : '#J_TotalSize'}
+        elTotalProgressNum : {value : '#J_TotalProgressNum'}
     }});
     return GrayQueue;
 }, {requires : ['node','../default/index','./queue','./style.css']});
