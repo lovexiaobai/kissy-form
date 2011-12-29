@@ -164,6 +164,12 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
                     break;
                 case types.AJAX :
                     UploadType = AjaxType;
+                    //如果不支持ajax，降级成iframe方案
+                    if(!isSupportAjax){
+                        UploadType = IframeType;
+                        self.set('type',Uploader.type.IFRAME);
+                        S.log(LOG_PREFIX + '由于你的浏览器不支持ajax上传，强制降级为iframe！');
+                    }
                     break;
                 default :
                     S.log(LOG_PREFIX + 'type参数不合法，只允许配置值为' + types.AUTO + ',' + types.IFRAME + ',' + types.AJAX);
