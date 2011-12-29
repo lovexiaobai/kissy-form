@@ -1,4 +1,4 @@
-/*--------- 默认模板 BY 明河 ---------*/
+/*--------- 默认模板，目前应用于淘宝退款页 BY 明河 ---------*/
 .clearfix:before, .clearfix:after {
     content: "";
     display: table;
@@ -10,7 +10,7 @@
 
 .clearfix {
     zoom: 1;
-    clear:both\9;
+    clear: both\9;
 }
 
 .f-r {
@@ -20,36 +20,37 @@
 .f-l {
     float: left;
 }
+
 .sprite {
     background: url("http://img03.taobaocdn.com/tps/i3/T1he85XfRIXXXXXXXX-24-160.png") 0 0 no-repeat;
 }
-a{
+.ks-uploader-queue a {
     color: #3366CC;
     text-decoration: none;
 }
-.ks-uploader-queue a{
-    color: #3366CC;
-    text-decoration: none;
+
+.ks-uploader-queue a:hover {
+    color: #FF6600;
+    text-decoration: underline;
 }
-.ks-uploader-queue a:hover{
-    color:#FF6600;
-    text-decoration:underline;
-}
+
 .uploader-button {
     border: 1px solid #C4DAED;
     font-size: 12px;
     text-align: center;
     line-height: 24px;
-    color: black;
     display: block;
     position: relative;
     width: 110px;
     z-index: 500;
-    margin-right:10px;
+    margin-right: 10px;
     /*渐变*/
     background: -webkit-gradient(linear, left top, left bottom, from(#FDFEFE), to(#DFE7EF));
     background: -moz-linear-gradient(top, #FDFEFE, #DFE7EF);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#FDFEFE', endColorstr = '#DFE7EF');
+}
+.uploader-button:link,.uploader-button:visited{
+    color:#404040;
 }
 
 .uploader-button-hover, .uploader-button:hover {
@@ -65,7 +66,7 @@ a{
     filter: none;
 }
 
-.uploader-button-disabled,.uploader-button-disabled:hover {
+.uploader-button-disabled, .uploader-button-disabled:hover {
     border: 1px solid #BFBFBF;
     color: #404040;
     background: -webkit-gradient(linear, left top, left bottom, from(#FAFAFA), to(#E5E5E5));
@@ -84,14 +85,17 @@ a{
     opacity: 0;
     filter: alpha(opacity = 0);
     position: absolute;
-    font-size: 400px\0/;
+    font-size: 400 px\0/;
 }
+
 *html .uploader-button input {
     font-size: 400px;
 }
+
 *+html .uploader-button input {
     font-size: 400px;
 }
+
 .ks-ajax-uploader-input-container {
     display: block;
     height: 26px;
@@ -123,14 +127,17 @@ a{
     width: 400px;
     margin: 0;
     padding: 0;
-    margin-top:10px;
+    margin-top: 10px;
     font-size: 12px;
 }
-.ks-uploader-queue li{
-    margin-top:5px;
-    list-style: none;
 
+.ks-uploader-queue li {
+    margin-top: 5px;
+    list-style: none;
+    line-height: 18px;
+    color:#404040;
 }
+
 .ks-uploader-queue .file-icon {
     background-position: 0 -70px;
     width: 12px;
@@ -139,7 +146,7 @@ a{
 }
 
 *html .ks-uploader-queue .file-icon {
-	background:url(http://img02.taobaocdn.com/tps/i2/T1XuOuXnBBXXXXXXXX-12-16.png) 0 0 no-repeat;
+    background: url(http://img02.taobaocdn.com/tps/i2/T1XuOuXnBBXXXXXXXX-12-16.png) 0 0 no-repeat;
 }
 
 .ks-uploader-queue .loading {
@@ -147,33 +154,41 @@ a{
     width: 16px;
     height: 16px;
 }
+
 .ks-uploader-queue .file-status {
-    margin-left:5px;
+    margin-left: 5px;
 }
-.ks-uploader-queue .file-status .uploader-progress{
+
+.ks-uploader-queue .file-status .uploader-progress {
     margin-right: 5px;
+    margin-top:3px;
 }
-.ks-uploader-queue .upload-cancel{
-    margin-top:2px;
+
+.ks-uploader-queue .upload-cancel {
+    margin-top: 2px;
 }
-.ks-ajax-uploader-input-container .valid-under{
+
+.ks-ajax-uploader-input-container .valid-under {
     display: none !important;
 }
-.ks-uploader-queue .upload-error{
-    color:#FD7316;
+
+.ks-uploader-queue .upload-error {
+    color: #FD7316;
 }
-.uploader-auth-msg .estate{
+
+.uploader-auth-msg .estate {
     margin: 0;
 }
 
-.ks-progress-bar{
+.ks-progress-bar {
     border: 1px solid #FA9515;
-    height:10px;
+    height: 10px;
     background-color: #fff;
-    width:80px;
+    width: 80px;
 }
-.ks-progress-bar .ks-progress-bar-value{
-    width:0;
-    height:100%;
+
+.ks-progress-bar .ks-progress-bar-value {
+    width: 0;
+    height: 100%;
     background-color: #FA9515;
 }

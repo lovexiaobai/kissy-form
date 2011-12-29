@@ -256,8 +256,7 @@ KISSY.add(function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
          */
         _uploadCompleteHanlder : function(ev) {
             var self = this,result = ev.result,status,event = Uploader.event,
-                queue = self.get('queue'),id = self.get('curUploadId'),
-                file = queue.getFile(id);
+                queue = self.get('queue'),id = self.get('curUploadId');
             if (!S.isObject(result)) return false;
             //文件上传状态
             status = result.status;

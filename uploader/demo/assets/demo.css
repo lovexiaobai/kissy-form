@@ -11,6 +11,7 @@ body {
 .btn-wrapper {
     margin-top: 10px;
 }
+
 #page {
     width: 98%;
     margin-left: auto;
@@ -26,7 +27,7 @@ body {
     padding-top: 10px;
     text-align: center;
     border-top: 1px solid #DFDFDF;
-    margin-bottom:10px;
+    margin-bottom: 10px;
 }
 
 #header {
@@ -126,26 +127,34 @@ a:hover {
     color: #00A0E9;
 }
 
-#doc p{
+p {
     line-height: 24px;
 }
-#doc h4{
-    font-size:22px;
-	color:#609574;
-	padding:5px 0;
-	border-bottom:2px dotted #609574;
-	margin:10px 0;
+
+h4 {
+    font-size: 22px;
+    color: #609574;
+    padding: 5px 0;
+    border-bottom: 2px dotted #609574;
+    margin: 10px 0;
 }
-#doc h5{
-    font-size:16px;
-	color:#C58080;
-    margin:10px 0;
+
+h5 {
+    font-size: 16px;
+    color: #C58080;
+    margin: 10px 0;
 }
-#doc ol,#doc ul{
+
+ol, ul {
     line-height: 24px;
-    margin-left:20px;
-    color:#609574;
+    margin-left: 20px;
+    color: #609574;
 }
-#doc ol{
+
+ul {
+    margin-top: 10px;
+}
+
+#doc ol {
     list-style: decimal;
 }
