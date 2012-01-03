@@ -232,12 +232,12 @@ KISSY.add(function(S, Node, Base,ProgressBar) {
          * 模板
          */
         tpl : {value : {
-            waiting : '<div>等待上传，<a href="#Upload" class="J_Upload">点此上传</a> </div>',
-            start : '<div><div class="f-l  J_ProgressBar uploader-progress"><img class="loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" /></div>' +
+            waiting : '<div class="waiting-status">等待上传，<a href="#Upload" class="J_Upload">点此上传</a> </div>',
+            start : '<div class="start-status clearfix"><div class="f-l  J_ProgressBar uploader-progress"><img class="loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" /></div>' +
                 ' <a class="f-l J_UploadCancel upload-cancel" href="#uploadCancel">取消</a></div> ',
             success : ' <a href="#fileDel" class="J_FileDel">删除</a>  ',
-            cancel : '<div>已经取消上传，<a href="#reUpload" class="J_ReUpload">点此重新上传</a> </div>',
-            error : '<div class="upload-error">{msg}<a href="#fileDel" class="J_FileDel">点此删除</a></div>'
+            cancel : '<div class="cancel-status">已经取消上传，<a href="#reUpload" class="J_ReUpload">点此重新上传</a> </div>',
+            error : '<div class="error-status upload-error">{msg}<a href="#fileDel" class="J_FileDel">点此删除</a></div>'
         } },
         /**
          * 队列实例
