@@ -41,6 +41,32 @@
         <li>文件上传域名：<b id="J_FileName"></b></li>
         <li>路径input名：<b id="J_UrlsInput"></b></li>
     </ul>
+    <h5>RenderUploader的init事件</h5>
+    <p>如果你需要对初始化后监听的上传组件进行操作，比如删除文件后弹出个提示或者达到某个上传数需要禁用上传按钮等，</p>
+    <p>那么需要监听RenderUploader实例的init事件，因为初始化Uploader前，要加载下模板js，这个过程很有可能是异步的。</p>
+    <textarea name="code" class="xml:nocontrols" rows="10" cols="100">
+        S.use('uploader/render', function (S, RenderUploader) {
+                //第一个参数：按钮元素钩子，第二个参数：队列元素钩子
+                var ru = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue');
+                //对组件的后续操作务必放在init事件内，因为组件时可能需要异步加载模板
+                ru.on("init",function(ev){
+                    var uploader = ev.uploader;
+                })
+            })
+    </textarea>
+    init事件的event对象带有uploader，为Uploader的实例，获取到这个实例后，就可以对组件进行操作。
+    <h5>获取Uploader实例的属性</h5>
+    form组件包内的UI组件都继承于Base，所以获取属性，需要使用get方法，比如uploader.get('type')（uploader为Uploader的实例）。
+    <textarea name="code" class="xml:nocontrols" rows="10" cols="100">
+        ru.on("init",function(ev){
+            var uploader = ev.uploader;
+            $('#J_UploadType').text(uploader.get('type'));
+            $('#J_Theme').text(uploader.get('theme'));
+            $('#J_AutoUpload').text(uploader.get('autoUpload'));
+        })
+    </textarea>
+    从理论上讲，你可以使用set方法变更配置，比如可以控制是否自动上传：uploader.set('autoUpload',true)，
+    但很多属性只支持只读，比如type，theme属性。
     <h5>uploadAll()方法</h5>
     <textarea name="code" class="xml:nocontrols" rows="10" cols="100">
 

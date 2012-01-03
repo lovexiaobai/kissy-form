@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!--
+  KF 构建文件
+  @author 明河（剑平）<minghe36@126.com>
+-->
+<project name="kissy-form-build" default="build-all" xmlns:ac="antlib:net.sf.antcontrib">
+    <description>KF(KISSY FORM) Project Build File</description>
