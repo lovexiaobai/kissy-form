@@ -44,7 +44,7 @@
     <h5>RenderUploader的init事件</h5>
     <p>如果你需要对初始化后监听的上传组件进行操作，比如删除文件后弹出个提示或者达到某个上传数需要禁用上传按钮等，</p>
     <p>那么需要监听RenderUploader实例的init事件，因为初始化Uploader前，要加载下模板js，这个过程很有可能是异步的。</p>
-    <textarea name="code" class="xml:nocontrols" rows="10" cols="100">
+    <textarea name="code" class="js:nocontrols" rows="10" cols="100">
         S.use('uploader/render', function (S, RenderUploader) {
                 //第一个参数：按钮元素钩子，第二个参数：队列元素钩子
                 var ru = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue');
@@ -57,7 +57,7 @@
     init事件的event对象带有uploader，为Uploader的实例，获取到这个实例后，就可以对组件进行操作。
     <h5>获取Uploader实例的属性</h5>
     form组件包内的UI组件都继承于Base，所以获取属性，需要使用get方法，比如uploader.get('type')（uploader为Uploader的实例）。
-    <textarea name="code" class="xml:nocontrols" rows="10" cols="100">
+    <textarea name="code" class="js:nocontrols" rows="10" cols="100">
         ru.on("init",function(ev){
             var uploader = ev.uploader;
             $('#J_UploadType').text(uploader.get('type'));
@@ -67,9 +67,40 @@
     </textarea>
     从理论上讲，你可以使用set方法变更配置，比如可以控制是否自动上传：uploader.set('autoUpload',true)，
     但很多属性只支持只读，比如type，theme属性。
-    <h5>uploadAll()方法</h5>
-    <textarea name="code" class="xml:nocontrols" rows="10" cols="100">
-
+    <h5>子类实例</h5>
+   Uploader有二个非常重要的属性：button（Button上传按钮实例）和queue（Queue上传队列实例），
+   如果你需要对按钮或队列进行操作，比如禁用上传按钮，或删除队列中的文件，那么就需要先获取这二个实例。
+    <textarea name="code" class="js:nocontrols" rows="10" cols="100">
+        ru.on("init",function(ev){
+            var $ = S.Node.all,
+                    //上传组件实例
+                    uploader = ev.uploader,
+                    //上传按钮实例
+                    button = uploader.get('button'),
+                    //上传队列实例
+                    queue = uploader.get('queue');
+            //留意文件上传域的name值是通过Button实例获取
+            $('#J_FileName').text(button.get('name'));
+            //禁用上传按钮
+            button.set('disabled',true);
+        })
+    </textarea>
+    <h5>upload()和uploadAll()</h5>
+    这二个Uploader的方法非常重要，upload(id)上传指定id的文件，uploadAll()上传所有等待中的文件。
+    <textarea name="code" class="js:nocontrols" rows="10" cols="100">
+        ru.on("init",function(ev){
+            var $ = S.Node.all,
+                    //上传组件实例
+                    uploader = ev.uploader,
+                    //上传按钮实例
+                    button = uploader.get('button'),
+                    //上传队列实例
+                    queue = uploader.get('queue');
+                    //点击上传，开始上传等待中的文件
+            $('#J_UploadAll').on('click', function(ev) {
+                            uploader.uploadAll();
+            })
+        })
     </textarea>
 </article>
 <script>
