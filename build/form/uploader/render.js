@@ -1294,7 +1294,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button) {
         }
     }, {
         ATTRS:{
-            theme:{value:'uploader/themes/default' },
+            theme:{value:'form/uploader/themes/default' },
             /**
              * 按钮目标元素
              */

@@ -1,4 +1,4 @@
-<project name="uploader.build" default="build" basedir=".">
+<project name="uploader.build" default="build" basedir="." xmlns:ac="antlib:net.sf.antcontrib">
     <description>Uploader Build File</description>
 
     <property file="build.properties"/>
@@ -26,6 +26,34 @@
             <fileset dir="${uploader.build.dir}" includes="**/*.js,**/*.css"/>
         </delete>
     </target>
+    <target name="themes">
+        <copy todir="${uploader.build.dir}/themes" overwrite="true">
+            <fileset dir="${src.dir}/themes"/>
+        </copy>
+        <delete>
+            <fileset dir="${uploader.build.dir}/themes" includes="**/*.js,**/*.html"/>
+        </delete>
+    </target>
+<!--
+    <target name="concat-theme">
+        <ac:for param="file">
+            <path>
+                 <fileset dir="${src.dir}/themes" includes="**/index.js" excludes="default/index.js"/>
+             </path>
+             <sequential>
+                    <ac:var name="var.dir" unset="true"/>
+                    <dirname  property="var.dir" file="@{file}"/>
+                    <echo>concat ${var.dir}</echo>
+                    <concat destfile="${var.dir}/index-pkg.js" encoding="${charset}" outputencoding="${charset}">
+                             <fileset dir="${var.dir}" includes="*.js"/>
+                             <filterchain>
+                                 <deletecharacters chars="&#xFEFF;"/>
+                             </filterchain>
+                     </concat>
+            </sequential>
+        </ac:for>
+    </target>
+-->
     <!--压缩前去除页面多余空白-->
     <target name="crlf">
         <fixcrlf includes="*.js" srcdir="${uploader.build.dir}" encoding="utf8" eol="crlf"></fixcrlf>
@@ -46,6 +74,6 @@
             <mapper type="regexp" from="^(.*)\.js$" to="\1-min.js"/>
         </apply>
     </target>
-    <target name="build" depends="concat,clean-build,move,minify">
+    <target name="build" depends="concat,clean-build,move,themes,minify">
     </target>
 </project>
