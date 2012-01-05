@@ -32,15 +32,15 @@
         <input type="button" value="获取文件路径" id="J_GetUrls">
     </div>
     <h5>在页面中增加一个存储路径的隐藏域</h5>
-    <textarea name="code" class="xml:nocontrols" rows="10" cols="100">
+    <pre class='brush: xml'>
         <!-- 路径urls -->
         <input type="hidden" value="" name="fileUrls" />
-    </textarea>
+    </pre>
     <p>留意隐藏域的name必须和你组件初始化配置一致，比如对应的配置"urlsInputName":"fileUrls"。</p>
     <p>组件初始化时会进行个判断，当存在指定name名的元素时，不再向页面插入一个隐藏域。</p>
     <p>当文件上传成功后，组件会自动将文件路径写入到隐藏域。</p>
     <p>组件的配置如下</p>
-    <textarea name="code" class="xml:nocontrols" rows="10" cols="100">
+    <pre class='brush: xml; highlight: [4]'>
         <a id="J_UploaderBtn" class="g-u uploader-button uploader-button-focus" data-config=
                 '{"type" : "auto",
                     "serverConfig":{"action":"upload.php","data":{"dir":"files/"},"dataType" : "json"},
@@ -49,9 +49,9 @@
            href="#">
             选择要上传的文件
         </a>
-    </textarea>
+    </pre>
     <h5>如何手动获取文件路径</h5>
-    <textarea name="code" class="js:nocontrols" rows="10" cols="100">
+    <pre class='brush: js; highlight: [8, 11]'>
         var ru = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue');
         //对组件的后续操作务必放在init事件内，因为组件时可能需要异步加载模板
         ru.on("init",function(ev){
@@ -66,7 +66,7 @@
                 alert('所有的url是：' + urls + ',url个数为：'+urls.length);
             })
         })
-    </textarea>
+    </pre>
     <p>Uploader有个urlsInput的属性存储着UrlsInput的实例，而UrlsInput有个urls（数组）的关键属性，可以得到文件路径。 </p>
     <p>UrlsInput有二个关键方法:add()和remove()，用于添加和删除文件路径，一般无需调用。</p>
 </article>
@@ -100,11 +100,9 @@
 </script>
 
 <!-- 代码高亮 START  -->
-<script type="text/javascript" src="http://www.36ria.com/sh/Scripts/shCore.js"></script>
-<script type="text/javascript" src="http://www.36ria.com/sh/Scripts/shBrushJScript.js"></script>
-<script type="text/javascript" src="http://www.36ria.com/sh/Scripts/shBrushXml.js"></script>
-<link type="text/css" rel="stylesheet" href="http://www.36ria.com/sh/Styles/SyntaxHighlighter.css"/>
-<script type="text/javascript">dp.SyntaxHighlighter.HighlightAll('code');</script>
+<link href='../../../../tool/syntaxhighlighter_3.0.83/sh.css' rel='stylesheet' type='text/css' />
+<script type="text/javascript" src="../../../../tool/syntaxhighlighter_3.0.83/sh.js"></script>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
 <!-- 代码高亮 END  -->
 </body>
 </html>

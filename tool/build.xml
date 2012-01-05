@@ -3,5 +3,22 @@
   KF 构建文件
   @author 明河（剑平）<minghe36@126.com>
 -->
-<project name="kissy-form-build" default="build-all" xmlns:ac="antlib:net.sf.antcontrib">
+<project name="kissy-form-build">
     <description>KF(KISSY FORM) Project Build File</description>
+    <property name="build.dir" location="."/>
+    <property name="sh.dir" location="${build.dir}/syntaxhighlighter_3.0.83"/>
+    <target name="build-sh">
+        <concat destfile="${sh.dir}/sh.js" encoding="utf-8" outputencoding="utf-8">
+            <path path="${sh.dir}/scripts/shCore.js" />
+            <path path="${sh.dir}/scripts/shAutoloader.js" />
+            <path path="${sh.dir}/scripts/shBrushXml.js" />
+            <path path="${sh.dir}/scripts/shBrushJScript.js" />
+            <path path="${sh.dir}/scripts/shBrushCss.js" />
+            <path path="${sh.dir}/scripts/shBrushCss.js" />
+        </concat>
+        <concat destfile="${sh.dir}/sh.css" encoding="utf-8" outputencoding="utf-8">
+            <path path="${sh.dir}/styles/shCore.css" />
+            <path path="${sh.dir}/styles/shThemeRDark.css" />
+        </concat>
+    </target>
+</project>
