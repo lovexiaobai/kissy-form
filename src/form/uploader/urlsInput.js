@@ -10,7 +10,7 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
      * @constructor
      * @extends Base
      * @requires Node
-     * @param {Stirng} wrapper 容器
+     * @param {String} wrapper 容器
      */
     function UrlsInput(wrapper, config) {
         var self = this;
@@ -47,11 +47,17 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
          * @param {String} url 路径
          */
         add : function(url){
-            if(!S.isString(url)) return false;
+            if(!S.isString(url)){
+                S.log(LOG_PREFIX + 'add()的url参数不合法！');
+                return false;
+            }
             var self = this,urls = self.get('urls'),
                 //判断路径是否已经存在
                 isExist = self.isExist(url);
-            if(isExist) return self;
+            if(isExist){
+                S.log(LOG_PREFIX + 'add()，文件路径已经存在！');
+                return self;
+            }
             urls.push(url);
             self.set('urls',urls);
             self._val();
@@ -64,7 +70,10 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
         remove : function(url){
             var self = this,urls = self.get('urls'),
                 isExist = self.isExist(url) ;
-            if(!isExist) return false;
+            if(!isExist){
+                S.log(LOG_PREFIX + 'remove()，不存在该文件路径！');
+                return false;
+            }
             urls = S.filter(urls,function(sUrl){
                 return sUrl != url;
             });
@@ -108,7 +117,10 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
                 tpl = self.get('tpl'),
                 name = self.get('name'), urls = self.get('urls'),
                 input;
-            if (!S.isString(tpl) || !S.isString('name')) return false;
+            if (!S.isString(tpl) || !S.isString('name')){
+                S.log(LOG_PREFIX + '_create()，tpl和name属性不合法！');
+                return false;
+            }
             input = $(S.substitute(tpl, {name : name,value : urls}));
             container.append(input);
             self.set('input', input);
