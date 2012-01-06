@@ -208,8 +208,8 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
             queue.set('uploader',self);
             //监听队列的删除事件
             queue.on(queue.constructor.event.REMOVE,function(ev){
-                //删除该文件路径
-                urlsInput.remove(ev.id);
+                //删除该文件路径，sUrl为服务器端返回的文件路径，而url是客服端文件路径
+                urlsInput.remove(ev.file.sUrl);
             });
             queue.render();
             return queue;
@@ -303,15 +303,27 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
             if(!S.isObject(data)) return false;
             var self = this,url = data.url,
                 urlsInput = self.get('urlsInput'),
-                fileId = self.get('curUploadId');
+                fileId = self.get('curUploadId'),
+                queue = self.get('queue');
             if(!S.isString(url) || !S.isObject(urlsInput)) return false;
+            //追加服务器端返回的文件url
+            queue.updateFile(fileId,{'sUrl' : url});
             //向路径隐藏域添加路径
-            urlsInput.add(fileId,url);
+            urlsInput.add(url);
         },
         _error : function(){
 
+        },
+        /**
+         * 向文件数据对象，追加服务器端返回的文件url
+         * @param {Number} id 文件id
+         * @param {String} sUrl 服务器端返回的文件
+         */
+        _addFileServerUrl : function(id,sUrl){
+            if(!S.isNumber(id) || !S.isString(sUrl)) return false;
+            var self = this,queue = self.get('queue'),
+                file = queue.getFile(id);
         }
-
     }, {ATTRS : /** @lends Uploader*/{
         /**
          * Button按钮的实例
@@ -741,6 +753,26 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
             var self = this,files = self.get('files'),
                 file = files[id];
             if (!S.isPlainObject(file)) file = false;
+            return file;
+        },
+        /**
+         * 更新文件数据对象，你可以追加数据
+         * @param {Number} id 文件id
+         * @param {Object} data 数据
+         * @return {Object}
+         */
+        updateFile : function(id,data){
+            if (!S.isNumber(id)) return false;
+            if(!S.isObject(data)){
+                S.log(LOG_PREFIX + 'updateFile()的data参数有误！');
+                return false;
+            }
+            var self = this,files = self.get('files'),
+                file = self.getFile(id);
+            if(!file) return false;
+            S.mix(file,data);
+            files[id] = file;
+            self.set('files',files);
             return file;
         },
         /**
@@ -2097,28 +2129,30 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
         },
         /**
          * 向路径隐藏域添加路径
-         * @param {index} index 数组索引
          * @param {String} url 路径
          */
-        add : function(index,url){
-            if(!S.isString(url) || !S.isNumber(index)) return false;
+        add : function(url){
+            if(!S.isString(url)) return false;
             var self = this,urls = self.get('urls'),
                 //判断路径是否已经存在
                 isExist = self.isExist(url);
             if(isExist) return self;
-            urls[index] = url;
+            urls.push(url);
             self.set('urls',urls);
             self._val();
             return self;
         },
         /**
          * 删除隐藏域内的指定路径
-         * @param {Number} index 索引值
+         * @param {String} url 路径
          */
-        remove : function(index){
-            if(!S.isNumber(index)) return false;
-            var self = this,urls = self.get('urls');
-            if(urls[index]) delete urls[index];
+        remove : function(url){
+            var self = this,urls = self.get('urls'),
+                isExist = self.isExist(url) ;
+            if(!isExist) return false;
+            urls = S.filter(urls,function(sUrl){
+                return sUrl != url;
+            });
             self.set('urls',urls);
             self._val();
             return urls;
@@ -2129,14 +2163,10 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
          */
         _val : function(){
             var self = this,urls = self.get('urls'),
-                $input = self.get('input'),realUrls = [],
+                $input = self.get('input'),
                 //多个路径间的分隔符
                 split = self.get('split'),
-                sUrl;
-            S.each(urls,function(url){
-                if(url) realUrls.push(url);
-            });
-            sUrl = realUrls.join(split);
+                sUrl = urls.join(split);
             $input.val(sUrl);
             return sUrl;
         },
@@ -2183,7 +2213,13 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
         /**
          * 多个路径间的分隔符
          */
-        split : {value : ','},
+        split : {value : ',',
+            setter : function(v){
+                var self = this;
+                self._val();
+                return v;
+            }
+        },
         /**
          * 文件路径隐藏input
          */

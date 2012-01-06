@@ -78,14 +78,10 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
          */
         _val : function(){
             var self = this,urls = self.get('urls'),
-                $input = self.get('input'),realUrls = [],
+                $input = self.get('input'),
                 //多个路径间的分隔符
                 split = self.get('split'),
-                sUrl;
-            S.each(urls,function(url){
-                if(url) realUrls.push(url);
-            });
-            sUrl = realUrls.join(split);
+                sUrl = urls.join(split);
             $input.val(sUrl);
             return sUrl;
         },
@@ -132,7 +128,13 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
         /**
          * 多个路径间的分隔符
          */
-        split : {value : ','},
+        split : {value : ',',
+            setter : function(v){
+                var self = this;
+                self._val();
+                return v;
+            }
+        },
         /**
          * 文件路径隐藏input
          */
