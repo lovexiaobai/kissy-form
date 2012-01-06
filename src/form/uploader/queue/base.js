@@ -70,17 +70,18 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
         },
         /**
          * 向上传队列添加文件
-         * @param {Object} file 文件信息
+         * @param {Object} file 文件信息，格式类似{'name' : 'test.jpg','size' : 2000,'input' : {},'file' : {'name' : 'test.jpg','type' : 'image/jpeg','size' : 2000}}
          * @return {NodeList} 文件节点
          */
-        add : function(file) {
+        add : function(file,callback) {
             var self = this,$target = self.get('target'),event = Queue.event,hFile,elFile,
                 //预置文件id
                 autoId = self.get('id'),
                 //文件信息显示模板
                 tpl = self.get('tpl'),
                 files = self.get('files'),
-                uploader = self.get('uploader');
+                uploader = self.get('uploader'),
+                duration = self.get('duration');
             if(!S.isObject(file)){
                 S.log(LOG_PREFIX + 'add()参数file不合法！');
                 return false;
@@ -91,7 +92,7 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
             if(file.size) file.textSize = Status.convertByteSize(file.size);
             hFile = S.substitute(tpl, file);
             //将文件添加到队列之中
-            elFile = $(hFile).appendTo($target).data('data-file', file);
+            elFile = $(hFile).hide().appendTo($target).data('data-file', file);
             //文件层
             file.target = elFile;
             //状态实例
@@ -103,24 +104,31 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
             self.fileStatus(autoId, Queue.status.WAITING);
             //增加文件id编号
             self.set('id', autoId + 1);
-            self.fire(event.ADD, {id : autoId,file : file,target : file.target});
+            elFile.fadeIn(duration,function(){
+                callback && callback.call(self,autoId,file);
+                self.fire(event.ADD, {id : autoId,file : file,target : file.target});
+            });
             return autoId;
         },
         /**
          * 删除队列中指定id的文件
          * @param {Number} id 文件id
+         * @param {Function} callback 删除元素后执行的回调函数
          */
-        remove : function(id){
-            var self = this,files = self.get('files'),file = files[id],$file;
+        remove : function(id,callback){
+            var self = this,files = self.get('files'),file = files[id],$file,
+                duration = self.get('duration');
             if(S.isObject(file)){
                 $file = file.target;
-                $file.fadeOut(0.3,function(){
+                $file.fadeOut(duration,function(){
                     $file.remove();
+                    callback && callback.call(self,id);
+                    self.fire(Queue.event.REMOVE,{id : id,file : file});
                 });
                 delete files[id];
                 self.set('files',files);
-                self.fire(Queue.event.REMOVE,{id : id,file : file});
             }
+            return file;
         },
         /**
          * 获取或设置文件状态
@@ -207,6 +215,10 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
          * @type String
          */
         tpl : { value : Queue.tpl.DEFAULT },
+        /**
+         * 动画速度
+         */
+        duration : {value : 0.3},
         target : {value : EMPTY},
         id : {value : 0},
         files : {value : []},

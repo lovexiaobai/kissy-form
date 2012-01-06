@@ -675,17 +675,18 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
         },
         /**
          * 向上传队列添加文件
-         * @param {Object} file 文件信息
+         * @param {Object} file 文件信息，格式类似{'name' : 'test.jpg','size' : 2000,'input' : {},'file' : {'name' : 'test.jpg','type' : 'image/jpeg','size' : 2000}}
          * @return {NodeList} 文件节点
          */
-        add : function(file) {
+        add : function(file,callback) {
             var self = this,$target = self.get('target'),event = Queue.event,hFile,elFile,
                 //预置文件id
                 autoId = self.get('id'),
                 //文件信息显示模板
                 tpl = self.get('tpl'),
                 files = self.get('files'),
-                uploader = self.get('uploader');
+                uploader = self.get('uploader'),
+                duration = self.get('duration');
             if(!S.isObject(file)){
                 S.log(LOG_PREFIX + 'add()参数file不合法！');
                 return false;
@@ -696,7 +697,7 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
             if(file.size) file.textSize = Status.convertByteSize(file.size);
             hFile = S.substitute(tpl, file);
             //将文件添加到队列之中
-            elFile = $(hFile).appendTo($target).data('data-file', file);
+            elFile = $(hFile).hide().appendTo($target).data('data-file', file);
             //文件层
             file.target = elFile;
             //状态实例
@@ -708,24 +709,31 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
             self.fileStatus(autoId, Queue.status.WAITING);
             //增加文件id编号
             self.set('id', autoId + 1);
-            self.fire(event.ADD, {id : autoId,file : file,target : file.target});
+            elFile.fadeIn(duration,function(){
+                callback && callback.call(self,autoId,file);
+                self.fire(event.ADD, {id : autoId,file : file,target : file.target});
+            });
             return autoId;
         },
         /**
          * 删除队列中指定id的文件
          * @param {Number} id 文件id
+         * @param {Function} callback 删除元素后执行的回调函数
          */
-        remove : function(id){
-            var self = this,files = self.get('files'),file = files[id],$file;
+        remove : function(id,callback){
+            var self = this,files = self.get('files'),file = files[id],$file,
+                duration = self.get('duration');
             if(S.isObject(file)){
                 $file = file.target;
-                $file.fadeOut(0.3,function(){
+                $file.fadeOut(duration,function(){
                     $file.remove();
+                    callback && callback.call(self,id);
+                    self.fire(Queue.event.REMOVE,{id : id,file : file});
                 });
                 delete files[id];
                 self.set('files',files);
-                self.fire(Queue.event.REMOVE,{id : id,file : file});
             }
+            return file;
         },
         /**
          * 获取或设置文件状态
@@ -812,6 +820,10 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
          * @type String
          */
         tpl : { value : Queue.tpl.DEFAULT },
+        /**
+         * 动画速度
+         */
+        duration : {value : 0.3},
         target : {value : EMPTY},
         id : {value : 0},
         files : {value : []},
@@ -2095,7 +2107,7 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
      * @constructor
      * @extends Base
      * @requires Node
-     * @param {Stirng} wrapper 容器
+     * @param {String} wrapper 容器
      */
     function UrlsInput(wrapper, config) {
         var self = this;
@@ -2132,11 +2144,17 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
          * @param {String} url 路径
          */
         add : function(url){
-            if(!S.isString(url)) return false;
+            if(!S.isString(url)){
+                S.log(LOG_PREFIX + 'add()的url参数不合法！');
+                return false;
+            }
             var self = this,urls = self.get('urls'),
                 //判断路径是否已经存在
                 isExist = self.isExist(url);
-            if(isExist) return self;
+            if(isExist){
+                S.log(LOG_PREFIX + 'add()，文件路径已经存在！');
+                return self;
+            }
             urls.push(url);
             self.set('urls',urls);
             self._val();
@@ -2149,7 +2167,10 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
         remove : function(url){
             var self = this,urls = self.get('urls'),
                 isExist = self.isExist(url) ;
-            if(!isExist) return false;
+            if(!isExist){
+                S.log(LOG_PREFIX + 'remove()，不存在该文件路径！');
+                return false;
+            }
             urls = S.filter(urls,function(sUrl){
                 return sUrl != url;
             });
@@ -2193,7 +2214,10 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
                 tpl = self.get('tpl'),
                 name = self.get('name'), urls = self.get('urls'),
                 input;
-            if (!S.isString(tpl) || !S.isString('name')) return false;
+            if (!S.isString(tpl) || !S.isString('name')){
+                S.log(LOG_PREFIX + '_create()，tpl和name属性不合法！');
+                return false;
+            }
             input = $(S.substitute(tpl, {name : name,value : urls}));
             container.append(input);
             self.set('input', input);
