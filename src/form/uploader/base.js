@@ -208,8 +208,8 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
             queue.set('uploader',self);
             //监听队列的删除事件
             queue.on(queue.constructor.event.REMOVE,function(ev){
-                //删除该文件路径
-                urlsInput.remove(ev.id);
+                //删除该文件路径，sUrl为服务器端返回的文件路径，而url是客服端文件路径
+                urlsInput.remove(ev.file.sUrl);
             });
             queue.render();
             return queue;
@@ -303,15 +303,27 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
             if(!S.isObject(data)) return false;
             var self = this,url = data.url,
                 urlsInput = self.get('urlsInput'),
-                fileId = self.get('curUploadId');
+                fileId = self.get('curUploadId'),
+                queue = self.get('queue');
             if(!S.isString(url) || !S.isObject(urlsInput)) return false;
+            //追加服务器端返回的文件url
+            queue.updateFile(fileId,{'sUrl' : url});
             //向路径隐藏域添加路径
-            urlsInput.add(fileId,url);
+            urlsInput.add(url);
         },
         _error : function(){
 
+        },
+        /**
+         * 向文件数据对象，追加服务器端返回的文件url
+         * @param {Number} id 文件id
+         * @param {String} sUrl 服务器端返回的文件
+         */
+        _addFileServerUrl : function(id,sUrl){
+            if(!S.isNumber(id) || !S.isString(sUrl)) return false;
+            var self = this,queue = self.get('queue'),
+                file = queue.getFile(id);
         }
-
     }, {ATTRS : /** @lends Uploader*/{
         /**
          * Button按钮的实例

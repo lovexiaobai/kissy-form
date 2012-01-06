@@ -151,6 +151,26 @@ KISSY.add('form/uploader/queue/base',function(S, Node, Base, Status) {
             return file;
         },
         /**
+         * 更新文件数据对象，你可以追加数据
+         * @param {Number} id 文件id
+         * @param {Object} data 数据
+         * @return {Object}
+         */
+        updateFile : function(id,data){
+            if (!S.isNumber(id)) return false;
+            if(!S.isObject(data)){
+                S.log(LOG_PREFIX + 'updateFile()的data参数有误！');
+                return false;
+            }
+            var self = this,files = self.get('files'),
+                file = self.getFile(id);
+            if(!file) return false;
+            S.mix(file,data);
+            files[id] = file;
+            self.set('files',files);
+            return file;
+        },
+        /**
          * 获取等待状态的文件id数组
          */
         getWaitFileIds : function(){

@@ -44,28 +44,30 @@ KISSY.add('form/uploader/urlsInput',function(S, Node, Base) {
         },
         /**
          * 向路径隐藏域添加路径
-         * @param {index} index 数组索引
          * @param {String} url 路径
          */
-        add : function(index,url){
-            if(!S.isString(url) || !S.isNumber(index)) return false;
+        add : function(url){
+            if(!S.isString(url)) return false;
             var self = this,urls = self.get('urls'),
                 //判断路径是否已经存在
                 isExist = self.isExist(url);
             if(isExist) return self;
-            urls[index] = url;
+            urls.push(url);
             self.set('urls',urls);
             self._val();
             return self;
         },
         /**
          * 删除隐藏域内的指定路径
-         * @param {Number} index 索引值
+         * @param {String} url 路径
          */
-        remove : function(index){
-            if(!S.isNumber(index)) return false;
-            var self = this,urls = self.get('urls');
-            if(urls[index]) delete urls[index];
+        remove : function(url){
+            var self = this,urls = self.get('urls'),
+                isExist = self.isExist(url) ;
+            if(!isExist) return false;
+            urls = S.filter(urls,function(sUrl){
+                return sUrl != url;
+            });
             self.set('urls',urls);
             self._val();
             return urls;
