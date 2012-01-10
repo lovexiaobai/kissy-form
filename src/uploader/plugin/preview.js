@@ -2,20 +2,22 @@
  * @fileoverview 文件本地预览组件
  * @author 紫英（橘子）<daxingplay@gmail.com>
  * @date 2012-01-10
+ * @requires KISSY 1.2+
  */
 
-KISSY.add('sh/mods/preview/upload-preview', function(S){
+KISSY.add(function(S){
 	
 	var D = S.DOM,
-		E = S.Event;
+		E = S.Event,
+		LOG_PRE = '[Plugin: Preview] ';
 		
-	var UploaderPreview = function(config){
+	function UploaderPreview(config){
 		var self = this,
 			_config = {
 				mode: 'filter',
 				maxWidth: 40,
 				maxHeight: 40,
-				// TODO 
+				// TODO change it to on and fire
 				// use this to check whether the file uploaded is what you want, for example, I can check whether the file uploaded by user is image.
 				onCheck: function(){
 					return 1;
@@ -39,13 +41,6 @@ KISSY.add('sh/mods/preview/upload-preview', function(S){
 			'show': 'show',
 			'error': 'error'
 		};
-		/*
-		self.func = {
-			check: 'check',
-			show: 'show',
-			err: 'error'
-		};
-		*/
 		
 		// prefer to use html5 file api
 		if(typeof window.FileReader === "undefined"){
@@ -53,12 +48,6 @@ KISSY.add('sh/mods/preview/upload-preview', function(S){
 				case 'firefox':
 					_config.mode = 'domfile';
 					break;
-				// case 'opera':
-				// case 'chrome':
-				// case 'safari':
-					// _config.mode = 'html5';
-					// //_config.preview = false;
-					// break;
 				case 'ie':
 					switch(S.UA.ie){
 						case 6:
@@ -66,6 +55,7 @@ KISSY.add('sh/mods/preview/upload-preview', function(S){
 							break;
 						case 8:
 						case 7:
+						// IE 9 and above should also use filter mode.
 						default:
 							_config.mode = 'filter';
 							break;
@@ -82,13 +72,15 @@ KISSY.add('sh/mods/preview/upload-preview', function(S){
 		
 		self.config = S.mix(_config, config);
 		
-		S.log('Preview initialized.');
+		S.log(LOG_PRE + 'Preview initialized.');
 	}
 	
 	S.augment(UploaderPreview, S.EventTarget, {
 		
 		preview: function(file, img){
-			var self = this, doc = document, showFunc;
+			var self = this, 
+				doc = document, 
+				showFunc;
 			
 			// the html element of the input(type="file")
 			self.file = file;
