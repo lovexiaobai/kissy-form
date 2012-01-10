@@ -108,7 +108,10 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
                     callback && callback.call(self, id);
                     self.fire(Queue.event.REMOVE, {id:id, file:file});
                 });
-                delete files[id];
+                //将该id的文件过滤掉
+                files = S.filter(files,function(file){
+                    return file.id !== id;
+                });
                 self.set('files', files);
             }
             return file;
