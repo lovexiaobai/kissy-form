@@ -36,23 +36,16 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
         },
         /**
          * 转换文件大小字节数
-         * @param {Number} size 文件大小字节数
+         * @param {Number} bytes 文件大小字节数
          * @return {String} 文件大小
          */
-        convertByteSize : function(size){
-            var byteSize = Math.round(size / 1024 * 100) * .01,
-            	suffix = 'kb';
-            if (byteSize > 1000) {
-                byteSize = Math.round(byteSize *.001 * 100) * .01;
-                suffix = 'mb';
-            }
-            sizeParts = byteSize.toString().split('.');
-            if (sizeParts.length > 1) {
-                byteSize = sizeParts[0] + '.' + sizeParts[1].substr(0,2);
-            } else {
-                byteSize = sizeParts[0];
-            }
-            return byteSize+ suffix;
+        convertByteSize : function(bytes){
+            var i = -1;
+            do {
+                bytes = bytes / 1024;
+                i++;
+            } while (bytes > 99);
+            return Math.max(bytes, 0.1).toFixed(1) + ['kB', 'MB', 'GB', 'TB', 'PB', 'EB'][i];
         }
     });
     //继承于Base，属性getter和setter委托于Base处理
