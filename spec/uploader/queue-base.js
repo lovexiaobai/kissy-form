@@ -40,5 +40,9 @@ KISSY.use('form/uploader/queue/base', function (S, Queue) {
             var file = queue.getFile(1);
             expect(file.name).not.toBeUndefined();
         });
+        it('成功获取指定状态下的文件',function(){
+            var files = queue.getFiles('waiting');
+            expect(files.length).toBeGreaterThan(0);
+        })
     })
 });

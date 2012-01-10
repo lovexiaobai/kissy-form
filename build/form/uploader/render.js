@@ -726,8 +726,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          */
         fileStatus:function (id, status, args) {
             if (!S.isNumber(id)) return false;
-            var self = this, files = self.get('files'), file = self.getFile(id),
-                st = Queue.status, oStatus;
+            var self = this, file = self.getFile(id),oStatus;
             if (!S.isPlainObject(file)) return false;
             //状态实例
             oStatus = file['status'];
@@ -785,6 +784,21 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             return waitFileIds;
         },
         /**
+         * 获取指定状态下的文件
+         * @param {String} status
+         */
+        getFiles : function(status){
+            var self = this,files = self.get('files'),oStatus,statusFiles = [];
+            if(!files.length) return false;
+            S.each(files,function(file){
+                if(file){
+                    oStatus = file.status;
+                    oStatus.get('curType') == status && statusFiles.push(file);
+                }
+            });
+            return statusFiles;
+        },
+        /**
          * 添加文件时先向文件数据对象追加id、target、size等数据
          * @param {Object} file 文件数据对象
          * @return {Object} 新的文件数据对象
@@ -807,10 +821,6 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             file.target = self._appendFileHtml(file);
             //状态实例
             file.status = self._renderStatus(file);
-            if (S.isObject(uploader)) file.status.set('uploader', uploader);
-            files[autoId] = file;
-            //状态实例
-            file.status = self._renderStatus(file);
             //传递Uploader实例给Status
             if (S.isObject(uploader)) file.status.set('uploader', uploader);
             files[autoId] = file;
@@ -820,7 +830,6 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             //增加文件id编号
             self.set('id', autoId + 1);
             return file;
-
         },
         /**
          * 向列表添加li元素（文件信息）
