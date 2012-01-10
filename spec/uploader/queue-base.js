@@ -38,7 +38,7 @@ KISSY.use('form/uploader/queue/base', function (S, Queue) {
             queue.add(testFile);
 */
             var file = queue.getFile(1);
-            expect(file.name).toBeUndefined();
+            expect(file.name).not.toBeUndefined();
         });
     })
 });

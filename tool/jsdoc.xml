@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+@author:剑平（明河）<minghe36@126.com>
+-->
+<project name="doc" default="render" basedir=".">
+    <!--jsdoc-toolkit所在目录-->
+    <property name="jsdoc.dir" location="jsdoc-toolkit/" />
+    <!--源代码目录-->
+    <property name="src.dir" location="../src/" />
+    <!--文档输出目录-->
+    <property name="output.dir" location="../doc/" />
+    <target name="render">
+        <taskdef name="jsdoctoolkit" classname="uk.co.darrenhurley.ant.tasks.JsDocToolkit" classpath="${jsdoc.dir}/jsdoc-toolkit-ant-task-1.1.2.jar;${jsdoc.dir}/java/classes/js.jar"></taskdef>
+        <jsdoctoolkit template="kissy" jsdochome="${jsdoc.dir}/" outputdir="${output.dir}/" inputdir="${src.dir}" encoding="utf-8">
+
+        </jsdoctoolkit>
+    </target>
+</project>

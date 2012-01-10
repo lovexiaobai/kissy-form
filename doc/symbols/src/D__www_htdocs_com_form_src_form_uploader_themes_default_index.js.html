@@ -1,0 +1,45 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="NAME">KISSY.add</span><span class="PUNC">(</span><span class="STRN">'form/uploader/themes/default/index'</span><span class="PUNC">,</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">S</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">Node</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">Base</span><span class="PUNC">,</span><span class="NAME">Queue</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">EMPTY</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">''</span><span class="PUNC">,</span><span class="NAME">$</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Node.all</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="WHIT">    </span><span class="COMM">/**
+<span class='line'>  4</span>      * @name DefaultTheme
+<span class='line'>  5</span>      * @class 上传组件默认模板
+<span class='line'>  6</span>      * @constructor
+<span class='line'>  7</span>      * @extends Base
+<span class='line'>  8</span>      * @requires Node
+<span class='line'>  9</span>      */</span><span class="WHIT">
+<span class='line'> 10</span> </span><span class="WHIT">    </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">DefaultTheme</span><span class="PUNC">(</span><span class="NAME">config</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 11</span> </span><span class="WHIT">        </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">self</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 12</span> </span><span class="WHIT">        </span><span class="COMM">//调用父类构造函数</span><span class="WHIT">
+<span class='line'> 13</span> </span><span class="WHIT">        </span><span class="NAME">DefaultTheme.superclass.constructor.call</span><span class="PUNC">(</span><span class="NAME">self</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">config</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 14</span> </span><span class="WHIT">        </span><span class="NAME">self._init</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 15</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 16</span> 
+<span class='line'> 17</span> </span><span class="WHIT">    </span><span class="NAME">S.extend</span><span class="PUNC">(</span><span class="NAME">DefaultTheme</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">Base</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="COMM">/** @lends DefaultTheme.prototype*/</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 18</span> </span><span class="WHIT">        </span><span class="COMM">/**
+<span class='line'> 19</span>          * 初始化
+<span class='line'> 20</span>          */</span><span class="WHIT">
+<span class='line'> 21</span> </span><span class="WHIT">        </span><span class="NAME">_init</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 22</span> </span><span class="WHIT">            </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">self</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">,</span><span class="NAME">queueTarget</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">self.get</span><span class="PUNC">(</span><span class="STRN">'queueTarget'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="NAME">queue</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 23</span> </span><span class="WHIT">            </span><span class="NAME">queue</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">Queue</span><span class="PUNC">(</span><span class="NAME">queueTarget</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 24</span> </span><span class="WHIT">            </span><span class="NAME">self.set</span><span class="PUNC">(</span><span class="STRN">'queue'</span><span class="PUNC">,</span><span class="NAME">queue</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 25</span> </span><span class="WHIT">        </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 26</span> </span><span class="WHIT">        </span><span class="COMM">/**
+<span class='line'> 27</span>          * 在上传组件运行完毕后执行的方法（对上传组件所有的控制都应该在这个函数内）
+<span class='line'> 28</span>          * @param {Uploader} uploader
+<span class='line'> 29</span>          */</span><span class="WHIT">
+<span class='line'> 30</span> </span><span class="WHIT">        </span><span class="NAME">afterUploaderRender</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">uploader</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 31</span> 
+<span class='line'> 32</span> </span><span class="WHIT">        </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 33</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="NAME">ATTRS</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="COMM">/** @lends DefaultTheme*/</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 34</span> </span><span class="WHIT">        </span><span class="NAME">queueTarget</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="NAME">value</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">EMPTY</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 35</span> </span><span class="WHIT">        </span><span class="NAME">queue</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="NAME">value</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">EMPTY</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 36</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 37</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">DefaultTheme</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 38</span> </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="NAME">requires</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="STRN">'node'</span><span class="PUNC">,</span><span class="STRN">'base'</span><span class="PUNC">,</span><span class="STRN">'../../queue/base'</span><span class="PUNC">,</span><span class="STRN">'./style.css'</span><span class="PUNC">]</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span></pre></body></html>
