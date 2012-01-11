@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>queue队列方法测试</title>
+<link rel="stylesheet" type="text/css" href="http://docs.kissyui.com/kissy-dpl/base/build/css/dpl-pkg.css"/>
+<link rel="stylesheet" type="text/css" href="assets/demo.css"/>
+<script src="http://a.tbcdn.cn/s/kissy/1.2.0/kissy.js" charset="utf-8"></script>
+</head>
+<body>
+<article id="doc">
+    <h4>queue队列方法测试</h4>
+    <p>这个demo只单独使用queue模板，测试queue的方法和属性。</p>
+    <!-- 队列 -->
+    <ul id="J_Queue">
+
+    </ul>
+    <div class="btn-wrapper">
+        <input id="J_Add" type="button" value="添加一个文件">
+        <input id="J_DelFirst" type="button" value="删除第一个文件">
+        <input id="J_Clear" type="button" value="删除所有文件">
+        <input id="J_GetAll" type="button" value="获取所有文件id">
+        <input id="J_ChangeStatus" type="button" value="改变第一个文件状态为success">
+        <input id="J_GetStatusFileIds" type="button" value="获取所有等待状态的文件id">
+        <input id="J_GetStatusFilesIndex" type="button" value="获取所有等待状态文件index">
+    </div>
+
+</article>
+<script>
+    var S = KISSY,$ = S.Node.all;
+    S.config({
+           packages:[ {
+               name:"form",
+               path:"../../../",
+               charset:"utf-8"
+           } ]
+    });
+    //加载队列模块
+    S.use('form/uploader/queue/base,form/uploader/themes/default/style.css', function (S, Queue) {
+        var queue = new Queue('#J_Queue');
+        queue.render();
+
+        $('#J_Add').on('click',function(ev){
+            //测试文件数据
+            var testFile = {'name' : 'test.jpg',
+                            'size' : 2000,
+                            'input' : {},
+                            'file' : {'name' : 'test.jpg','type' : 'image/jpeg','size' : 2000}
+            };
+            //向队列添加文件
+            queue.add(testFile);
+        });
+        $('#J_DelFirst').on('click',function(ev){
+            queue.remove(0);
+        });
+        $('#J_Clear').on('click',function(ev){
+            queue.clear();
+        });
+        $('#J_GetAll').on('click',function(ev){
+            var ids = [],
+                files = queue.get('files');
+            S.each(files,function(file){
+                ids.push(file.id);
+            });
+            alert('所有文件id：' + ids);
+        });
+        $('#J_ChangeStatus').on('click',function(ev){
+            queue.fileStatus(0,'success');
+        });
+        $('#J_GetStatusFileIds').on('click',function(ev){
+            var files = queue.getFiles('waiting'),
+                ids = [];
+            S.each(files,function(file){
+                ids.push(file.id);
+            });
+            alert('所有等待中的文件id为：' + ids);
+        });
+        $('#J_GetStatusFilesIndex').on('click',function(){
+            var indexs = queue.getFileIds('waiting');
+            alert('所有等待中的文件index为：' + indexs);
+        })
+    })
+</script>
+
+<!-- 代码高亮 START  -->
+<link href='../../../../tool/syntaxhighlighter_3.0.83/sh.css' rel='stylesheet' type='text/css' />
+<script type="text/javascript" src="../../../../tool/syntaxhighlighter_3.0.83/sh.js"></script>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+<!-- 代码高亮 END  -->
+</body>
+</html>

@@ -124,7 +124,7 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         uploadWaitFile : function(){
             var self = this,queue = self.get('queue'),
-                waitFileIds = queue.getWaitFileIds();
+                waitFileIds = queue.getFileIds('waiting');
             //没有等待上传的文件
             if(!waitFileIds.length){
                 self.set('isUploadWaitFiles',false);
@@ -132,7 +132,7 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
                 return false;
             }
             //开始上传等待中的文件
-            self.upload(waitFileIds[0]);
+            self.upload(0);
         },
         /**
          * 是否支持ajax方案上传

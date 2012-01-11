@@ -37,12 +37,10 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         event:{
             //添加完一个文件后的事件
             ADD:'add',
-            //添加多个文件后的事件
-            ADD_ALL:'addAll',
             //删除文件后触发
             REMOVE:'remove',
-            // 队列满时触发
-            QUEUE_FULL:'queueFull'
+            //清理队列所有的文件后触发
+            CLEAR : 'clear'
         },
         /**
          * 文件的状态
@@ -55,7 +53,8 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         hook:{
             //状态
             STATUS:'.J_FileStatus'
-        }
+        },
+        FILE_ID_PREFIX : 'file-'
     });
     //继承于Base，属性getter和setter委托于Base处理
     S.extend(Queue, Base, /** @lends Queue.prototype*/{
@@ -75,46 +74,74 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          */
         add:function (file, callback) {
             var self = this, event = Queue.event,
-                //预置文件id
-                autoId = self.get('id'),
-                duration = self.get('duration');
+                duration = self.get('duration'),
+                index;
             if (!S.isObject(file)) {
                 S.log(LOG_PREFIX + 'add()参数file不合法！');
                 return false;
             }
             //设置文件对象
             file = self._setAddFileData(file);
+            index = self.getFileIndex(file.id);
             //更换文件状态为等待
-            self.fileStatus(autoId, Queue.status.WAITING);
+            self.fileStatus(index, Queue.status.WAITING);
             //显示文件信息li元素
             file.target.fadeIn(duration, function () {
-                callback && callback.call(self, autoId, file);
-                self.fire(event.ADD, {id:autoId, file:file, target:file.target});
+                callback && callback.call(self, index, file);
+                self.fire(event.ADD, {index:index, file:file, target:file.target});
             });
-            return autoId;
+            return file;
         },
         /**
          * 删除队列中指定id的文件
-         * @param {Number} id 文件id
+         * @param {Number} indexOrFileId 文件数组索引或文件id
          * @param {Function} callback 删除元素后执行的回调函数
          */
-        remove:function (id, callback) {
-            var self = this, files = self.get('files'), file = files[id], $file,
+        remove:function (indexOrFileId, callback) {
+            var self = this, files = self.get('files'), file, $file,
                 duration = self.get('duration');
-            if (S.isObject(file)) {
-                $file = file.target;
-                $file.fadeOut(duration, function () {
-                    $file.remove();
-                    callback && callback.call(self, id);
-                    self.fire(Queue.event.REMOVE, {id:id, file:file});
-                });
-                //将该id的文件过滤掉
-                files = S.filter(files,function(file){
-                    return file.id !== id;
-                });
-                self.set('files', files);
+            //参数是字符串，说明是文件id，先获取对应文件数组的索引
+            if(S.isString(indexOrFileId)){
+                indexOrFileId = self.getFileIndex(indexOrFileId);
+
             }
+            //文件数据对象
+            file = files[indexOrFileId];
+            if(!S.isObject(file)){
+                S.log(LOG_PREFIX + 'remove()不存在index为'+indexOrFileId + '的文件数据');
+                return false;
+            }
+            $file = file.target;
+            $file.fadeOut(duration, function () {
+                $file.remove();
+                callback && callback.call(self, file);
+                self.fire(Queue.event.REMOVE, {id:indexOrFileId, file:file});
+            });
+            //将该id的文件过滤掉
+            files = S.filter(files,function(file,i){
+                return i !== indexOrFileId;
+            });
+            S.log(files);
+            self.set('files', files);
             return file;
+        },
+        /**
+         * 清理队列
+         */
+        clear : function(){
+            var self = this,files;
+            _remove();
+            //移除元素
+            function _remove(){
+                files = self.get('files');
+                if(!files.length){
+                    self.fire(Queue.event.CLEAR);
+                    return false;
+                }
+                self.remove(0,function(){
+                    _remove();
+                });
+            }
         },
         /**
          * 获取或设置文件状态
@@ -144,6 +171,21 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             return file;
         },
         /**
+         * 根据文件id来查找文件在队列中的索引
+         * @param {String} fileId 文件id
+         * @return {Number} index
+         */
+        getFileIndex : function(fileId){
+            var self = this, files = self.get('files'),index = -1;
+            S.each(files,function(file,i){
+                if(file.id == fileId){
+                    index = i;
+                    return true;
+                }
+            });
+            return index;
+        },
+        /**
          * 更新文件数据对象，你可以追加数据
          * @param {Number} id 文件id
          * @param {Object} data 数据
@@ -165,8 +207,10 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         },
         /**
          * 获取等待状态的文件id数组
+         * param {String} type 状态类型
+         * @return {Array}
          */
-        getWaitFileIds:function () {
+        getFileIds:function (type) {
             var self = this, files = self.get('files'),
                 status, waitFileIds = [];
             if (!files.length) return waitFileIds;
@@ -174,7 +218,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
                 if (S.isObject(file)) {
                     status = file.status;
                     //文件状态
-                    if (status.get('curType') == status.constructor.type.WAITING) {
+                    if (status.get('curType') == type) {
                         waitFileIds.push(index);
                     }
                 }
@@ -183,7 +227,8 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         },
         /**
          * 获取指定状态下的文件
-         * @param {String} status
+         * @param {String} status 状态类型
+         * @return {Array}
          */
         getFiles : function(status){
             var self = this,files = self.get('files'),oStatus,statusFiles = [];
@@ -203,8 +248,6 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          */
         _setAddFileData:function (file) {
             var self = this,
-                //预置文件id
-                autoId = self.get('id'),
                 files = self.get('files'),
                 uploader = self.get('uploader');
             if (!S.isObject(file)) {
@@ -212,7 +255,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
                 return false;
             }
             //设置文件唯一id
-            file.id = autoId;
+            file.id = S.guid(Queue.FILE_ID_PREFIX);
             //转换文件大小单位为（kb和mb）
             if (file.size) file.textSize = Status.convertByteSize(file.size);
             //文件信息元素
@@ -221,12 +264,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             file.status = self._renderStatus(file);
             //传递Uploader实例给Status
             if (S.isObject(uploader)) file.status.set('uploader', uploader);
-            files[autoId] = file;
-            self.set('files', files);
-            //设置文件状态为等待上传
-            self.fileStatus(autoId, Queue.status.WAITING);
-            //增加文件id编号
-            self.set('id', autoId + 1);
+            files.push(file);
             return file;
         },
         /**
@@ -265,8 +303,13 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          * 动画速度
          */
         duration:{value:0.3},
+        /**
+         * 队列元素
+         */
         target:{value:EMPTY},
-        id:{value:0},
+        /**
+         * 文件信息数据
+         */
         files:{value:[]},
         //上传组件实例
         uploader:{value:EMPTY}
