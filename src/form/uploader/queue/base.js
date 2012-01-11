@@ -145,13 +145,13 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         },
         /**
          * 获取或设置文件状态
-         * @param {Number} id 文件id
+         * @param {Number} index 文件数组的索引值
          * @param {String} status 文件状态
          * @return {Object}
          */
-        fileStatus:function (id, status, args) {
-            if (!S.isNumber(id)) return false;
-            var self = this, file = self.getFile(id),oStatus;
+        fileStatus:function (index, status, args) {
+            if (!S.isNumber(index)) return false;
+            var self = this, file = self.getFile(index),oStatus;
             if (!S.isPlainObject(file)) return false;
             //状态实例
             oStatus = file['status'];
@@ -206,24 +206,24 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             return file;
         },
         /**
-         * 获取等待状态的文件id数组
+         * 获取等指定状态的文件id数组
          * param {String} type 状态类型
          * @return {Array}
          */
-        getFileIds:function (type) {
+        getIndexs:function (type) {
             var self = this, files = self.get('files'),
-                status, waitFileIds = [];
-            if (!files.length) return waitFileIds;
+                status, indexs = [];
+            if (!files.length) return indexs;
             S.each(files, function (file, index) {
                 if (S.isObject(file)) {
                     status = file.status;
                     //文件状态
                     if (status.get('curType') == type) {
-                        waitFileIds.push(index);
+                        indexs.push(index);
                     }
                 }
             });
-            return waitFileIds;
+            return indexs;
         },
         /**
          * 获取指定状态下的文件

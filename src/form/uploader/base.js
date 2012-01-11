@@ -124,7 +124,7 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         uploadWaitFile : function(){
             var self = this,queue = self.get('queue'),
-                waitFileIds = queue.getFileIds('waiting');
+                waitFileIds = queue.getIndexs('waiting');
             //没有等待上传的文件
             if(!waitFileIds.length){
                 self.set('isUploadWaitFiles',false);
