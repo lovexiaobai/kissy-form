@@ -7,23 +7,23 @@ KISSY.use('form/uploader/urlsInput', function (S, UrlsInput) {
         testUrl2 = 'http://www.36ria.com/test.png',
         html = '<input type="hidden" value="" name="fileUrls" id="J_FileUrls" />';
         $(html).appendTo('body');
-        it('³É¹¦ÊµÀı»¯UrlsInput£¬²¢´´½¨Ò»¸öinput', function () {
+        it('æˆåŠŸå®ä¾‹åŒ–UrlsInputï¼Œå¹¶åˆ›å»ºä¸€ä¸ªinput', function () {
             cUrlsInput = new UrlsInput('#J_UrlsInputWrapper', {name:"testInput"});
             cUrlsInput.render();
             expect(cUrlsInput.get('input').length).toEqual(1);
             expect($('#J_UrlsInputWrapper').children('input').length).toEqual(1);
         });
-        it('³É¹¦Ìí¼Óurl',function(){
+        it('æˆåŠŸæ·»åŠ url',function(){
             var $input = cUrlsInput.get('input');
             cUrlsInput.add(testUrl);
             expect($input.val()).toEqual(testUrl);
             expect(cUrlsInput.get('urls').length).toEqual(1);
         });
-        it('Èç¹û´æÔÚÏàÍ¬Â·¾¶²»ÖØ¸´Ìí¼Ó',function(){
+        it('å¦‚æœå­˜åœ¨ç›¸åŒè·¯å¾„ä¸é‡å¤æ·»åŠ ',function(){
             cUrlsInput.add(testUrl);
             expect(cUrlsInput.get('urls').length).toEqual(1);
         });
-        it('¸Ä±äÂ·¾¶·Ö¸î·û',function(){
+        it('æ”¹å˜è·¯å¾„åˆ†å‰²ç¬¦',function(){
             var $input = cUrlsInput.get('input'),
                 split = ':';
             cUrlsInput.set('split',split);
@@ -31,13 +31,13 @@ KISSY.use('form/uploader/urlsInput', function (S, UrlsInput) {
             expect(cUrlsInput.get('urls').length).toEqual(2);
             expect($input.val()).toEqual(testUrl + ':' + testUrl2);
         });
-        it('³É¹¦É¾³ıÂ·¾¶',function(){
+        it('æˆåŠŸåˆ é™¤è·¯å¾„',function(){
             var $input = cUrlsInput.get('input');
             cUrlsInput.remove(testUrl);
             expect(cUrlsInput.get('urls').length).toEqual(1);
             expect($input.val()).toEqual(testUrl2);
         });
-        it('ÒÑ¾­´æÔÚinput£¬ÊµÀı»¯×é¼ş',function(){
+        it('å·²ç»å­˜åœ¨inputï¼Œå®ä¾‹åŒ–ç»„ä»¶',function(){
             var urlsInput = new UrlsInput(null,{name : 'fileUrls'});
             urlsInput.render();
             expect(urlsInput.get('input').length).toEqual(1);

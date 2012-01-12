@@ -75,20 +75,20 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         add:function (file, callback) {
             var self = this, event = Queue.event,
                 duration = self.get('duration'),
-                index;
+                index,fileData = {};
             if (!S.isObject(file)) {
                 S.log(LOG_PREFIX + 'add()参数file不合法！');
                 return false;
             }
             //设置文件对象
-            file = self._setAddFileData(file);
-            index = self.getFileIndex(file.id);
+            fileData = self._setAddFileData(file);
+            index = self.getFileIndex(fileData.id);
             //更换文件状态为等待
             self.fileStatus(index, Queue.status.WAITING);
             //显示文件信息li元素
-            file.target.fadeIn(duration, function () {
-                callback && callback.call(self, index, file);
-                self.fire(event.ADD, {index:index, file:file, target:file.target});
+            fileData.target.fadeIn(duration, function () {
+                callback && callback.call(self, index, fileData);
+                self.fire(event.ADD, {index:index, file:fileData, target:fileData.target});
             });
             return file;
         },
@@ -121,7 +121,6 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             files = S.filter(files,function(file,i){
                 return i !== indexOrFileId;
             });
-            S.log(files);
             self.set('files', files);
             return file;
         },
@@ -187,26 +186,26 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         },
         /**
          * 更新文件数据对象，你可以追加数据
-         * @param {Number} id 文件id
+         * @param {Number} index 文件数组内的索引值
          * @param {Object} data 数据
          * @return {Object}
          */
-        updateFile:function (id, data) {
-            if (!S.isNumber(id)) return false;
+        updateFile:function (index, data) {
+            if (!S.isNumber(index)) return false;
             if (!S.isObject(data)) {
                 S.log(LOG_PREFIX + 'updateFile()的data参数有误！');
                 return false;
             }
             var self = this, files = self.get('files'),
-                file = self.getFile(id);
+                file = self.getFile(index);
             if (!file) return false;
             S.mix(file, data);
-            files[id] = file;
+            files[index] = file;
             self.set('files', files);
             return file;
         },
         /**
-         * 获取等指定状态的文件id数组
+         * 获取等指定状态的文件对应的文件数组index的数组
          * param {String} type 状态类型
          * @return {Array}
          */
