@@ -18,8 +18,7 @@ KISSY.add('form/uploader/queue/progressBar',function(S, Node, Base) {
         var self = this;
         //调用父类构造函数
         ProgressBar.superclass.constructor.call(self, config);
-        if(S.isString(wrapper)) self.set('wrapper',$(wrapper));
-        if(wrapper.length)  self.set('wrapper',wrapper);
+        self.set('wrapper',$(wrapper));
     }
     S.mix(ProgressBar, /** @lends ProgressBar.prototype*/{
         /**
@@ -39,7 +38,10 @@ KISSY.add('form/uploader/queue/progressBar',function(S, Node, Base) {
          * 组件支持的事件
          */
         event : {
-            RENDER : 'render'
+            RENDER : 'render',
+            CHANGE : 'change',
+            SHOW : 'show',
+            HIDE : 'hide'
         }
     });
     //继承于Base，属性getter和setter委托于Base处理
@@ -48,26 +50,36 @@ KISSY.add('form/uploader/queue/progressBar',function(S, Node, Base) {
          * 运行
          */
         render : function() {
-            var self = this,$wrapper = self.get('wrapper');
+            var self = this,$wrapper = self.get('wrapper'),
+                width = self.get('width');
             if(!$wrapper.length) return false;
             //给容器添加ks-progress-bar样式名
-            $wrapper.addClass(ProgressBar.cls.PROGRESS_BAR);
+            $wrapper.addClass(ProgressBar.cls.PROGRESS_BAR)
+                    .width(width);
             self._addAttr();
+            !self.get('visible') && self.hide();
             self.set('bar',self._create());
+            self.fire(ProgressBar.event.RENDER);
         },
         /**
          * 显示进度条
          */
         show : function(){
             var self = this,$wrapper = self.get('wrapper');
-            $wrapper.fadeIn(0.3);
+            $wrapper.fadeIn(self.get('duration'),function(){
+                self.set('visible',true);
+                self.fire(ProgressBar.event.SHOW,{visible : true});
+            });
         },
         /**
          * 隐藏进度条
          */
         hide : function(){
             var self = this,$wrapper = self.get('wrapper');
-            $wrapper.fadeOut(0.3);
+            $wrapper.fadeOut(self.get('duration'),function(){
+                self.set('visible',false);
+                self.fire(ProgressBar.event.HIDE,{visible : false});
+            });
         },
         /**
          * 创建进度条
@@ -104,6 +116,10 @@ KISSY.add('form/uploader/queue/progressBar',function(S, Node, Base) {
          */
         bar : {value : EMPTY},
         /**
+         * 进度条宽度
+         */
+        width : { value:100 },
+        /**
          * 当前进度
          */
         value : {
@@ -119,9 +135,20 @@ KISSY.add('form/uploader/queue/progressBar',function(S, Node, Base) {
                 $bar.animate({'width':width + 'px'},speed,'none',function(){
                     $wrapper.attr(ARIA_VALUENOW,v);
                     $bar.attr(DATA_VALUE,v);
+                    self.fire(ProgressBar.event.CHANGE,{value : v,width : width});
                 });
                 return v;
             }
+        },
+        /**
+         * 控制进度条的可见性
+         */
+        visible : { value:true },
+        /**
+         * 显隐动画的速度
+         */
+        duration : {
+          value : 0.3
         },
         /**
          * 模板
