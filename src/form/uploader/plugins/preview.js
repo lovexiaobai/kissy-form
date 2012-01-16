@@ -1,6 +1,6 @@
 /**
- * @fileoverview 文件本地预览组件
- * @author 紫英（橘子）<daxingplay@gmail.com>
+ * @fileoverview 鏈湴鍥剧墖棰勮缁勪欢
+ * @author 绱嫳锛堟瀛愶級<daxingplay@gmail.com>
  * @date 2012-01-10
  * @requires KISSY 1.2+
  */
@@ -271,7 +271,7 @@ KISSY.add(function(S){
 								// alert(tempImg.fileSize);
 							// }
 							// if(fileSize/1024 > 500){
-								// alert('图片大小不能超过500K!');
+								// alert('图片锟斤拷小锟斤拷锟杰筹拷锟斤拷500K!');
 							// }
 							// tempImg = null;
 						self.data = data;
