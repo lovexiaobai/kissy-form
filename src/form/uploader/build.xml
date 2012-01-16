@@ -1,0 +1,78 @@
+<project name="uploader.build" default="build" basedir="." xmlns:ac="antlib:net.sf.antcontrib">
+    <description>Uploader Build File</description>
+
+    <property name="charset" value="utf-8"/>
+    <property name="tool.dir" location="../../../tool"/>
+    <property name="compiler" location="${tool.dir}/closure-compiler/compiler.jar"/>
+    <property name="form.build.dir" location="../../../build/form"/>
+    <property name="src.dir" location="."/>
+    <property name="uploader.build.dir" location="${form.build.dir}/uploader"/>
+
+
+    <target name="concat">
+        <concat destfile="render-pkg.js" encoding="${charset}" outputencoding="${charset}">
+            <fileset dir="${src.dir}" includes="**/*.js" excludes="tests/*.js,demo/**/*.js,auth/*.js"/>
+            <filterchain>
+                <deletecharacters chars="&#xFEFF;"/>
+            </filterchain>
+        </concat>
+    </target>
+    <target name="move">
+        <move file="render-pkg.js" tofile="${uploader.build.dir}/render.js"/>
+    </target>
+    <target name="clean-build">
+        <delete>
+            <fileset dir="${uploader.build.dir}" includes="**/*.js,**/*.css"/>
+        </delete>
+    </target>
+    <target name="themes">
+        <copy todir="${uploader.build.dir}/themes" overwrite="true">
+            <fileset dir="${src.dir}/themes"/>
+        </copy>
+        <delete>
+            <fileset dir="${uploader.build.dir}/themes" includes="**/*.js,**/*.html"/>
+        </delete>
+    </target>
+<!--
+    <target name="concat-theme">
+        <ac:for param="file">
+            <path>
+                 <fileset dir="${src.dir}/themes" includes="**/index.js" excludes="default/index.js"/>
+             </path>
+             <sequential>
+                    <ac:var name="var.dir" unset="true"/>
+                    <dirname  property="var.dir" file="@{file}"/>
+                    <echo>concat ${var.dir}</echo>
+                    <concat destfile="${var.dir}/index-pkg.js" encoding="${charset}" outputencoding="${charset}">
+                             <fileset dir="${var.dir}" includes="*.js"/>
+                             <filterchain>
+                                 <deletecharacters chars="&#xFEFF;"/>
+                             </filterchain>
+                     </concat>
+            </sequential>
+        </ac:for>
+    </target>
+-->
+    <!--压缩前去除页面多余空白-->
+    <target name="crlf">
+        <fixcrlf includes="*.js" srcdir="${uploader.build.dir}" encoding="utf8" eol="crlf"></fixcrlf>
+    </target>
+    <!--压缩脚本-->
+    <target name="minify" depends="crlf">
+        <apply executable="java" verbose="true" dest="${uploader.build.dir}" failonerror="true" parallel="false">
+            <fileset dir="${uploader.build.dir}" includes="**/*.js"/>
+            <arg line="-jar"/>
+            <arg path="${compiler}"/>
+            <arg line="--charset utf8"/>
+            <arg value="--warning_level"/>
+            <arg value="QUIET"/>
+            <arg value="--js"/>
+            <srcfile/>
+            <arg value="--js_output_file"/>
+            <targetfile/>
+            <mapper type="regexp" from="^(.*)\.js$" to="\1-min.js"/>
+        </apply>
+    </target>
+    <target name="build" depends="concat,clean-build,move,themes,minify">
+    </target>
+</project>
