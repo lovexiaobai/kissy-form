@@ -100,14 +100,16 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
         _waiting : function() {
             var self = this, tpl = self.get('tpl'),waitingTpl = tpl.waiting,
                 uploader = self.get('uploader'),
+                queue = self.get('queue'),
                 //文件id
                 file = self.get('file'),id = file.id,
+                index = queue.getFileIndex(id),
                 $content = self._changeDom(waitingTpl),
                 $upload = $content.children('.J_Upload');
             $upload.on('click',function(ev){
                 ev.preventDefault();
                 if (!S.isObject(uploader)) return false;
-                uploader.upload(id);
+                uploader.upload(index);
             });
         },
         /**
@@ -129,7 +131,7 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
                 uploader.cancel();
             });
             //如果是ajax异步上传，加入进度条
-            if(uploadType == 'ajax'){
+            if(uploadType != 'iframe'){
                 var $progressBar = $content.children('.J_ProgressBar');
                 var progressBar = new ProgressBar($progressBar);
                 progressBar.render();

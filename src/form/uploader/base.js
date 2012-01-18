@@ -2,7 +2,7 @@
  * @fileoverview 异步文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
+KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, AjaxType,FlashType) {
     var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploader]:';
 
     /**
@@ -22,7 +22,7 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         /**
          * 上传方式
          */
-        type : {AUTO : 'auto',IFRAME : 'iframe',AJAX : 'ajax'},
+        type : {AUTO : 'auto',IFRAME : 'iframe',AJAX : 'ajax',FLASH : 'flash'},
         /**
          * 事件
          */
@@ -51,12 +51,17 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         render : function() {
             var self = this,serverConfig = self.get('serverConfig'),
                 UploadType = self.getUploadType(),uploadType,
-                uploaderTypeEvent = UploadType.event;
+                uploaderTypeEvent = UploadType.event,
+                button;
             if (!UploadType) return false;
             //路径input实例
             self.set('urlsInput',self._renderUrlsInput());
             self._renderQueue();
-            self._renderButton();
+            button = self._renderButton();
+            //如果是flash异步上传方案，增加swfUploader的实例作为参数
+            if(self.get('type') == Uploader.type.FLASH){
+                S.mix(serverConfig,{swfUploader:button.get('swfUploader')});
+            }
             //实例化上传方式类
             uploadType = new UploadType(serverConfig);
             //监听上传器上传完成事件
@@ -71,35 +76,36 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         },
         /**
          * 上传文件
-         * @param {Number} fileId 文件索引值
+         * @param {Number} index 文件对应的在上传队列数组内的索引值
          */
-        upload : function(fileId) {
-            if (!S.isNumber(fileId)) return false;
+        upload : function(index) {
+            if (!S.isNumber(index)) return false;
             var self = this,uploadType = self.get('uploadType'),
                 queue = self.get('queue'),
-                file = queue.get('files')[fileId],
-                fileInput;
+                file = queue.get('files')[index],
+                uploadParam;
             if (!S.isPlainObject(file)) {
-                S.log(LOG_PREFIX + '队列中不存在id为' + fileId + '的文件');
+                S.log(LOG_PREFIX + '队列中不存在id为' + index + '的文件');
                 return false;
             }
             //如果有文件正在上传，予以阻止上传
-            if(self.get('curUploadId') != EMPTY){
-                alert('有文件正在上传，请上传完后再操作！');
+            if(self.get('curUploadIndex') != EMPTY){
+                alert('第'+ self.get('curUploadIndex') +'文件正在上传，请上传完后再操作！');
                 return false;
             }
-            //文件上传域
-            fileInput = file.input;
+            //文件上传域，如果是flash上传,input为文件数据对象
+            uploadParam = file.input.id || file.input;
             //触发文件上传前事件
-            self.fire(Uploader.event.START, {id : fileId,file : file});
+            self.fire(Uploader.event.START, {index : index,file : file});
             //阻止文件上传
             if(!self.get('isAllowUpload')) return false;
             //设置当前上传的文件id
-            self.set('curUploadId', fileId);
+            self.set('curUploadIndex', index);
             //改变文件上传状态为start
-            queue.fileStatus(fileId, queue.constructor.status.START);
+            queue.fileStatus(index, queue.constructor.status.START);
+
             //开始上传
-            uploadType.upload(fileInput);
+            uploadType.upload(uploadParam);
         },
         /**
          * 取消上传
@@ -171,6 +177,9 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
                         S.log(LOG_PREFIX + '由于你的浏览器不支持ajax上传，强制降级为iframe！');
                     }
                     break;
+                case types.FLASH :
+                    UploadType = FlashType;
+                    break;
                 default :
                     S.log(LOG_PREFIX + 'type参数不合法，只允许配置值为' + types.AUTO + ',' + types.IFRAME + ',' + types.AJAX);
                     return false;
@@ -218,7 +227,7 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          * 选择完文件后
          */
         _select : function(ev) {
-            var self = this,autoUpload = self.get('autoUpload'),
+            /*var self = this,autoUpload = self.get('autoUpload'),
                 queue = self.get('queue'),
                 curId = self.get('curUploadId'),
                 //ev.files为文件域值改变触发返回的文件对象数组，默认是数组，由于不支持多选，这里只需要获取第一个文件即可
@@ -229,17 +238,28 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
                 fileSize = file.size || 0,
                 //文件对象
                 oFile = {name : fileName,input : ev.input,file : file,size : fileSize},
-                fileId;
-            self.set('curFileData',oFile);
-            self.fire(Uploader.event.SELECT,oFile);
+                fileId;*/
+            var self = this,autoUpload = self.get('autoUpload'),
+                queue = self.get('queue'),
+                curId = self.get('curUploadIndex'),
+                files = ev.files;
+            S.each(files,function(file){
+                //文件大小，IE浏览器下不存在
+                if(!file.size) file.size = 0;
+                //chrome文件名属性名为fileName，而firefox为name
+                if(!file.name) file.name = file.fileName || EMPTY;
+                //如果是flash上传，并不存在文件上传域input
+                file.input = ev.input || file;
+            });
+            self.fire(Uploader.event.SELECT,files);
             //阻止文件上传
             if(!self.get('isAllowUpload')) return false;
-            //向队列添加文件
-            fileId = queue.add(oFile);
-            //如果不存在正在上传的文件，且允许自动上传，上传该文件
-            if(curId === EMPTY){
-                autoUpload && self.upload(fileId);
-            }
+            queue.add(files,function(){
+                //如果不存在正在上传的文件，且允许自动上传，上传该文件
+                if(curId == EMPTY && autoUpload){
+                    self.upload(files);
+                }
+            });
         },
         /**
          * 向上传按钮容器内增加用于存储文件路径的input
@@ -256,22 +276,22 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         _uploadCompleteHanlder : function(ev) {
             var self = this,result = ev.result,status,event = Uploader.event,
-                queue = self.get('queue'),id = self.get('curUploadId');
+                queue = self.get('queue'),index = self.get('curUploadIndex');
             if (!S.isObject(result)) return false;
             //文件上传状态
             status = result.status;
             if (status) {
                 //修改队列中文件的状态为success（上传完成）
-                queue.fileStatus(id, queue.constructor.status.SUCCESS);
+                queue.fileStatus(index, queue.constructor.status.SUCCESS);
                 self._success(result.data);
                 self.fire(event.SUCCESS);
             } else {
                 //修改队列中文件的状态为error（上传失败）
-                queue.fileStatus(id, queue.constructor.status.ERROR);
+                queue.fileStatus(index, queue.constructor.status.ERROR);
                 self.fire(event.ERROR, {status : status});
             }
-            //置空当前上传id
-            self.set('curUploadId', EMPTY);
+            //置空当前上传的文件在队列中的索引值
+            self.set('curUploadIndex', EMPTY);
             self.fire(event.COMPLETE);
             //是否上传等待中的文件
             if(self.get('isUploadWaitFiles')) self.uploadWaitFile();
@@ -281,18 +301,18 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         _uploadStopHanlder : function(){
             var self = this,queue = self.get('queue'),
-                id = self.get('curUploadId');
+                index = self.get('curUploadIndex');
             //更改取消上传后的状态
-            queue.fileStatus(id, queue.constructor.status.CANCEL);
+            queue.fileStatus(index, queue.constructor.status.CANCEL);
             //重置当前上传文件id
-            self.set('curUploadId',EMPTY);
+            self.set('curUploadIndex',EMPTY);
         },
         /**
          * 上传进度监听器
          */
         _uploadProgressHandler : function(ev){
             var self = this,queue = self.get('queue'),
-                            id = self.get('curUploadId');
+                id = self.get('curUploadIndex');
             queue.fileStatus(id, queue.constructor.status.PROGRESS,ev);
         },
         /**
@@ -313,16 +333,6 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         },
         _error : function(){
 
-        },
-        /**
-         * 向文件数据对象，追加服务器端返回的文件url
-         * @param {Number} id 文件id
-         * @param {String} sUrl 服务器端返回的文件
-         */
-        _addFileServerUrl : function(id,sUrl){
-            if(!S.isNumber(id) || !S.isString(sUrl)) return false;
-            var self = this,queue = self.get('queue'),
-                file = queue.getFile(id);
         }
     }, {ATTRS : /** @lends Uploader*/{
         /**
@@ -353,14 +363,12 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          * 存储文件路径的隐藏域的name名
          */
         urlsInputName : {value : EMPTY},
-        //当前上传的id
-        curUploadId : {value : EMPTY},
-        //当前文件数据，格式类似{name : 'test.jpg',input : HTMLElement,file : []}
-        curFileData : {value : {}},
+        //当前上传的文件对应的在数组内的索引值
+        curUploadIndex : {value : EMPTY},
         uploadType : {value : {}},
         urlsInput : {value : EMPTY},
         //是否正在上传等待中的文件
         isUploadWaitFiles : {value : false}
     }});
     return Uploader;
-}, {requires:['base','node','./urlsInput','./type/iframe','./type/ajax']});
+}, {requires:['base','node','./urlsInput','./type/iframe','./type/ajax','./type/flash']});

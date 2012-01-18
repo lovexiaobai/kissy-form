@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>使用flash方案异步上传文件</title>
+<link rel="stylesheet" type="text/css" href="http://docs.kissyui.com/kissy-dpl/base/build/css/dpl-pkg.css"/>
+<link rel="stylesheet" type="text/css" href="assets/demo.css"/>
+<script src="http://a.tbcdn.cn/s/kissy/1.2.0/kissy.js" charset="utf-8"></script>
+</head>
+<body>
+<article id="doc">
+    <h4>使用flash方案异步上传文件</h4>
+
+    <!-- 上传按钮，组件配置请写在data-config内 -->
+    <a id="J_UploaderBtn" class="g-u uploader-button uploader-button-focus" data-config=
+            '{"type" : "flash",
+                "theme" : "form/uploader/themes/default",
+                "autoUpload" : true,
+                "serverConfig":{"action":"http://localhost/com/form/src/form/uploader/demo/upload.php","data":{"dir":"files/"},"dataType" : "json"},
+                "name":"Filedata",
+                "urlsInputName":"fileUrls"}'
+       href="#">
+        选择要上传的文件
+    </a>
+    <!-- 文件上传队列 -->
+    <ul id="J_UploaderQueue">
+
+    </ul>
+</article>
+<script>
+    var S = KISSY;
+    S.config({
+           packages:[ {
+               name:"form",
+               path:"../../../",
+               charset:"utf-8"
+           } ]
+    });
+    //加载上传组件入口文件
+    S.use('form/uploader/render', function (S, RenderUploader) {
+        //第一个参数：按钮元素钩子，第二个参数：队列元素钩子
+        var ru = new RenderUploader('#J_UploaderBtn', '#J_UploaderQueue');
+    })
+</script>
+
+<!-- 代码高亮 START  -->
+<link href='../../../../tool/syntaxhighlighter_3.0.83/sh.css' rel='stylesheet' type='text/css' />
+<script type="text/javascript" src="../../../../tool/syntaxhighlighter_3.0.83/sh.js"></script>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+<!-- 代码高亮 END  -->
+</body>
+</html>

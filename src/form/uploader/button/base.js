@@ -43,7 +43,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
                 target = self.get('target'),
                 render = self.fire(Button.event.beforeRender);
             if (render === false) {
-                S.log(LOG_PREFIX + 'button render was prevented.')
+                S.log(LOG_PREFIX + 'button render was prevented.');
                 return false;
             } else {
                 if (target == null) {
