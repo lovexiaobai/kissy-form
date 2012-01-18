@@ -136,6 +136,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             fileInput = $(inputContainer).children('input');
             // TODO: 开启多选上传
             // multiple && DOM.attr('multiple', 'multiple');
+            fileInput.attr('multiple','multiple');
             //上传框的值改变后触发
             $(fileInput).on('change', self._changeHandler, self);
             //DOM.hide(fileInput);
@@ -151,13 +152,19 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
         _changeHandler : function(ev) {
             var self = this,
                 fileInput = self.get('fileInput'),
-                value = $(fileInput).val();
+                value = $(fileInput).val(),
+                oFiles = ev.target.files,files = [];
             if (value == EMPTY) {
                 S.log(LOG_PREFIX + 'No file selected.');
                 return false;
             }
+            S.each(oFiles,function(v){
+                if(S.isObject(v)){
+                    files.push({'name' : v.name,'type' : v.type,'size' : v.size});
+                }
+            });
             self.fire(Button.event.CHANGE, {
-                files: ev.target.files,
+                files: files,
                 input: $(fileInput).clone().getDOMNode()
             });
             S.log(LOG_PREFIX + 'button change event was fired just now.');

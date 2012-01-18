@@ -70,7 +70,6 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         /**
          * 向上传队列添加文件
          * @param {Object | Array} files 文件数据，传递数组时为批量添加
-         * @return {NodeList} 文件节点
          */
         add:function (files, callback) {
             var self = this, event = Queue.event;
@@ -86,8 +85,6 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
                     self.fire(event.ADD, {index:index, file:fileData, target:fileData.target});
                 });
             }
-
-            return file;
         },
         /**
          * 向队列添加个文件
@@ -117,8 +114,8 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          * @param {Function} callback 全部添加完毕后执行的回调函数
          */
         _addFiles : function(files,callback){
-            if (!S.isArray(files) || !files.length) {
-                S.log(LOG_PREFIX + '_addFiles()参数file不合法！');
+            if (!files.length) {
+                S.log(LOG_PREFIX + '_addFiles()参数files不合法！');
                 return false;
             }
             var self = this;
