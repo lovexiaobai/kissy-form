@@ -130,15 +130,15 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         uploadWaitFile : function(){
             var self = this,queue = self.get('queue'),
-                waitFileIds = queue.getIndexs('waiting');
+                waitFileIndexs = queue.getIndexs('waiting');
             //没有等待上传的文件
-            if(!waitFileIds.length){
+            if(!waitFileIndexs.length){
                 self.set('isUploadWaitFiles',false);
                 self.fire(Uploader.event.UPLOAD_ALL);
                 return false;
             }
             //开始上传等待中的文件
-            self.upload(0);
+            self.upload(waitFileIndexs[0]);
         },
         /**
          * 是否支持ajax方案上传
@@ -181,7 +181,7 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
                     UploadType = FlashType;
                     break;
                 default :
-                    S.log(LOG_PREFIX + 'type参数不合法，只允许配置值为' + types.AUTO + ',' + types.IFRAME + ',' + types.AJAX);
+                    S.log(LOG_PREFIX + 'type参数不合法，只允许配置值为' + types.AUTO + ',' + types.IFRAME + ',' + types.AJAX+ ',' + types.FLASH);
                     return false;
             }
             return UploadType;
@@ -227,18 +227,6 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          * 选择完文件后
          */
         _select : function(ev) {
-            /*var self = this,autoUpload = self.get('autoUpload'),
-                queue = self.get('queue'),
-                curId = self.get('curUploadId'),
-                //ev.files为文件域值改变触发返回的文件对象数组，默认是数组，由于不支持多选，这里只需要获取第一个文件即可
-                file = ev.files[0],
-                //chrome文件名属性名为fileName，而firefox为name
-                fileName = file.fileName || file.name,
-                //文件大小，IE浏览器下不存在
-                fileSize = file.size || 0,
-                //文件对象
-                oFile = {name : fileName,input : ev.input,file : file,size : fileSize},
-                fileId;*/
             var self = this,autoUpload = self.get('autoUpload'),
                 queue = self.get('queue'),
                 curId = self.get('curUploadIndex'),
@@ -257,7 +245,7 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
             queue.add(files,function(){
                 //如果不存在正在上传的文件，且允许自动上传，上传该文件
                 if(curId == EMPTY && autoUpload){
-                    self.upload(files);
+                    self.uploadAll();
                 }
             });
         },

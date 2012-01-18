@@ -85,13 +85,12 @@ KISSY.add('form/uploader/type/flash', function (S, Node, UploadType, swfUploader
          * @param {Object} ev
          */
         _uploadCompleteDataHandler : function(ev){
-            var result;
+            var self = this,result;
             try {
                 result = JSON.parse(ev.data);
             } catch(err) {
                 S.log(LOG_PREFIX + 'json数据格式不合法！');
                 self.fire(FlashType.event.ERROR, {msg : '不是合法的json数据'});
-                return false;
             }
             self.set('uploadingId',EMPTY);
             self.fire(FlashType.event.SUCCESS, {result : result});
