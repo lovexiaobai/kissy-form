@@ -48,7 +48,7 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
                 $target = self.get('target'),
                 swfUploader,
                 multiple = self.get('multiple'),
-                fileFilters = self.get('fileFilters');
+                fileFilters = self.get('fileFilters') ;
             $target.css('position', 'relative');
             self._createSwfWrapper();
             self._setFlashSizeConfig();
@@ -59,6 +59,7 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
             self._bindBtnEvent();
             //监听选择文件后事件
             swfUploader.on('fileSelect', self._changeHandler, self);
+            self._setDisabled();
         },
         /**
          * 创建flash容器
@@ -124,6 +125,18 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
         _changeHandler:function (ev) {
             var self = this, files = ev.fileList;
             self.fire(SwfButton.event.CHANGE, {files:files});
+        },
+        /**
+         * 设置上传组件的禁用
+         * @return {Boolean}
+         */
+        _setDisabled : function(){
+            var self = this,
+                disabled = self.get('disabled'),
+                swfUploader = self.get('swfUploader');
+            if(!swfUploader || !S.isBoolean(disabled)) return false;
+            swfUploader[disabled && 'lock' || 'unlock']();
+            return disabled;
         }
     }, {ATTRS:/** @lends SwfButton*/{
         /**
@@ -162,6 +175,19 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
                 var self = this, swfUploader = self.get('swfUploader');
                 if (swfUploader && S.isArray(v)) {
                     swfUploader.filter(v);
+                }
+                return v;
+            }
+        },
+        /**
+         * 禁用按钮
+         */
+        disabled : {
+            value : false,
+            setter : function(v){
+                var self = this, swfUploader = self.get('swfUploader');
+                if (swfUploader) {
+                    self._setDisabled();
                 }
                 return v;
             }
