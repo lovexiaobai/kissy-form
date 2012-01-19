@@ -134,9 +134,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             //向body添加表单文件上传域
             $(inputContainer).appendTo(target);
             fileInput = $(inputContainer).children('input');
-            // TODO: 开启多选上传
-            // multiple && DOM.attr('multiple', 'multiple');
-            fileInput.attr('multiple','multiple');
+            multiple && fileInput.attr('multiple',multiple) || fileInput.removeAttr('multiple');
             //上传框的值改变后触发
             $(fileInput).on('change', self._changeHandler, self);
             //DOM.hide(fileInput);
@@ -225,6 +223,10 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
                     return v;
                 }
             },
+            /**
+             * 是否开启多选支持
+             */
+            multiple : {value : true},
             /**
              * 样式
              * @type Object
