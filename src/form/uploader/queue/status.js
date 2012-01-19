@@ -254,4 +254,4 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
         progressBar : {value : EMPTY}
     }});
     return Status;
-}, {requires : ['node','base','./progressBar']});
+}, {requires : ['node','base','../plugins/progressBar/progressBar']});
