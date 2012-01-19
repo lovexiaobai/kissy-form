@@ -25,6 +25,8 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
          * 支持的事件
          */
         event:{
+            //组件运行后事件
+            RENDER : 'render',
             //选择文件后事件
             CHANGE:'change',
             //鼠标在swf中滑过事件
@@ -53,13 +55,17 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
             self.set('swfWrapper',self._createSwfWrapper());
             self._setFlashSizeConfig();
             swfUploader = self._initSwfUploader();
-            //多选和文件过滤控制
-            swfUploader.browse(multiple, fileFilters);
-            //监听鼠标事件
-            self._bindBtnEvent();
-            //监听选择文件后事件
-            swfUploader.on('fileSelect', self._changeHandler, self);
-            self._setDisabled(self.get('disabled'));
+            //SWF 内容准备就绪
+            swfUploader.on('contentReady', function(ev){
+                //多选和文件过滤控制
+                swfUploader.browse(multiple, fileFilters);
+                //监听鼠标事件
+                self._bindBtnEvent();
+                //监听选择文件后事件
+                swfUploader.on('fileSelect', self._changeHandler, self);
+                self._setDisabled(self.get('disabled'));
+                self.fire(SwfButton.event.RENDER);
+            }, self);
         },
         /**
          * 创建flash容器
