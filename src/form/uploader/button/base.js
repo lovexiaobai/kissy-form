@@ -226,7 +226,16 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             /**
              * 是否开启多选支持
              */
-            multiple : {value : true},
+            multiple : {
+                value : true,
+                setter : function(v){
+                    var self = this,fileInput = self.get('fileInput');
+                    if(fileInput.length){
+                        v && fileInput.attr('multiple','multiple') || fileInput.removeAttr('multiple');
+                    }
+                    return v;
+                }
+            },
             /**
              * 样式
              * @type Object
