@@ -13,7 +13,7 @@
     <h5>先来看个最简单的demo</h5>
     <p>点击下来的按钮，上传1个文件试下</p>
     <!-- 上传按钮，组件配置请写在data-config内 -->
-    <a id="J_UploaderBtn" class="g-u uploader-button uploader-button-focus" data-config=
+    <a id="J_UploaderBtn" class="g-u uploader-button" data-config=
             '{"type" : "ajax",
                 "theme" : "form/uploader/themes/default",
                 "autoUpload" : false,
@@ -32,7 +32,7 @@
     </div>
     <h5>组件参数配置情况</h5>
     <ul>
-        <li>上传方式：<b id="J_UploadType"></b>，还有auto、ajax二个值，当为ajax时，如果浏览器不支持ajax，自动降级为iframe</li>
+        <li>上传方式：<b id="J_UploadType"></b>，还有auto、ajax、flash三个值，当为ajax时，如果浏览器不支持ajax，自动降级为iframe</li>
         <li>模板：<b id="J_Theme"></b>，为模板路径</li>
         <li>自动上传：<b id="J_AutoUpload"></b>，默认是true</li>
         <li>服务器端配置：<b id="J_ServerConfig"></b></li>

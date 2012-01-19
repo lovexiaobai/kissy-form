@@ -15,9 +15,9 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
      */
     function Button(target, config) {
         var self = this;
+        config = S.merge({target:$(target)}, config);
         //超类初始化
         Button.superclass.constructor.call(self, config);
-        self.set('target', $(target));
     }
 
     S.mix(Button, {
@@ -192,7 +192,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
              * @type String
              */
             tpl : {
-                value : '<div class="ks-ajax-uploader-input-container"><input type="file" name="{name}" hidefoucs="true" class="ks-ajax-uploader-input" /></div>'
+                value : '<div class="file-input-wrapper"><input type="file" name="{name}" hidefoucs="true" class="file-input" /></div>'
             },
             /**
              * 隐藏的表单上传域的name值
