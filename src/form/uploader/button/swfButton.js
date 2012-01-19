@@ -34,11 +34,15 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
         render:function () {
             var self = this,
                 $target = self.get('target'),
-                swfUploader;
+                swfUploader,
+                multiple = self.get('multiple'),
+                fileFilters = self.get('fileFilters');
             $target.css('position','relative');
             self._createSwfWrapper();
             self._setFlashSizeConfig();
             swfUploader = self._initSwfUploader();
+            //多选和文件过滤控制
+            swfUploader.browse(multiple,fileFilters);
             //监听选择文件后事件
             swfUploader.on('fileSelect',self._changeHandler,self);
         },
@@ -106,6 +110,32 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
          */
         tpl:{
             value:'<div id="{id}" class="uploader-button-swf" style="position: absolute;top:0;left:0;"></div>'
+        },
+        /**
+         * 是否开启多选支持
+         */
+        multiple : {
+            value : true,
+            setter : function(v){
+                var self = this,swfUploader = self.get('swfUploader');
+                if(swfUploader){
+                    swfUploader.multifile(v);
+                }
+                return v;
+            }
+        },
+        /**
+         * 文件过滤，格式类似[{desc:"JPG,JPEG,PNG,GIF,BMP",ext:"*.jpg;*.jpeg;*.png;*.gif;*.bmp"}]
+         */
+        fileFilters : {
+            value : [],
+            setter : function(v){
+                var self = this,swfUploader = self.get('swfUploader');
+                if(swfUploader && S.isArray(v)){
+                    swfUploader.filter(v);
+                }
+                return v;
+            }
         },
         /**
          * flash配置
