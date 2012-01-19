@@ -19,12 +19,24 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
         //调用父类构造函数
         SwfButton.superclass.constructor.call(self, config);
     }
+
     S.mix(SwfButton, /** @lends SwfButton*/{
         /**
          * 支持的事件
          */
-        event : {
-            CHANGE : 'change'
+        event:{
+            //选择文件后事件
+            CHANGE:'change',
+            //鼠标在swf中滑过事件
+            MOUSE_OVER:'mouseOver',
+            //鼠标在swf中按下事件
+            MOUSE_DOWN:'mouseDown',
+            //鼠标在swf中弹起事件
+            MOUSE_UP:'mouseUp',
+            //鼠标在swf中移开事件
+            MOUSE_OUT:'mouseOut',
+            //鼠标单击事件
+            CLICK:'click'
         }
     });
     S.extend(SwfButton, Base, /** @lends SwfButton.prototype*/{
@@ -37,14 +49,16 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
                 swfUploader,
                 multiple = self.get('multiple'),
                 fileFilters = self.get('fileFilters');
-            $target.css('position','relative');
+            $target.css('position', 'relative');
             self._createSwfWrapper();
             self._setFlashSizeConfig();
             swfUploader = self._initSwfUploader();
             //多选和文件过滤控制
-            swfUploader.browse(multiple,fileFilters);
+            swfUploader.browse(multiple, fileFilters);
+            //监听鼠标事件
+            self._bindBtnEvent();
             //监听选择文件后事件
-            swfUploader.on('fileSelect',self._changeHandler,self);
+            swfUploader.on('fileSelect', self._changeHandler, self);
         },
         /**
          * 创建flash容器
@@ -78,6 +92,21 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
             return swfUploader;
         },
         /**
+         * 监听swf的各个鼠标事件
+         * @return {SwfButton}
+         */
+        _bindBtnEvent:function () {
+            var self = this, event = SwfButton.event,
+                swfUploader = self.get('swfUploader');
+            if (!swfUploader) return false;
+            S.each(event, function (ev) {
+                swfUploader.on(ev, function (e) {
+                    self.fire(ev);
+                }, self);
+            });
+            return self;
+        },
+        /**
          * 设置flash配置参数
          */
         _setFlashSizeConfig:function () {
@@ -87,14 +116,14 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
                 width:target.width(),
                 height:target.height()
             });
-            self.set('flash',flash);
+            self.set('flash', flash);
         },
         /**
          * flash中选择完文件后触发的事件
          */
-        _changeHandler : function(ev){
-            var self = this,files = ev.fileList;
-            self.fire(SwfButton.event.CHANGE,{files : files});
+        _changeHandler:function (ev) {
+            var self = this, files = ev.fileList;
+            self.fire(SwfButton.event.CHANGE, {files:files});
         }
     }, {ATTRS:/** @lends SwfButton*/{
         /**
@@ -114,11 +143,11 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
         /**
          * 是否开启多选支持
          */
-        multiple : {
-            value : true,
-            setter : function(v){
-                var self = this,swfUploader = self.get('swfUploader');
-                if(swfUploader){
+        multiple:{
+            value:true,
+            setter:function (v) {
+                var self = this, swfUploader = self.get('swfUploader');
+                if (swfUploader) {
                     swfUploader.multifile(v);
                 }
                 return v;
@@ -127,11 +156,11 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
         /**
          * 文件过滤，格式类似[{desc:"JPG,JPEG,PNG,GIF,BMP",ext:"*.jpg;*.jpeg;*.png;*.gif;*.bmp"}]
          */
-        fileFilters : {
-            value : [],
-            setter : function(v){
-                var self = this,swfUploader = self.get('swfUploader');
-                if(swfUploader && S.isArray(v)){
+        fileFilters:{
+            value:[],
+            setter:function (v) {
+                var self = this, swfUploader = self.get('swfUploader');
+                if (swfUploader && S.isArray(v)) {
                     swfUploader.filter(v);
                 }
                 return v;
