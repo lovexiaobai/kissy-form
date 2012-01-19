@@ -50,7 +50,7 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
                 multiple = self.get('multiple'),
                 fileFilters = self.get('fileFilters') ;
             $target.css('position', 'relative');
-            self._createSwfWrapper();
+            self.set('swfWrapper',self._createSwfWrapper());
             self._setFlashSizeConfig();
             swfUploader = self._initSwfUploader();
             //多选和文件过滤控制
@@ -59,7 +59,7 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
             self._bindBtnEvent();
             //监听选择文件后事件
             swfUploader.on('fileSelect', self._changeHandler, self);
-            self._setDisabled();
+            self._setDisabled(self.get('disabled'));
         },
         /**
          * 创建flash容器
@@ -128,14 +128,28 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
         },
         /**
          * 设置上传组件的禁用
+         * @param {Boolean} disabled 是否禁用
          * @return {Boolean}
          */
-        _setDisabled : function(){
+        _setDisabled : function(disabled){
             var self = this,
-                disabled = self.get('disabled'),
-                swfUploader = self.get('swfUploader');
+                swfUploader = self.get('swfUploader'),
+                cls = self.get('cls'),disabledCls = cls.disabled,
+                $target = self.get('target'),
+                $swfWrapper = self.get('swfWrapper');
             if(!swfUploader || !S.isBoolean(disabled)) return false;
-            swfUploader[disabled && 'lock' || 'unlock']();
+            if(!disabled){
+                $target.removeClass(disabledCls);
+                //显示swf容器
+                $swfWrapper.show();
+                //TODO:之所以不使用更简单的unlock()方法，因为这个方法应用无效，有可能是bug
+                //swfUploader.unlock();
+            }else{
+                $target.addClass(disabledCls);
+                //隐藏swf容器
+                $swfWrapper.hide();
+                //swfUploader.lock();
+            }
             return disabled;
         }
     }, {ATTRS:/** @lends SwfButton*/{
@@ -143,6 +157,10 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
          * 按钮目标元素
          */
         target:{value:EMPTY},
+        /**
+         * swf容器
+         */
+        swfWrapper : {value : EMPTY},
         /**
          * swf容器的id，如果不指定将使用随机id
          */
@@ -187,10 +205,16 @@ KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader
             setter : function(v){
                 var self = this, swfUploader = self.get('swfUploader');
                 if (swfUploader) {
-                    self._setDisabled();
+                    self._setDisabled(v);
                 }
                 return v;
             }
+        },
+        /**
+         * 样式
+         */
+        cls : {
+            value : { disabled:'uploader-button-disabled' }
         },
         /**
          * flash配置
