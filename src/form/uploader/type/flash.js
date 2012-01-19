@@ -24,6 +24,8 @@ KISSY.add('form/uploader/type/flash', function (S, Node, UploadType, swfUploader
          * 事件列表
          */
         event:S.merge(UploadType.event, {
+            //swf文件已经准备就绪
+            SWF_READY: 'swfReady',
             //正在上传
             PROGRESS:'progress'
         })
@@ -35,6 +37,12 @@ KISSY.add('form/uploader/type/flash', function (S, Node, UploadType, swfUploader
          */
         _init:function () {
             var self = this, swfUploader = self.get('swfUploader');
+            //SWF 内容准备就绪
+            swfUploader.on('contentReady', function(ev){
+                self.fire(FlashType.event.SWF_READY);
+            }, self);
+            //监听开始上传事件
+            swfUploader.on('uploadStart', self._uploadStartHandler, self);
             //监听文件正在上传事件
             swfUploader.on('uploadProgress', self._uploadProgressHandler, self);
             //监听文件上传完成事件
@@ -69,13 +77,23 @@ KISSY.add('form/uploader/type/flash', function (S, Node, UploadType, swfUploader
             return self;
         },
         /**
+         * 开始上传事件监听器
+         * @param {Object} ev ev.file：文件数据
+         */
+        _uploadStartHandler : function(ev){
+            var self = this;
+            self.fire(FlashType.event.START, {'file' : ev.file });
+        },
+        /**
          * 上传中事件监听器
          * @param {Object} ev
          */
         _uploadProgressHandler:function (ev) {
             var self = this;
             S.mix(ev, {
+                //已经读取的文件字节数
                 loaded:ev.bytesLoaded,
+                //文件总共字节数
                 total : ev.bytesTotal
             });
             self.fire(FlashType.event.PROGRESS, { 'loaded':ev.loaded, 'total':ev.total });
