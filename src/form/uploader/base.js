@@ -2,7 +2,7 @@
  * @fileoverview 异步文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, AjaxType,FlashType) {
+KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, AjaxType,FlashType,Flash) {
     var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploader]:';
 
     /**
@@ -50,7 +50,8 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         render : function() {
             var self = this,serverConfig = self.get('serverConfig'),
-                UploadType = self.getUploadType(),uploadType,
+                type = self.get('type'),
+                UploadType = self.getUploadType(type),uploadType,
                 uploaderTypeEvent = UploadType.event,
                 button;
             if (!UploadType) return false;
@@ -148,42 +149,56 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
             return S.isObject(FormData);
         },
         /**
+         * 是否支持flash方案上传
+         * @return {Boolean}
+         */
+        isSupportFlash : function(){
+            var fpv = S.UA.fpv();
+            return S.isArray(fpv) && fpv.length > 0;
+        },
+        /**
          * 获取上传方式类（iframe方案或ajax方案）
          * @return {IframeType|AjaxType}
          */
-        getUploadType : function() {
-            var self = this,type = self.get('type'),types = Uploader.type,
-                isSupportAjax = self.isSupportAjax(),UploadType;
+        getUploadType : function(type) {
+            var self = this,types = Uploader.type,
+                UploadType;
+            //如果type参数为auto，那么type=['ajax','flash','iframe']
+            if(type == types.AUTO) type = [types.AJAX,types.FLASH,types.IFRAME];
+            //如果是数组，遍历获取浏览器支持的上传方式
+            if(S.isArray(type) && type.length > 0){
+                S.each(type,function(t){
+                    UploadType = self._getType(t);
+                    if(UploadType) return true;
+                });
+            }else{
+                UploadType = self._getType(t);
+            }
+            return UploadType;
+        },
+        /**
+         * 获取上传方式
+         * @param {String} type 上传方式（根据type返回对应的上传类，比如iframe返回IframeType）
+         */
+        _getType : function(type){
+            var self = this,types = Uploader.type,UploadType,
+                isSupportAjax = self.isSupportAjax(),
+                isSupportFlash = self.isSupportFlash();
             switch (type) {
-                case types.AUTO :
-                    UploadType = isSupportAjax && AjaxType || IframeType;
-                    if(isSupportAjax){
-                        UploadType = AjaxType;
-                        self.set('type',Uploader.type.AJAX);
-                    }else{
-                        UploadType = IframeType;
-                        self.set('type',Uploader.type.IFRAME);
-                    }
-                    break;
                 case types.IFRAME :
                     UploadType = IframeType;
                     break;
                 case types.AJAX :
-                    UploadType = AjaxType;
-                    //如果不支持ajax，降级成iframe方案
-                    if(!isSupportAjax){
-                        UploadType = IframeType;
-                        self.set('type',Uploader.type.IFRAME);
-                        S.log(LOG_PREFIX + '由于你的浏览器不支持ajax上传，强制降级为iframe！');
-                    }
+                    UploadType = isSupportAjax && AjaxType || false;
                     break;
                 case types.FLASH :
-                    UploadType = FlashType;
+                    UploadType = isSupportFlash && FlashType || false;
                     break;
                 default :
-                    S.log(LOG_PREFIX + 'type参数不合法，只允许配置值为' + types.AUTO + ',' + types.IFRAME + ',' + types.AJAX+ ',' + types.FLASH);
+                    S.log(LOG_PREFIX + 'type参数不合法');
                     return false;
             }
+            self.set('type',type);
             return UploadType;
         },
         /**
@@ -225,6 +240,7 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         },
         /**
          * 选择完文件后
+         * @param {Object} ev 事件对象
          */
         _select : function(ev) {
             var self = this,autoUpload = self.get('autoUpload'),
@@ -359,4 +375,4 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         isUploadWaitFiles : {value : false}
     }});
     return Uploader;
-}, {requires:['base','node','./urlsInput','./type/iframe','./type/ajax','./type/flash']});
+}, {requires:['base','node','./urlsInput','./type/iframe','./type/ajax','./type/flash','flash']});

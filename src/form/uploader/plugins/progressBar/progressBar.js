@@ -16,9 +16,9 @@ KISSY.add('form/uploader/plugins/progressBar/progressBar',function(S, Node, Base
      */
     function ProgressBar(wrapper, config) {
         var self = this;
+        config = S.merge({wrapper:$(wrapper)}, config);
         //调用父类构造函数
         ProgressBar.superclass.constructor.call(self, config);
-        self.set('wrapper',$(wrapper));
     }
     S.mix(ProgressBar, /** @lends ProgressBar.prototype*/{
         /**
