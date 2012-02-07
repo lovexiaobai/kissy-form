@@ -79,8 +79,9 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
                     callback && callback.call(self);
                     self.fire(event.ADD);
                 });
+                return false;
             } else {
-                self._addFile(files, function (index, fileData) {
+                return self._addFile(files, function (index, fileData) {
                     callback && callback.call(self, index, fileData);
                     self.fire(event.ADD, {index:index, file:fileData, target:fileData.target});
                 });
@@ -90,6 +91,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          * 向队列添加个文件
          * @param {Object} file 文件数据
          * @param {Function} callback 添加完成后执行的回调函数
+         * @return {Object} 文件数据对象
          */
         _addFile:function (file,callback) {
             if (!S.isObject(file)) {
@@ -107,6 +109,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             fileData.target.fadeIn(duration, function () {
                 callback && callback.call(self, index, fileData);
             });
+            return fileData;
         },
         /**
          * 向队列批量添加文件
@@ -142,7 +145,6 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             //参数是字符串，说明是文件id，先获取对应文件数组的索引
             if (S.isString(indexOrFileId)) {
                 indexOrFileId = self.getFileIndex(indexOrFileId);
-
             }
             //文件数据对象
             file = files[indexOrFileId];
@@ -153,8 +155,8 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             $file = file.target;
             $file.fadeOut(duration, function () {
                 $file.remove();
-                callback && callback.call(self, file);
-                self.fire(Queue.event.REMOVE, {id:indexOrFileId, file:file});
+                callback && callback.call(self,indexOrFileId, file);
+                self.fire(Queue.event.REMOVE, {index:indexOrFileId, file:file});
             });
             //将该id的文件过滤掉
             files = S.filter(files, function (file, i) {
