@@ -37,6 +37,10 @@ KISSY.add('form/uploader/type/flash', function (S, Node, UploadType, swfUploader
          */
         _init:function () {
             var self = this, swfUploader = self.get('swfUploader');
+            if(!swfUploader){
+                S.log(LOG_PREFIX + 'swfUploader对象为空！');
+                return false;
+            }
             //SWF 内容准备就绪
             swfUploader.on('contentReady', function(ev){
                 self.fire(FlashType.event.SWF_READY);
