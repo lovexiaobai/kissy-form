@@ -164,9 +164,8 @@ KISSY.add(function(S){
 			}
 			
 			function onError(){
-				//TODO
-				self.config.onError();
-				// self.fire(self.event.error);
+				// self.config.onError();
+				self.fire(self.event.error);
 			}
 			
 			function simplePreview(){
@@ -252,7 +251,10 @@ KISSY.add(function(S){
 				// S.log(self.config.onCheck());
 				S.log('[UploadPreview] One file selected. Using ' + self.config.mode + ' mode to preview.');
 				// S.log(self.config, 'dir');
-				if(self.config.onCheck(self.file)){
+				
+				var checkResult = self.fire(self.event.check);
+				
+				if(checkResult !== false){
 					var data = getImgData();
 					
 					// S.log(data);
@@ -324,7 +326,7 @@ KISSY.add(function(S){
 		
 	})
 	
-	S.UploaderPreview = UploaderPreview;
+	// S.UploaderPreview = UploaderPreview;
 	
 	return UploaderPreview;
 	
