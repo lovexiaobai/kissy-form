@@ -19,16 +19,16 @@ KISSY.add(function(S){
 				maxHeight: 40,
 				// TODO change it to on and fire
 				// use this to check whether the file uploaded is what you want, for example, I can check whether the file uploaded by user is image.
-				onCheck: function(){
-					return 1;
-				},
-				onGet: function(){
-					return 1;
-				},
-				// when the thumb of the uploaded image is shown, the function will exec.
-				onShow: function(){
-					return 1;
-				},
+				// onCheck: function(){
+					// return 1;
+				// },
+				// onGet: function(){
+					// return 1;
+				// },
+				// // when the thumb of the uploaded image is shown, the function will exec.
+				// onShow: function(){
+					// return 1;
+				// },
 				onError: function(){
 					return 1;
 				},
@@ -159,8 +159,8 @@ KISSY.add(function(S){
 				// for ImageZoom
 				var imagezoomSrc = self.config.mode == 'filter' ? self.data : src;
 				D.attr(self.img, 'data-ks-imagezoom', imagezoomSrc);
-				self.config.onShow();
-				// self.fire(self.event.show);
+				// self.config.onShow();
+				self.fire(self.event.show);
 			}
 			
 			function onError(){
