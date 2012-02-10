@@ -15,9 +15,9 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
      */
     function Button(target, config) {
         var self = this;
+        config = S.merge({target:$(target)}, config);
         //超类初始化
         Button.superclass.constructor.call(self, config);
-        self.set('target', $(target));
     }
 
     S.mix(Button, {
@@ -43,7 +43,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
                 target = self.get('target'),
                 render = self.fire(Button.event.beforeRender);
             if (render === false) {
-                S.log(LOG_PREFIX + 'button render was prevented.')
+                S.log(LOG_PREFIX + 'button render was prevented.');
                 return false;
             } else {
                 if (target == null) {
@@ -134,8 +134,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             //向body添加表单文件上传域
             $(inputContainer).appendTo(target);
             fileInput = $(inputContainer).children('input');
-            // TODO: 开启多选上传
-            // multiple && DOM.attr('multiple', 'multiple');
+            multiple && fileInput.attr('multiple',multiple) || fileInput.removeAttr('multiple');
             //上传框的值改变后触发
             $(fileInput).on('change', self._changeHandler, self);
             //DOM.hide(fileInput);
@@ -151,13 +150,19 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
         _changeHandler : function(ev) {
             var self = this,
                 fileInput = self.get('fileInput'),
-                value = $(fileInput).val();
+                value = $(fileInput).val(),
+                oFiles = ev.target.files,files = [];
             if (value == EMPTY) {
                 S.log(LOG_PREFIX + 'No file selected.');
                 return false;
             }
+            S.each(oFiles,function(v){
+                if(S.isObject(v)){
+                    files.push({'name' : v.name,'type' : v.type,'size' : v.size});
+                }
+            });
             self.fire(Button.event.CHANGE, {
-                files: ev.target.files,
+                files: files,
                 input: $(fileInput).clone().getDOMNode()
             });
             S.log(LOG_PREFIX + 'button change event was fired just now.');
@@ -187,7 +192,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
              * @type String
              */
             tpl : {
-                value : '<div class="ks-ajax-uploader-input-container"><input type="file" name="{name}" hidefoucs="true" class="ks-ajax-uploader-input" /></div>'
+                value : '<div class="file-input-wrapper"><input type="file" name="{name}" hidefoucs="true" class="file-input" /></div>'
             },
             /**
              * 隐藏的表单上传域的name值
@@ -214,6 +219,19 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
                         self.hide();
                     } else {
                         self.show();
+                    }
+                    return v;
+                }
+            },
+            /**
+             * 是否开启多选支持
+             */
+            multiple : {
+                value : true,
+                setter : function(v){
+                    var self = this,fileInput = self.get('fileInput');
+                    if(fileInput.length){
+                        v && fileInput.attr('multiple','multiple') || fileInput.removeAttr('multiple');
                     }
                     return v;
                 }

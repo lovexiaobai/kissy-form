@@ -72,7 +72,7 @@ KISSY.add('form/uploader/type/ajax',function(S, Node, UploadType) {
          * @return {AjaxType}
          */
         send : function() {
-            var self = this,ajaxConfig = self.get('ajaxConfig'),
+            var self = this,
                 //服务器端处理文件上传的路径
                 action = self.get('action'),
                 data = self.get('formData');

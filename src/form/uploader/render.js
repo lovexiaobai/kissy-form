@@ -2,7 +2,7 @@
  * @fileoverview 运行文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button) {
+KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfButton) {
     var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploaderRender]:',
         dataName = {CONFIG:'data-config'};
 
@@ -69,9 +69,11 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button) {
          * @return {Button}
          */
         _initButton:function () {
-            var self = this, target = self.get('buttonTarget'), name = self.get('name');
+            var self = this, target = self.get('buttonTarget'),
+                name = self.get('name'),
+                type = self.get('type');
             //实例化上传按钮
-            return new Button(target, {name:name});
+            return type != 'flash' && new Button(target, {name:name}) || new SwfButton(target);
         },
         _initThemes:function (callback) {
             var self = this, theme = self.get('theme');
@@ -133,4 +135,4 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button) {
         }
     });
     return RenderUploader;
-}, {requires:['base', 'node', './base', './button/base']});
+}, {requires:['base', 'node', './base', './button/base','./button/swfButton']});

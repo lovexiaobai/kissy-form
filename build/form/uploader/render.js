@@ -2,7 +2,7 @@
  * @fileoverview 异步文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, AjaxType) {
+KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, AjaxType,FlashType,Flash) {
     var EMPTY = '',$ = Node.all,LOG_PREFIX = '[uploader]:';
 
     /**
@@ -22,7 +22,7 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         /**
          * 上传方式
          */
-        type : {AUTO : 'auto',IFRAME : 'iframe',AJAX : 'ajax'},
+        type : {AUTO : 'auto',IFRAME : 'iframe',AJAX : 'ajax',FLASH : 'flash'},
         /**
          * 事件
          */
@@ -50,13 +50,19 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         render : function() {
             var self = this,serverConfig = self.get('serverConfig'),
-                UploadType = self.getUploadType(),uploadType,
-                uploaderTypeEvent = UploadType.event;
+                type = self.get('type'),
+                UploadType = self.getUploadType(type),uploadType,
+                uploaderTypeEvent = UploadType.event,
+                button;
             if (!UploadType) return false;
             //路径input实例
             self.set('urlsInput',self._renderUrlsInput());
             self._renderQueue();
-            self._renderButton();
+            button = self._renderButton();
+            //如果是flash异步上传方案，增加swfUploader的实例作为参数
+            if(self.get('type') == Uploader.type.FLASH){
+                S.mix(serverConfig,{swfUploader:button.get('swfUploader')});
+            }
             //实例化上传方式类
             uploadType = new UploadType(serverConfig);
             //监听上传器上传完成事件
@@ -71,35 +77,36 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         },
         /**
          * 上传文件
-         * @param {Number} fileId 文件索引值
+         * @param {Number} index 文件对应的在上传队列数组内的索引值
          */
-        upload : function(fileId) {
-            if (!S.isNumber(fileId)) return false;
+        upload : function(index) {
+            if (!S.isNumber(index)) return false;
             var self = this,uploadType = self.get('uploadType'),
                 queue = self.get('queue'),
-                file = queue.get('files')[fileId],
-                fileInput;
+                file = queue.get('files')[index],
+                uploadParam;
             if (!S.isPlainObject(file)) {
-                S.log(LOG_PREFIX + '队列中不存在id为' + fileId + '的文件');
+                S.log(LOG_PREFIX + '队列中不存在id为' + index + '的文件');
                 return false;
             }
             //如果有文件正在上传，予以阻止上传
-            if(self.get('curUploadId') != EMPTY){
-                alert('有文件正在上传，请上传完后再操作！');
+            if(self.get('curUploadIndex') != EMPTY){
+                alert('第'+ self.get('curUploadIndex') +'文件正在上传，请上传完后再操作！');
                 return false;
             }
-            //文件上传域
-            fileInput = file.input;
+            //文件上传域，如果是flash上传,input为文件数据对象
+            uploadParam = file.input.id || file.input;
             //触发文件上传前事件
-            self.fire(Uploader.event.START, {id : fileId,file : file});
+            self.fire(Uploader.event.START, {index : index,file : file});
             //阻止文件上传
             if(!self.get('isAllowUpload')) return false;
             //设置当前上传的文件id
-            self.set('curUploadId', fileId);
+            self.set('curUploadIndex', index);
             //改变文件上传状态为start
-            queue.fileStatus(fileId, queue.constructor.status.START);
+            queue.fileStatus(index, queue.constructor.status.START);
+
             //开始上传
-            uploadType.upload(fileInput);
+            uploadType.upload(uploadParam);
         },
         /**
          * 取消上传
@@ -124,15 +131,15 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         uploadWaitFile : function(){
             var self = this,queue = self.get('queue'),
-                waitFileIds = queue.getIndexs('waiting');
+                waitFileIndexs = queue.getIndexs('waiting');
             //没有等待上传的文件
-            if(!waitFileIds.length){
+            if(!waitFileIndexs.length){
                 self.set('isUploadWaitFiles',false);
                 self.fire(Uploader.event.UPLOAD_ALL);
                 return false;
             }
             //开始上传等待中的文件
-            self.upload(0);
+            self.upload(waitFileIndexs[0]);
         },
         /**
          * 是否支持ajax方案上传
@@ -142,39 +149,56 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
             return S.isObject(FormData);
         },
         /**
+         * 是否支持flash方案上传
+         * @return {Boolean}
+         */
+        isSupportFlash : function(){
+            var fpv = S.UA.fpv();
+            return S.isArray(fpv) && fpv.length > 0;
+        },
+        /**
          * 获取上传方式类（iframe方案或ajax方案）
          * @return {IframeType|AjaxType}
          */
-        getUploadType : function() {
-            var self = this,type = self.get('type'),types = Uploader.type,
-                isSupportAjax = self.isSupportAjax(),UploadType;
+        getUploadType : function(type) {
+            var self = this,types = Uploader.type,
+                UploadType;
+            //如果type参数为auto，那么type=['ajax','flash','iframe']
+            if(type == types.AUTO) type = [types.AJAX,types.IFRAME];
+            //如果是数组，遍历获取浏览器支持的上传方式
+            if(S.isArray(type) && type.length > 0){
+                S.each(type,function(t){
+                    UploadType = self._getType(t);
+                    if(UploadType) return false;
+                });
+            }else{
+                UploadType = self._getType(type);
+            }
+            return UploadType;
+        },
+        /**
+         * 获取上传方式
+         * @param {String} type 上传方式（根据type返回对应的上传类，比如iframe返回IframeType）
+         */
+        _getType : function(type){
+            var self = this,types = Uploader.type,UploadType,
+                isSupportAjax = self.isSupportAjax(),
+                isSupportFlash = self.isSupportFlash();
             switch (type) {
-                case types.AUTO :
-                    UploadType = isSupportAjax && AjaxType || IframeType;
-                    if(isSupportAjax){
-                        UploadType = AjaxType;
-                        self.set('type',Uploader.type.AJAX);
-                    }else{
-                        UploadType = IframeType;
-                        self.set('type',Uploader.type.IFRAME);
-                    }
-                    break;
                 case types.IFRAME :
                     UploadType = IframeType;
                     break;
                 case types.AJAX :
-                    UploadType = AjaxType;
-                    //如果不支持ajax，降级成iframe方案
-                    if(!isSupportAjax){
-                        UploadType = IframeType;
-                        self.set('type',Uploader.type.IFRAME);
-                        S.log(LOG_PREFIX + '由于你的浏览器不支持ajax上传，强制降级为iframe！');
-                    }
+                    UploadType = isSupportAjax && AjaxType || false;
+                    break;
+                case types.FLASH :
+                    UploadType = isSupportFlash && FlashType || false;
                     break;
                 default :
-                    S.log(LOG_PREFIX + 'type参数不合法，只允许配置值为' + types.AUTO + ',' + types.IFRAME + ',' + types.AJAX);
+                    S.log(LOG_PREFIX + 'type参数不合法');
                     return false;
             }
+            self.set('type',type);
             return UploadType;
         },
         /**
@@ -216,30 +240,30 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         },
         /**
          * 选择完文件后
+         * @param {Object} ev 事件对象
          */
         _select : function(ev) {
             var self = this,autoUpload = self.get('autoUpload'),
                 queue = self.get('queue'),
-                curId = self.get('curUploadId'),
-                //ev.files为文件域值改变触发返回的文件对象数组，默认是数组，由于不支持多选，这里只需要获取第一个文件即可
-                file = ev.files[0],
-                //chrome文件名属性名为fileName，而firefox为name
-                fileName = file.fileName || file.name,
+                curId = self.get('curUploadIndex'),
+                files = ev.files;
+            S.each(files,function(file){
                 //文件大小，IE浏览器下不存在
-                fileSize = file.size || 0,
-                //文件对象
-                oFile = {name : fileName,input : ev.input,file : file,size : fileSize},
-                fileId;
-            self.set('curFileData',oFile);
-            self.fire(Uploader.event.SELECT,oFile);
+                if(!file.size) file.size = 0;
+                //chrome文件名属性名为fileName，而firefox为name
+                if(!file.name) file.name = file.fileName || EMPTY;
+                //如果是flash上传，并不存在文件上传域input
+                file.input = ev.input || file;
+            });
+            self.fire(Uploader.event.SELECT,files);
             //阻止文件上传
             if(!self.get('isAllowUpload')) return false;
-            //向队列添加文件
-            fileId = queue.add(oFile);
-            //如果不存在正在上传的文件，且允许自动上传，上传该文件
-            if(curId === EMPTY){
-                autoUpload && self.upload(fileId);
-            }
+            queue.add(files,function(){
+                //如果不存在正在上传的文件，且允许自动上传，上传该文件
+                if(curId == EMPTY && autoUpload){
+                    self.uploadAll();
+                }
+            });
         },
         /**
          * 向上传按钮容器内增加用于存储文件路径的input
@@ -256,22 +280,22 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         _uploadCompleteHanlder : function(ev) {
             var self = this,result = ev.result,status,event = Uploader.event,
-                queue = self.get('queue'),id = self.get('curUploadId');
+                queue = self.get('queue'),index = self.get('curUploadIndex');
             if (!S.isObject(result)) return false;
             //文件上传状态
             status = result.status;
             if (status) {
                 //修改队列中文件的状态为success（上传完成）
-                queue.fileStatus(id, queue.constructor.status.SUCCESS);
+                queue.fileStatus(index, queue.constructor.status.SUCCESS);
                 self._success(result.data);
                 self.fire(event.SUCCESS);
             } else {
                 //修改队列中文件的状态为error（上传失败）
-                queue.fileStatus(id, queue.constructor.status.ERROR);
+                queue.fileStatus(index, queue.constructor.status.ERROR);
                 self.fire(event.ERROR, {status : status});
             }
-            //置空当前上传id
-            self.set('curUploadId', EMPTY);
+            //置空当前上传的文件在队列中的索引值
+            self.set('curUploadIndex', EMPTY);
             self.fire(event.COMPLETE);
             //是否上传等待中的文件
             if(self.get('isUploadWaitFiles')) self.uploadWaitFile();
@@ -281,18 +305,18 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          */
         _uploadStopHanlder : function(){
             var self = this,queue = self.get('queue'),
-                id = self.get('curUploadId');
+                index = self.get('curUploadIndex');
             //更改取消上传后的状态
-            queue.fileStatus(id, queue.constructor.status.CANCEL);
+            queue.fileStatus(index, queue.constructor.status.CANCEL);
             //重置当前上传文件id
-            self.set('curUploadId',EMPTY);
+            self.set('curUploadIndex',EMPTY);
         },
         /**
          * 上传进度监听器
          */
         _uploadProgressHandler : function(ev){
             var self = this,queue = self.get('queue'),
-                            id = self.get('curUploadId');
+                id = self.get('curUploadIndex');
             queue.fileStatus(id, queue.constructor.status.PROGRESS,ev);
         },
         /**
@@ -313,16 +337,6 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
         },
         _error : function(){
 
-        },
-        /**
-         * 向文件数据对象，追加服务器端返回的文件url
-         * @param {Number} id 文件id
-         * @param {String} sUrl 服务器端返回的文件
-         */
-        _addFileServerUrl : function(id,sUrl){
-            if(!S.isNumber(id) || !S.isString(sUrl)) return false;
-            var self = this,queue = self.get('queue'),
-                file = queue.getFile(id);
         }
     }, {ATTRS : /** @lends Uploader*/{
         /**
@@ -353,17 +367,15 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          * 存储文件路径的隐藏域的name名
          */
         urlsInputName : {value : EMPTY},
-        //当前上传的id
-        curUploadId : {value : EMPTY},
-        //当前文件数据，格式类似{name : 'test.jpg',input : HTMLElement,file : []}
-        curFileData : {value : {}},
+        //当前上传的文件对应的在数组内的索引值
+        curUploadIndex : {value : EMPTY},
         uploadType : {value : {}},
         urlsInput : {value : EMPTY},
         //是否正在上传等待中的文件
         isUploadWaitFiles : {value : false}
     }});
     return Uploader;
-}, {requires:['base','node','./urlsInput','./type/iframe','./type/ajax']});/**
+}, {requires:['base','node','./urlsInput','./type/iframe','./type/ajax','./type/flash','flash']});/**
  * @fileoverview 文件上传按钮base
  * @author: 紫英(橘子)<daxingplay@gmail.com>, 剑平（明河）<minghe36@126.com>
  **/
@@ -380,9 +392,9 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
      */
     function Button(target, config) {
         var self = this;
+        config = S.merge({target:$(target)}, config);
         //超类初始化
         Button.superclass.constructor.call(self, config);
-        self.set('target', $(target));
     }
 
     S.mix(Button, {
@@ -408,7 +420,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
                 target = self.get('target'),
                 render = self.fire(Button.event.beforeRender);
             if (render === false) {
-                S.log(LOG_PREFIX + 'button render was prevented.')
+                S.log(LOG_PREFIX + 'button render was prevented.');
                 return false;
             } else {
                 if (target == null) {
@@ -499,8 +511,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             //向body添加表单文件上传域
             $(inputContainer).appendTo(target);
             fileInput = $(inputContainer).children('input');
-            // TODO: 开启多选上传
-            // multiple && DOM.attr('multiple', 'multiple');
+            multiple && fileInput.attr('multiple',multiple) || fileInput.removeAttr('multiple');
             //上传框的值改变后触发
             $(fileInput).on('change', self._changeHandler, self);
             //DOM.hide(fileInput);
@@ -516,13 +527,19 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
         _changeHandler : function(ev) {
             var self = this,
                 fileInput = self.get('fileInput'),
-                value = $(fileInput).val();
+                value = $(fileInput).val(),
+                oFiles = ev.target.files,files = [];
             if (value == EMPTY) {
                 S.log(LOG_PREFIX + 'No file selected.');
                 return false;
             }
+            S.each(oFiles,function(v){
+                if(S.isObject(v)){
+                    files.push({'name' : v.name,'type' : v.type,'size' : v.size});
+                }
+            });
             self.fire(Button.event.CHANGE, {
-                files: ev.target.files,
+                files: files,
                 input: $(fileInput).clone().getDOMNode()
             });
             S.log(LOG_PREFIX + 'button change event was fired just now.');
@@ -552,7 +569,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
              * @type String
              */
             tpl : {
-                value : '<div class="ks-ajax-uploader-input-container"><input type="file" name="{name}" hidefoucs="true" class="ks-ajax-uploader-input" /></div>'
+                value : '<div class="file-input-wrapper"><input type="file" name="{name}" hidefoucs="true" class="file-input" /></div>'
             },
             /**
              * 隐藏的表单上传域的name值
@@ -584,6 +601,19 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
                 }
             },
             /**
+             * 是否开启多选支持
+             */
+            multiple : {
+                value : true,
+                setter : function(v){
+                    var self = this,fileInput = self.get('fileInput');
+                    if(fileInput.length){
+                        v && fileInput.attr('multiple','multiple') || fileInput.removeAttr('multiple');
+                    }
+                    return v;
+                }
+            },
+            /**
              * 样式
              * @type Object
              */
@@ -604,328 +634,501 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
     ]
 });
 /**
- * @fileoverview 文件上传队列列表显示和处理
- * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
+ * @fileoverview flash上传按钮
+ * @author: 紫英(橘子)<daxingplay@gmail.com>, 剑平（明河）<minghe36@126.com>
  **/
-KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
-    var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploader-queue]:';
+KISSY.add('form/uploader/button/swfButton', function (S, Node, Base, SwfUploader) {
+    var EMPTY = '', $ = Node.all,
+        SWF_WRAPPER_ID_PREVFIX = 'swf-uploader-wrapper-';
 
     /**
-     * @name Queue
-     * @class 文件上传队列
+     * @name SwfButton
+     * @class flash上传按钮
      * @constructor
      * @extends Base
-     * @requires Node,Status
+     * @requires Node
      */
-    function Queue(target, config) {
+    function SwfButton(target, config) {
         var self = this;
+        config = S.merge({target:$(target)}, config);
         //调用父类构造函数
-        Queue.superclass.constructor.call(self, config);
-        //队列目标
-        self.set('target', $(target));
+        SwfButton.superclass.constructor.call(self, config);
     }
 
-    S.mix(Queue, /**@lends Queue*/ {
-        /**
-         * 模板
-         */
-        tpl:{
-            DEFAULT:'<li id="queue-file-{id}" class="clearfix" data-name="{name}">' +
-                '<div class="f-l sprite file-icon"></div>' +
-                '<div class="f-l">{name}</div>' +
-                '<div class="f-l file-status J_FileStatus"></div>' +
-                '</li>'
-        },
+    S.mix(SwfButton, /** @lends SwfButton*/{
         /**
          * 支持的事件
          */
         event:{
-            //添加完一个文件后的事件
-            ADD:'add',
-            //删除文件后触发
-            REMOVE:'remove',
-            //清理队列所有的文件后触发
-            CLEAR : 'clear'
-        },
-        /**
-         * 文件的状态
-         */
-        status:Status.type,
-        //样式
-        cls:{
-            QUEUE:'ks-uploader-queue'
-        },
-        hook:{
-            //状态
-            STATUS:'.J_FileStatus'
-        },
-        FILE_ID_PREFIX : 'file-'
+            //组件运行后事件
+            RENDER : 'render',
+            //选择文件后事件
+            CHANGE:'change',
+            //鼠标在swf中滑过事件
+            MOUSE_OVER:'mouseOver',
+            //鼠标在swf中按下事件
+            MOUSE_DOWN:'mouseDown',
+            //鼠标在swf中弹起事件
+            MOUSE_UP:'mouseUp',
+            //鼠标在swf中移开事件
+            MOUSE_OUT:'mouseOut',
+            //鼠标单击事件
+            CLICK:'click'
+        }
     });
-    //继承于Base，属性getter和setter委托于Base处理
-    S.extend(Queue, Base, /** @lends Queue.prototype*/{
+    S.extend(SwfButton, Base, /** @lends SwfButton.prototype*/{
         /**
-         * 运行组件
-         * @return {Queue}
+         * 运行
          */
         render:function () {
-            var self = this, $target = self.get('target');
-            $target.addClass(Queue.cls.QUEUE);
+            var self = this,
+                $target = self.get('target'),
+                swfUploader,
+                multiple = self.get('multiple'),
+                fileFilters = self.get('fileFilters') ;
+            $target.css('position', 'relative');
+            self.set('swfWrapper',self._createSwfWrapper());
+            self._setFlashSizeConfig();
+            swfUploader = self._initSwfUploader();
+            //SWF 内容准备就绪
+            swfUploader.on('contentReady', function(ev){
+                //多选和文件过滤控制
+                swfUploader.browse(multiple, fileFilters);
+                //监听鼠标事件
+                self._bindBtnEvent();
+                //监听选择文件后事件
+                swfUploader.on('fileSelect', self._changeHandler, self);
+                self._setDisabled(self.get('disabled'));
+                self.fire(SwfButton.event.RENDER);
+            }, self);
+        },
+        /**
+         * 创建flash容器
+         */
+        _createSwfWrapper:function () {
+            var self = this,
+                target = self.get('target'),
+                tpl = self.get('tpl'),
+                //容器id
+                id = self.get('swfWrapperId') != EMPTY && self.get('swfWrapperId') || SWF_WRAPPER_ID_PREVFIX + S.guid(),
+                //容器html
+                html = S.substitute(tpl, {id:id});
+            self.set('swfWrapperId', id);
+            return $(html).appendTo(target);
+        },
+        /**
+         * 初始化ajbridge的uploader
+         * @return {SwfUploader}
+         */
+        _initSwfUploader:function () {
+            var self = this, flash = self.get('flash'),
+                id = self.get('swfWrapperId'),
+                swfUploader;
+            try {
+                //实例化AJBridge.Uploader
+                swfUploader = new SwfUploader(id, flash);
+                self.set('swfUploader', swfUploader);
+            } catch (err) {
+
+            }
+            return swfUploader;
+        },
+        /**
+         * 监听swf的各个鼠标事件
+         * @return {SwfButton}
+         */
+        _bindBtnEvent:function () {
+            var self = this, event = SwfButton.event,
+                swfUploader = self.get('swfUploader');
+            if (!swfUploader) return false;
+            S.each(event, function (ev) {
+                swfUploader.on(ev, function (e) {
+                    self.fire(ev);
+                }, self);
+            });
             return self;
         },
         /**
-         * 向上传队列添加文件
-         * @param {Object} file 文件信息，格式类似{'name' : 'test.jpg','size' : 2000,'input' : {},'file' : {'name' : 'test.jpg','type' : 'image/jpeg','size' : 2000}}
-         * @return {NodeList} 文件节点
+         * 设置flash配置参数
          */
-        add:function (file, callback) {
-            var self = this, event = Queue.event,
-                duration = self.get('duration'),
-                index,fileData = {};
-            if (!S.isObject(file)) {
-                S.log(LOG_PREFIX + 'add()参数file不合法！');
-                return false;
-            }
-            //设置文件对象
-            fileData = self._setAddFileData(file);
-            index = self.getFileIndex(fileData.id);
-            //更换文件状态为等待
-            self.fileStatus(index, Queue.status.WAITING);
-            //显示文件信息li元素
-            fileData.target.fadeIn(duration, function () {
-                callback && callback.call(self, index, fileData);
-                self.fire(event.ADD, {index:index, file:fileData, target:fileData.target});
+        _setFlashSizeConfig:function () {
+            var self = this, flash = self.get('flash'),
+                target = self.get('target');
+            S.mix(flash.attrs, {
+                width:target.width(),
+                height:target.height()
             });
-            return file;
+            self.set('flash', flash);
         },
         /**
-         * 删除队列中指定id的文件
-         * @param {Number} indexOrFileId 文件数组索引或文件id
-         * @param {Function} callback 删除元素后执行的回调函数
+         * flash中选择完文件后触发的事件
          */
-        remove:function (indexOrFileId, callback) {
-            var self = this, files = self.get('files'), file, $file,
-                duration = self.get('duration');
-            //参数是字符串，说明是文件id，先获取对应文件数组的索引
-            if(S.isString(indexOrFileId)){
-                indexOrFileId = self.getFileIndex(indexOrFileId);
-
-            }
-            //文件数据对象
-            file = files[indexOrFileId];
-            if(!S.isObject(file)){
-                S.log(LOG_PREFIX + 'remove()不存在index为'+indexOrFileId + '的文件数据');
-                return false;
-            }
-            $file = file.target;
-            $file.fadeOut(duration, function () {
-                $file.remove();
-                callback && callback.call(self, file);
-                self.fire(Queue.event.REMOVE, {id:indexOrFileId, file:file});
-            });
-            //将该id的文件过滤掉
-            files = S.filter(files,function(file,i){
-                return i !== indexOrFileId;
-            });
-            self.set('files', files);
-            return file;
+        _changeHandler:function (ev) {
+            var self = this, files = ev.fileList;
+            self.fire(SwfButton.event.CHANGE, {files:files});
         },
         /**
-         * 清理队列
+         * 设置上传组件的禁用
+         * @param {Boolean} disabled 是否禁用
+         * @return {Boolean}
          */
-        clear : function(){
-            var self = this,files;
-            _remove();
-            //移除元素
-            function _remove(){
-                files = self.get('files');
-                if(!files.length){
-                    self.fire(Queue.event.CLEAR);
-                    return false;
-                }
-                self.remove(0,function(){
-                    _remove();
-                });
-            }
-        },
-        /**
-         * 获取或设置文件状态
-         * @param {Number} index 文件数组的索引值
-         * @param {String} status 文件状态
-         * @return {Object}
-         */
-        fileStatus:function (index, status, args) {
-            if (!S.isNumber(index)) return false;
-            var self = this, file = self.getFile(index),oStatus;
-            if (!S.isPlainObject(file)) return false;
-            //状态实例
-            oStatus = file['status'];
-            if (status) oStatus.change(status, args);
-            return  oStatus;
-        },
-        /**
-         * 获取指定索引值的队列中的文件
-         * @param  {Number} id 文件id
-         * @return {Object}
-         */
-        getFile:function (id) {
-            if (!S.isNumber(id)) return false;
-            var self = this, files = self.get('files'),
-                file = files[id];
-            if (!S.isPlainObject(file)) file = false;
-            return file;
-        },
-        /**
-         * 根据文件id来查找文件在队列中的索引
-         * @param {String} fileId 文件id
-         * @return {Number} index
-         */
-        getFileIndex : function(fileId){
-            var self = this, files = self.get('files'),index = -1;
-            S.each(files,function(file,i){
-                if(file.id == fileId){
-                    index = i;
-                    return true;
-                }
-            });
-            return index;
-        },
-        /**
-         * 更新文件数据对象，你可以追加数据
-         * @param {Number} index 文件数组内的索引值
-         * @param {Object} data 数据
-         * @return {Object}
-         */
-        updateFile:function (index, data) {
-            if (!S.isNumber(index)) return false;
-            if (!S.isObject(data)) {
-                S.log(LOG_PREFIX + 'updateFile()的data参数有误！');
-                return false;
-            }
-            var self = this, files = self.get('files'),
-                file = self.getFile(index);
-            if (!file) return false;
-            S.mix(file, data);
-            files[index] = file;
-            self.set('files', files);
-            return file;
-        },
-        /**
-         * 获取等指定状态的文件对应的文件数组index的数组
-         * param {String} type 状态类型
-         * @return {Array}
-         */
-        getIndexs:function (type) {
-            var self = this, files = self.get('files'),
-                status, indexs = [];
-            if (!files.length) return indexs;
-            S.each(files, function (file, index) {
-                if (S.isObject(file)) {
-                    status = file.status;
-                    //文件状态
-                    if (status.get('curType') == type) {
-                        indexs.push(index);
-                    }
-                }
-            });
-            return indexs;
-        },
-        /**
-         * 获取指定状态下的文件
-         * @param {String} status 状态类型
-         * @return {Array}
-         */
-        getFiles : function(status){
-            var self = this,files = self.get('files'),oStatus,statusFiles = [];
-            if(!files.length) return false;
-            S.each(files,function(file){
-                if(file){
-                    oStatus = file.status;
-                    oStatus.get('curType') == status && statusFiles.push(file);
-                }
-            });
-            return statusFiles;
-        },
-        /**
-         * 添加文件时先向文件数据对象追加id、target、size等数据
-         * @param {Object} file 文件数据对象
-         * @return {Object} 新的文件数据对象
-         */
-        _setAddFileData:function (file) {
+        _setDisabled : function(disabled){
             var self = this,
-                files = self.get('files'),
-                uploader = self.get('uploader');
-            if (!S.isObject(file)) {
-                S.log(LOG_PREFIX + '_updateFileData()参数file不合法！');
-                return false;
+                swfUploader = self.get('swfUploader'),
+                cls = self.get('cls'),disabledCls = cls.disabled,
+                $target = self.get('target'),
+                $swfWrapper = self.get('swfWrapper');
+            if(!swfUploader || !S.isBoolean(disabled)) return false;
+            if(!disabled){
+                $target.removeClass(disabledCls);
+                //显示swf容器
+                $swfWrapper.show();
+                //TODO:之所以不使用更简单的unlock()方法，因为这个方法应用无效，有可能是bug
+                //swfUploader.unlock();
+            }else{
+                $target.addClass(disabledCls);
+                //隐藏swf容器
+                $swfWrapper.hide();
+                //swfUploader.lock();
             }
-            //设置文件唯一id
-            file.id = S.guid(Queue.FILE_ID_PREFIX);
-            //转换文件大小单位为（kb和mb）
-            if (file.size) file.textSize = Status.convertByteSize(file.size);
-            //文件信息元素
-            file.target = self._appendFileHtml(file);
-            //状态实例
-            file.status = self._renderStatus(file);
-            //传递Uploader实例给Status
-            if (S.isObject(uploader)) file.status.set('uploader', uploader);
-            files.push(file);
-            return file;
-        },
-        /**
-         * 向列表添加li元素（文件信息）
-         * @param {Object} data 文件对象数据
-         * @return {NodeList}
-         */
-        _appendFileHtml:function (data) {
-            var self = this, $target = self.get('target'),
-                //文件信息显示模板
-                tpl = self.get('tpl'),
-                hFile = S.substitute(tpl, data);
-            return $(hFile).hide().appendTo($target).data('data-file', data);
-
-        },
-        /**
-         * 运行Status
-         * @param {Object} file  文件数据
-         * @return {Status} 状态实例
-         */
-        _renderStatus:function (file) {
-            var self = this, $file = file.target, hook = Queue.hook.STATUS, elStatus;
-            if (!$file.length) return false;
-            //状态层
-            elStatus = $file.children(hook);
-            //实例化状态类
-            return new Status(elStatus, {queue:self, file:file});
+            return disabled;
         }
-    }, {ATTRS:/** @lends Queue*/{
+    }, {ATTRS:/** @lends SwfButton*/{
         /**
-         * 模板
-         * @type String
-         */
-        tpl:{ value:Queue.tpl.DEFAULT },
-        /**
-         * 动画速度
-         */
-        duration:{value:0.3},
-        /**
-         * 队列元素
+         * 按钮目标元素
          */
         target:{value:EMPTY},
         /**
-         * 文件信息数据
+         * swf容器
          */
-        files:{value:[]},
-        //上传组件实例
-        uploader:{value:EMPTY}
+        swfWrapper : {value : EMPTY},
+        /**
+         * swf容器的id，如果不指定将使用随机id
+         */
+        swfWrapperId:{value:EMPTY},
+        /**
+         * flash容器模板
+         */
+        tpl:{
+            value:'<div id="{id}" class="uploader-button-swf" style="position: absolute;top:0;left:0;"></div>'
+        },
+        /**
+         * 是否开启多选支持
+         */
+        multiple:{
+            value:true,
+            setter:function (v) {
+                var self = this, swfUploader = self.get('swfUploader');
+                if (swfUploader) {
+                    swfUploader.multifile(v);
+                }
+                return v;
+            }
+        },
+        /**
+         * 文件过滤，格式类似[{desc:"JPG,JPEG,PNG,GIF,BMP",ext:"*.jpg;*.jpeg;*.png;*.gif;*.bmp"}]
+         */
+        fileFilters:{
+            value:[],
+            setter:function (v) {
+                var self = this, swfUploader = self.get('swfUploader');
+                if (swfUploader && S.isArray(v)) {
+                    swfUploader.filter(v);
+                }
+                return v;
+            }
+        },
+        /**
+         * 禁用按钮
+         */
+        disabled : {
+            value : false,
+            setter : function(v){
+                var self = this, swfUploader = self.get('swfUploader');
+                if (swfUploader) {
+                    self._setDisabled(v);
+                }
+                return v;
+            }
+        },
+        /**
+         * 样式
+         */
+        cls : {
+            value : { disabled:'uploader-button-disabled' }
+        },
+        /**
+         * flash配置
+         */
+        flash:{
+            value:{
+                src:'../plugins/ajbridge/uploader.swf',
+                id:'swfUploader',
+                params:{
+                    bgcolor:"#fff",
+                    wmode:"transparent"
+                },
+                //属性
+                attrs:{ },
+                //手型
+                hand:true,
+                //启用按钮模式,激发鼠标事件
+                btn:true
+            }
+        },
+        /**
+         *  ajbridge的uploader的实例
+         */
+        swfUploader:{value:EMPTY}
     }});
+    return SwfButton;
+}, {requires:['node', 'base', 'form/uploader/plugins/ajbridge/uploader']});/*
+Copyright 2011, KISSY UI Library v1.1.5
+MIT Licensed
+build time: Sep 11 10:29
+*/
+/**
+ * AJBridge Class
+ * @author kingfo oicuicu@gmail.com
+ */
+KISSY.add('form/uploader/plugins/ajbridge/ajbridge', function(S,Flash) {
 
-    return Queue;
-}, {requires:['node', 'base', './status']});
+    var ID_PRE = '#',
+        VERSION = '1.0.15',
+		PREFIX = 'ks-ajb-',
+		LAYOUT = 100,
+        EVENT_HANDLER = 'KISSY.AJBridge.eventHandler'; // Flash 事件抛出接受通道
+
+    /**
+     * @constructor
+     * @param {String} id       注册应用容器 id
+     * @param {Object} config   基本配置同 S.Flash 的 config
+     * @param {Boolean} manual  手动进行 init
+     */
+    function AJBridge(id, config,manual) {
+        id = id.replace(ID_PRE, ''); // 健壮性考虑。出于 KISSY 习惯采用 id 选择器
+        config = Flash._normalize(config||{}); // 标准化参数关键字
+
+        var self = this,
+            target = ID_PRE + id, // 之所以要求使用 id，是因为当使用 ajbridge 时，程序员自己应该能确切知道自己在做什么
+            callback = function(data) {
+                if (data.status < 1) {
+                    self.fire('failed', { data: data });
+                    return;
+                }
+				
+                S.mix(self, data);
+
+                // 执行激活 静态模式的 flash
+                // 如果这 AJBridge 先于 DOMReady 前执行 则失效
+                // 建议配合 S.ready();
+                if (!data.dynamic || !config.src) {
+						self.activate();
+                }
+            };
+		
+		// 自动产生 id	
+		config.id = config.id || S.guid(PREFIX);
+
+        // 注册应用实例
+        AJBridge.instances[config.id] = self;
+
+        //	动态方式
+        if (config.src) {
+            // 强制打开 JS 访问授权，AJBridge 的最基本要求
+            config.params.allowscriptaccess = 'always';
+            config.params.flashvars = S.merge(config.params.flashvars, {
+                // 配置 JS 入口
+                jsEntry: EVENT_HANDLER,
+                // 虽然 Flash 通过 ExternalInterface 获得 obejctId
+                // 但是依然存在兼容性问题, 因此需要直接告诉
+                swfID: config.id
+            });
+        }
+
+        // 支持静态方式，但是要求以上三个步骤已静态写入
+        // 可以参考 test.html
+		
+        // 由于完全基于事件机制，因此需要通过监听之后进行初始化 Flash
+		
+        if(manual)self.__args = [target, config, callback];
+		else S.later(Flash.add,LAYOUT,false,Flash,[target, config, callback]);
+    }
+
+    /**
+     * 静态方法
+     */
+    S.app(AJBridge, {
+
+        version: VERSION,
+
+        instances: { },
+
+        /**
+         * 处理来自 AJBridge 已定义的事件
+         * @param {String} id            swf传出的自身ID
+         * @param {Object} event        swf传出的事件
+         */
+        eventHandler: function(id, event) {
+            var instance = AJBridge.instances[id];
+            if (instance) {
+                instance.__eventHandler(id, event);
+            }
+        },
+
+        /**
+         * 批量注册 SWF 公开的方法
+         * @param {Class} C
+         * @param {String|Array} methods
+         */
+        augment: function (C, methods) {
+            if (S.isString(methods)) {
+                methods = [methods];
+            }
+            if (!S.isArray(methods)) return;
+			
+			
+
+            S.each(methods, function(methodName) {
+                C.prototype[methodName] = function() {
+                    try {
+                        return this.callSWF(methodName, S.makeArray(arguments));
+                    } catch(e) { // 当 swf 异常时，进一步捕获信息
+                        this.fire('error', { message: e });
+                    }
+                }
+            });
+        }
+    });
+
+    S.augment(AJBridge, S.EventTarget, {
+
+        init: function() {
+			if(!this.__args)return;
+            Flash.add.apply(Flash, this.__args);
+			this.__args = null;
+			delete this.__args; // 防止重复添加
+        },
+
+        __eventHandler: function(id, event) {
+            var self = this,
+                type = event.type;
+			
+            event.id = id;   //	弥补后期 id 使用
+            switch(type){
+				case "log":
+					 S.log(event.message);
+					break;
+				default:
+					self.fire(type, event);
+			}
+			
+        },
+
+        /**
+         * Calls a specific function exposed by the SWF's ExternalInterface.
+         * @param func {String} the name of the function to call
+         * @param args {Array} the set of arguments to pass to the function.
+         */
+        callSWF: function (func, args) {
+            var self = this;
+            args = args || [];
+            try {
+                if (self.swf[func]) {
+                    return self.swf[func].apply(self.swf, args);
+                }
+            }
+            // some version flash function is odd in ie: property or method not supported by object
+            catch(e) {
+                var params = '';
+                if (args.length !== 0) {
+                    params = "'" + args.join("','") + "'";
+                }
+                //avoid eval for compressiong
+                return (new Function('self', 'return self.swf.' + func + '(' + params + ');'))(self);
+            }
+        }
+    });
+
+    // 为静态方法动态注册
+    // 注意，只有在 S.ready() 后进行 AJBridge 注册才有效。
+    AJBridge.augment(AJBridge, ['activate', 'getReady','getCoreVersion']);
+
+    window.AJBridge = S.AJBridge = AJBridge;
+
+    return AJBridge;
+}, { requires:["flash"] });
+/**
+ * NOTES:
+ * 20120117 移植成kissy1.2.0的模块（明河修改）
+ */
+/*
+Copyright 2011, KISSY UI Library v1.1.5
+MIT Licensed
+build time: Sep 11 10:29
+*/
+/**
+ * @author kingfo  oicuicu@gmail.com
+ */
+KISSY.add('form/uploader/plugins/ajbridge/uploader', function(S,flash,A) {
+
+    /**
+     * @constructor
+     * @param {String} id                                    需要注册的SWF应用ID
+     * @param {Object} config                                配置项
+     * @param {String} config.ds                             default server 的缩写
+     * @param {String} config.dsp                            default server parameters 的缩写
+     * @param {Boolean} config.btn                           启用按钮模式，默认 false
+     * @param {Boolean} config.hand                          显示手型，默认 false
+     */
+    function Uploader(id, config) {
+        config = config || { };
+        var flashvars = { };
+		
+		
+		
+		S.each(['ds', 'dsp', 'btn', 'hand'], function(key) {
+			if(key in config) flashvars[key] = config[key];
+		});
+		
+
+        config.params = config.params || { };
+        config.params.flashvars = S.merge(config.params.flashvars, flashvars);
+
+		Uploader.superclass.constructor.call(this, id, config);
+    }
+
+    S.extend(Uploader, A);
+
+    A.augment(Uploader,
+        [
+            'setFileFilters',
+            'filter',
+            'setAllowMultipleFiles',
+            'multifile',
+            'browse',
+            'upload',
+            'uploadAll',
+            'cancel',
+            'getFile',
+            'removeFile',
+            'lock',
+            'unlock',
+            'setBtnMode',
+            'useHand',
+            'clear'
+        ]
+        );
+
+    Uploader.version = '1.0.1';
+    A.Uploader = Uploader;
+    return A.Uploader;
+},{ requires:["flash","form/uploader/plugins/ajbridge/ajbridge"] });
 /**
  * @fileoverview 进度条
  * @author 剑平（明河）<minghe36@126.com>
  **/
-KISSY.add('form/uploader/queue/progressBar',function(S, Node, Base) {
+KISSY.add('form/uploader/plugins/progressBar/progressBar',function(S, Node, Base) {
     var EMPTY = '',$ = Node.all,
         PROGRESS_BAR = 'progressbar',ROLE = 'role',
         ARIA_VALUEMIN = 'aria-valuemin',ARIA_VALUEMAX = 'aria-valuemax',ARIA_VALUENOW = 'aria-valuenow',
@@ -939,9 +1142,9 @@ KISSY.add('form/uploader/queue/progressBar',function(S, Node, Base) {
      */
     function ProgressBar(wrapper, config) {
         var self = this;
+        config = S.merge({wrapper:$(wrapper)}, config);
         //调用父类构造函数
         ProgressBar.superclass.constructor.call(self, config);
-        self.set('wrapper',$(wrapper));
     }
     S.mix(ProgressBar, /** @lends ProgressBar.prototype*/{
         /**
@@ -1083,6 +1286,365 @@ KISSY.add('form/uploader/queue/progressBar',function(S, Node, Base) {
     }});
     return ProgressBar;
 }, {requires : ['node','base']});/**
+ * @fileoverview 文件上传队列列表显示和处理
+ * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
+ **/
+KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
+    var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploader-queue]:';
+
+    /**
+     * @name Queue
+     * @class 文件上传队列
+     * @constructor
+     * @extends Base
+     * @requires Node,Status
+     */
+    function Queue(target, config) {
+        var self = this;
+        //调用父类构造函数
+        Queue.superclass.constructor.call(self, config);
+        //队列目标
+        self.set('target', $(target));
+    }
+
+    S.mix(Queue, /**@lends Queue*/ {
+        /**
+         * 模板
+         */
+        tpl:{
+            DEFAULT:'<li id="queue-file-{id}" class="clearfix" data-name="{name}">' +
+                '<div class="f-l sprite file-icon"></div>' +
+                '<div class="f-l">{name}</div>' +
+                '<div class="f-l file-status J_FileStatus"></div>' +
+                '</li>'
+        },
+        /**
+         * 支持的事件
+         */
+        event:{
+            //添加完一个文件后的事件
+            ADD:'add',
+            //删除文件后触发
+            REMOVE:'remove',
+            //清理队列所有的文件后触发
+            CLEAR:'clear'
+        },
+        /**
+         * 文件的状态
+         */
+        status:Status.type,
+        //样式
+        cls:{
+            QUEUE:'ks-uploader-queue'
+        },
+        hook:{
+            //状态
+            STATUS:'.J_FileStatus'
+        },
+        FILE_ID_PREFIX:'file-'
+    });
+    //继承于Base，属性getter和setter委托于Base处理
+    S.extend(Queue, Base, /** @lends Queue.prototype*/{
+        /**
+         * 运行组件
+         * @return {Queue}
+         */
+        render:function () {
+            var self = this, $target = self.get('target');
+            $target.addClass(Queue.cls.QUEUE);
+            return self;
+        },
+        /**
+         * 向上传队列添加文件
+         * @param {Object | Array} files 文件数据，传递数组时为批量添加
+         */
+        add:function (files, callback) {
+            var self = this, event = Queue.event;
+            //如果存在多个文件，需要批量添加文件
+            if (files.length > 0) {
+                self._addFiles(files,function(){
+                    callback && callback.call(self);
+                    self.fire(event.ADD);
+                });
+                return false;
+            } else {
+                return self._addFile(files, function (index, fileData) {
+                    callback && callback.call(self, index, fileData);
+                    self.fire(event.ADD, {index:index, file:fileData, target:fileData.target});
+                });
+            }
+        },
+        /**
+         * 向队列添加个文件
+         * @param {Object} file 文件数据
+         * @param {Function} callback 添加完成后执行的回调函数
+         * @return {Object} 文件数据对象
+         */
+        _addFile:function (file,callback) {
+            if (!S.isObject(file)) {
+                S.log(LOG_PREFIX + '_addFile()参数file不合法！');
+                return false;
+            }
+            var self = this,
+                duration = self.get('duration'),
+                //设置文件对象
+                fileData = self._setAddFileData(file),
+                index = self.getFileIndex(fileData.id);
+            //更换文件状态为等待
+            self.fileStatus(index, Queue.status.WAITING);
+            //显示文件信息li元素
+            fileData.target.fadeIn(duration, function () {
+                callback && callback.call(self, index, fileData);
+            });
+            return fileData;
+        },
+        /**
+         * 向队列批量添加文件
+         * @param {Array} files 文件数据数组
+         * @param {Function} callback 全部添加完毕后执行的回调函数
+         */
+        _addFiles : function(files,callback){
+            if (!files.length) {
+                S.log(LOG_PREFIX + '_addFiles()参数files不合法！');
+                return false;
+            }
+            var self = this;
+            _run(0);
+            function _run(index){
+                if(index === files.length){
+                    callback && callback.call(this);
+                    return false;
+                }
+                self._addFile(files[index],function(){
+                    index ++;
+                    _run(index);
+                });
+            }
+        },
+        /**
+         * 删除队列中指定id的文件
+         * @param {Number} indexOrFileId 文件数组索引或文件id
+         * @param {Function} callback 删除元素后执行的回调函数
+         */
+        remove:function (indexOrFileId, callback) {
+            var self = this, files = self.get('files'), file, $file,
+                duration = self.get('duration');
+            //参数是字符串，说明是文件id，先获取对应文件数组的索引
+            if (S.isString(indexOrFileId)) {
+                indexOrFileId = self.getFileIndex(indexOrFileId);
+            }
+            //文件数据对象
+            file = files[indexOrFileId];
+            if (!S.isObject(file)) {
+                S.log(LOG_PREFIX + 'remove()不存在index为' + indexOrFileId + '的文件数据');
+                return false;
+            }
+            $file = file.target;
+            $file.fadeOut(duration, function () {
+                $file.remove();
+                callback && callback.call(self,indexOrFileId, file);
+                self.fire(Queue.event.REMOVE, {index:indexOrFileId, file:file});
+            });
+            //将该id的文件过滤掉
+            files = S.filter(files, function (file, i) {
+                return i !== indexOrFileId;
+            });
+            self.set('files', files);
+            return file;
+        },
+        /**
+         * 清理队列
+         */
+        clear:function () {
+            var self = this, files;
+            _remove();
+            //移除元素
+            function _remove() {
+                files = self.get('files');
+                if (!files.length) {
+                    self.fire(Queue.event.CLEAR);
+                    return false;
+                }
+                self.remove(0, function () {
+                    _remove();
+                });
+            }
+        },
+        /**
+         * 获取或设置文件状态
+         * @param {Number} index 文件数组的索引值
+         * @param {String} status 文件状态
+         * @return {Object}
+         */
+        fileStatus:function (index, status, args) {
+            if (!S.isNumber(index)) return false;
+            var self = this, file = self.getFile(index), oStatus;
+            if (!S.isPlainObject(file)) return false;
+            //状态实例
+            oStatus = file['status'];
+            if (status) oStatus.change(status, args);
+            return  oStatus;
+        },
+        /**
+         * 获取指定索引值的队列中的文件
+         * @param  {Number} id 文件id
+         * @return {Object}
+         */
+        getFile:function (id) {
+            if (!S.isNumber(id)) return false;
+            var self = this, files = self.get('files'),
+                file = files[id];
+            if (!S.isPlainObject(file)) file = false;
+            return file;
+        },
+        /**
+         * 根据文件id来查找文件在队列中的索引
+         * @param {String} fileId 文件id
+         * @return {Number} index
+         */
+        getFileIndex:function (fileId) {
+            var self = this, files = self.get('files'), index = -1;
+            S.each(files, function (file, i) {
+                if (file.id == fileId) {
+                    index = i;
+                    return true;
+                }
+            });
+            return index;
+        },
+        /**
+         * 更新文件数据对象，你可以追加数据
+         * @param {Number} index 文件数组内的索引值
+         * @param {Object} data 数据
+         * @return {Object}
+         */
+        updateFile:function (index, data) {
+            if (!S.isNumber(index)) return false;
+            if (!S.isObject(data)) {
+                S.log(LOG_PREFIX + 'updateFile()的data参数有误！');
+                return false;
+            }
+            var self = this, files = self.get('files'),
+                file = self.getFile(index);
+            if (!file) return false;
+            S.mix(file, data);
+            files[index] = file;
+            self.set('files', files);
+            return file;
+        },
+        /**
+         * 获取等指定状态的文件对应的文件数组index的数组
+         * param {String} type 状态类型
+         * @return {Array}
+         */
+        getIndexs:function (type) {
+            var self = this, files = self.get('files'),
+                status, indexs = [];
+            if (!files.length) return indexs;
+            S.each(files, function (file, index) {
+                if (S.isObject(file)) {
+                    status = file.status;
+                    //文件状态
+                    if (status.get('curType') == type) {
+                        indexs.push(index);
+                    }
+                }
+            });
+            return indexs;
+        },
+        /**
+         * 获取指定状态下的文件
+         * @param {String} status 状态类型
+         * @return {Array}
+         */
+        getFiles:function (status) {
+            var self = this, files = self.get('files'), oStatus, statusFiles = [];
+            if (!files.length) return false;
+            S.each(files, function (file) {
+                if (file) {
+                    oStatus = file.status;
+                    oStatus.get('curType') == status && statusFiles.push(file);
+                }
+            });
+            return statusFiles;
+        },
+        /**
+         * 添加文件时先向文件数据对象追加id、target、size等数据
+         * @param {Object} file 文件数据对象
+         * @return {Object} 新的文件数据对象
+         */
+        _setAddFileData:function (file) {
+            var self = this,
+                files = self.get('files'),
+                uploader = self.get('uploader');
+            if (!S.isObject(file)) {
+                S.log(LOG_PREFIX + '_updateFileData()参数file不合法！');
+                return false;
+            }
+            //设置文件唯一id
+            if (!file.id) file.id = S.guid(Queue.FILE_ID_PREFIX);
+            //转换文件大小单位为（kb和mb）
+            if (file.size) file.textSize = Status.convertByteSize(file.size);
+            //文件信息元素
+            file.target = self._appendFileHtml(file);
+            //状态实例
+            file.status = self._renderStatus(file);
+            //传递Uploader实例给Status
+            if (S.isObject(uploader)) file.status.set('uploader', uploader);
+            files.push(file);
+            return file;
+        },
+        /**
+         * 向列表添加li元素（文件信息）
+         * @param {Object} data 文件对象数据
+         * @return {NodeList}
+         */
+        _appendFileHtml:function (data) {
+            var self = this, $target = self.get('target'),
+                //文件信息显示模板
+                tpl = self.get('tpl'),
+                hFile = S.substitute(tpl, data);
+            return $(hFile).hide().appendTo($target).data('data-file', data);
+
+        },
+        /**
+         * 运行Status
+         * @param {Object} file  文件数据
+         * @return {Status} 状态实例
+         */
+        _renderStatus:function (file) {
+            var self = this, $file = file.target, hook = Queue.hook.STATUS, elStatus;
+            if (!$file.length) return false;
+            //状态层
+            elStatus = $file.children(hook);
+            //实例化状态类
+            return new Status(elStatus, {queue:self, file:file});
+        }
+    }, {ATTRS:/** @lends Queue*/{
+        /**
+         * 模板
+         * @type String
+         */
+        tpl:{ value:Queue.tpl.DEFAULT },
+        /**
+         * 动画速度
+         */
+        duration:{value:0.3},
+        /**
+         * 队列元素
+         */
+        target:{value:EMPTY},
+        /**
+         * 文件信息数据
+         */
+        files:{value:[]},
+        //上传组件实例
+        uploader:{value:EMPTY}
+    }});
+
+    return Queue;
+}, {requires:['node', 'base', './status']});
+/**
  * @fileoverview 文件改变状态后改变状态元素的内容
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
@@ -1095,15 +1657,17 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
      * @constructor
      * @extends Base
      * @requires Node
+     * @param {String} target 目标元素钩子
+     * @param {Object} config 配置
      */
     function Status(target, config) {
         var self = this;
+        config = S.merge({target:$(target)}, config);
         //调用父类构造函数
         Status.superclass.constructor.call(self, config);
-        self.set('target', $(target));
     }
 
-    S.mix(Status, {
+    S.mix(Status, /** @lends Status.prototype*/{
         /**
          * 文件的状态类型
          */
@@ -1114,9 +1678,6 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
             SUCCESS : 'success',
             CANCEL : 'cancel',
             ERROR : 'error'
-        },
-        tpl : {
-            LOADING : '<img src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" />'
         },
         /**
          * 转换文件大小字节数
@@ -1138,6 +1699,7 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
          * 改变状态，调用对应的状态函数
          * @param {String} status 状态名
          * @param {Object} args 传递给状态函数的参数
+         * @return {Status}
          */
         change : function(status,args){
             if (!S.isString(status)) return false;
@@ -1184,14 +1746,16 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
         _waiting : function() {
             var self = this, tpl = self.get('tpl'),waitingTpl = tpl.waiting,
                 uploader = self.get('uploader'),
+                queue = self.get('queue'),
                 //文件id
                 file = self.get('file'),id = file.id,
+                index = queue.getFileIndex(id),
                 $content = self._changeDom(waitingTpl),
                 $upload = $content.children('.J_Upload');
             $upload.on('click',function(ev){
                 ev.preventDefault();
                 if (!S.isObject(uploader)) return false;
-                uploader.upload(id);
+                uploader.upload(index);
             });
         },
         /**
@@ -1212,8 +1776,8 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
                 if (!S.isObject(uploader)) return false;
                 uploader.cancel();
             });
-            //如果是ajax异步上传，加入进度条
-            if(uploadType == 'ajax'){
+            //如果是ajax或flash异步上传，加入进度条
+            if(uploadType == 'ajax' || uploadType == 'flash'){
                 var $progressBar = $content.children('.J_ProgressBar');
                 var progressBar = new ProgressBar($progressBar);
                 progressBar.render();
@@ -1243,16 +1807,16 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
                 file = self.get('file'),id = file.id,
                 progressBar = self.get('progressBar'),
                 $target = self.get('target'),
+                $content,$progressBar,
                 $del;
             if (!S.isString(successTpl)) return false;
             if(S.isObject(progressBar)){
-                var $wrapper =$target.children(),
-                    $cancel = $wrapper.children('.J_UploadCancel');
-                $cancel.remove();
-                $del = $(successTpl).appendTo($wrapper);
-            }else{
-                $del =  self._changeDom(successTpl);
+                var $wrapper =$target.children();
+                $progressBar = $wrapper.children('.J_ProgressBar').clone(true);
             }
+            $content = self._changeDom(successTpl);
+            if($progressBar) $content.prepend($progressBar);
+            $del = $content.children('.J_FileDel');
             //点击删除
             $del.on('click', function(ev) {
                 ev.preventDefault();
@@ -1312,7 +1876,7 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
             waiting : '<div class="waiting-status">等待上传，<a href="#Upload" class="J_Upload">点此上传</a> </div>',
             start : '<div class="start-status clearfix"><div class="f-l  J_ProgressBar uploader-progress"><img class="loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" /></div>' +
                 ' <a class="f-l J_UploadCancel upload-cancel" href="#uploadCancel">取消</a></div> ',
-            success : ' <a href="#fileDel" class="J_FileDel">删除</a>  ',
+            success : ' <div class="success-status"><a href="#fileDel" class="J_FileDel">删除</a></div>',
             cancel : '<div class="cancel-status">已经取消上传，<a href="#reUpload" class="J_ReUpload">点此重新上传</a> </div>',
             error : '<div class="error-status upload-error">{msg}<a href="#fileDel" class="J_FileDel">点此删除</a></div>'
         } },
@@ -1336,11 +1900,11 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
         progressBar : {value : EMPTY}
     }});
     return Status;
-}, {requires : ['node','base','./progressBar']});/**
+}, {requires : ['node','base','../plugins/progressBar/progressBar']});/**
  * @fileoverview 运行文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button) {
+KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfButton) {
     var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploaderRender]:',
         dataName = {CONFIG:'data-config'};
 
@@ -1407,9 +1971,11 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button) {
          * @return {Button}
          */
         _initButton:function () {
-            var self = this, target = self.get('buttonTarget'), name = self.get('name');
+            var self = this, target = self.get('buttonTarget'),
+                name = self.get('name'),
+                type = self.get('type');
             //实例化上传按钮
-            return new Button(target, {name:name});
+            return type != 'flash' && new Button(target, {name:name}) || new SwfButton(target);
         },
         _initThemes:function (callback) {
             var self = this, theme = self.get('theme');
@@ -1471,7 +2037,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button) {
         }
     });
     return RenderUploader;
-}, {requires:['base', 'node', './base', './button/base']});KISSY.add('form/uploader/themes/default/index',function(S, Node, Base,Queue) {
+}, {requires:['base', 'node', './base', './button/base','./button/swfButton']});KISSY.add('form/uploader/themes/default/index',function(S, Node, Base,Queue) {
     var EMPTY = '',$ = Node.all;
     /**
      * @name DefaultTheme
@@ -1851,7 +2417,7 @@ KISSY.add('form/uploader/type/ajax',function(S, Node, UploadType) {
          * @return {AjaxType}
          */
         send : function() {
-            var self = this,ajaxConfig = self.get('ajaxConfig'),
+            var self = this,
                 //服务器端处理文件上传的路径
                 action = self.get('action'),
                 data = self.get('formData');
@@ -1991,6 +2557,144 @@ KISSY.add('form/uploader/type/base',function(S, Node, Base) {
 
     return UploadType;
 }, {requires:['node','base']});/**
+ * @fileoverview flash上传方案，基于龙藏写的ajbridge内的uploader
+ * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
+ **/
+KISSY.add('form/uploader/type/flash', function (S, Node, UploadType, swfUploader) {
+    var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploader-FlashType]:';
+
+    /**
+     * @name FlashType
+     * @class flash上传方案，基于龙藏写的ajbridge内的uploader
+     * @constructor
+     * @extends UploadType
+     * @requires Node
+     */
+    function FlashType(config) {
+        var self = this;
+        //调用父类构造函数
+        FlashType.superclass.constructor.call(self, config);
+        self._init();
+    }
+
+    S.mix(FlashType, /** @lends FlashType.prototype*/{
+        /**
+         * 事件列表
+         */
+        event:S.merge(UploadType.event, {
+            //swf文件已经准备就绪
+            SWF_READY: 'swfReady',
+            //正在上传
+            PROGRESS:'progress'
+        })
+    });
+
+    S.extend(FlashType, UploadType, /** @lends FlashType.prototype*/{
+        /**
+         * 初始化
+         */
+        _init:function () {
+            var self = this, swfUploader = self.get('swfUploader');
+            if(!swfUploader){
+                S.log(LOG_PREFIX + 'swfUploader对象为空！');
+                return false;
+            }
+            //SWF 内容准备就绪
+            swfUploader.on('contentReady', function(ev){
+                self.fire(FlashType.event.SWF_READY);
+            }, self);
+            //监听开始上传事件
+            swfUploader.on('uploadStart', self._uploadStartHandler, self);
+            //监听文件正在上传事件
+            swfUploader.on('uploadProgress', self._uploadProgressHandler, self);
+            //监听文件上传完成事件
+            swfUploader.on('uploadCompleteData',self._uploadCompleteDataHandler,self);
+            //监听文件失败事件
+            swfUploader.on('uploadError',self._uploadErrorHandler,self);
+        },
+        /**
+         * 上传文件
+         * @param {String} id 文件id
+         * @return {FlashType}
+         */
+        upload:function (id) {
+            var self = this, swfUploader = self.get('swfUploader'),
+                action = self.get('action'), method = 'POST',
+                data = self.get('data');
+            self.set('uploadingId',id);
+            swfUploader.upload(id, action, method, data);
+            return self;
+        },
+        /**
+         * 停止上传文件
+         * @return {FlashType}
+         */
+        stop:function () {
+            var self = this, swfUploader = self.get('swfUploader'),
+                uploadingId = self.get('uploadingId');
+            if(uploadingId != EMPTY){
+                swfUploader.cancel(uploadingId);
+                self.fire(FlashType.event.STOP, {id : uploadingId});
+            }
+            return self;
+        },
+        /**
+         * 开始上传事件监听器
+         * @param {Object} ev ev.file：文件数据
+         */
+        _uploadStartHandler : function(ev){
+            var self = this;
+            self.fire(FlashType.event.START, {'file' : ev.file });
+        },
+        /**
+         * 上传中事件监听器
+         * @param {Object} ev
+         */
+        _uploadProgressHandler:function (ev) {
+            var self = this;
+            S.mix(ev, {
+                //已经读取的文件字节数
+                loaded:ev.bytesLoaded,
+                //文件总共字节数
+                total : ev.bytesTotal
+            });
+            self.fire(FlashType.event.PROGRESS, { 'loaded':ev.loaded, 'total':ev.total });
+        },
+        /**
+         * 上传完成后事件监听器
+         * @param {Object} ev
+         */
+        _uploadCompleteDataHandler : function(ev){
+            var self = this,result;
+            try {
+                result = JSON.parse(ev.data);
+            } catch(err) {
+                S.log(LOG_PREFIX + 'json数据格式不合法！');
+                self.fire(FlashType.event.ERROR, {msg : '不是合法的json数据'});
+            }
+            self.set('uploadingId',EMPTY);
+            self.fire(FlashType.event.SUCCESS, {result : result});
+        },
+        /**
+         *文件上传失败后事件监听器
+         */
+        _uploadErrorHandler : function(ev){
+            var self = this;
+            self.set('uploadingId',EMPTY);
+            self.fire(FlashType.event.ERROR, {msg : ev.msg});
+        }
+    }, {ATTRS:/** @lends FlashType*/{
+        /**
+         * ajbridge的uploader组件的实例，必须参数
+         */
+        swfUploader:{value:EMPTY},
+        /**
+         * 正在上传的文件id
+         */
+        uploadingId : {value : EMPTY}
+    }});
+    return FlashType;
+}, {requires:['node', './base']});/**
  * @fileoverview iframe方案上传
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
