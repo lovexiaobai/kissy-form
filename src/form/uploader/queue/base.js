@@ -200,13 +200,13 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         },
         /**
          * 获取指定索引值的队列中的文件
-         * @param  {Number} id 文件id
+         * @param  {Number} index 文件在队列中的索引
          * @return {Object}
          */
-        getFile:function (id) {
-            if (!S.isNumber(id)) return false;
+        getFile:function (index) {
+            if (!S.isNumber(index)) return false;
             var self = this, files = self.get('files'),
-                file = files[id];
+                file = files[index];
             if (!S.isPlainObject(file)) file = false;
             return file;
         },

@@ -31,17 +31,19 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             RENDER:'render',
             //选择完文件后触发
             SELECT:'select',
-            //开始上传
+            //开始上传后触发
             START:'start',
+            //正在上传中时触发
+            PROGRESS : 'progress',
             //上传完成（在上传成功或上传失败后都会触发）
             COMPLETE:'complete',
-            //上传成功
+            //上传成功后触发
             SUCCESS:'success',
             //批量上传结束后触发
             UPLOAD_FILES:'uploadFiles',
             //取消上传后触发
             CANCEL:'cancel',
-            //上传失败
+            //上传失败后触发
             ERROR:'error'
         },
         /**
@@ -110,7 +112,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             //设置当前上传的文件id
             self.set('curUploadIndex', index);
             //改变文件上传状态为start
-            queue.fileStatus(index, queue.constructor.status.START);
+            queue.fileStatus(index, Uploader.status.START);
 
             //开始上传
             uploadType.upload(uploadParam);
@@ -269,13 +271,13 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
                 //如果是flash上传，并不存在文件上传域input
                 file.input = ev.input || file;
             });
-            self.fire(Uploader.event.SELECT, files);
+            self.fire(Uploader.event.SELECT, {files : files});
             //阻止文件上传
             if (!self.get('isAllowUpload')) return false;
             queue.add(files, function () {
                 //如果不存在正在上传的文件，且允许自动上传，上传该文件
                 if (curId == EMPTY && autoUpload) {
-                    self.uploadAll();
+                    self.uploadFiles();
                 }
             });
         },
@@ -302,7 +304,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
                 //修改队列中文件的状态为success（上传完成）
                 queue.fileStatus(index, Uploader.status.SUCCESS);
                 self._success(result.data);
-                self.fire(event.SUCCESS);
+                self.fire(event.SUCCESS,{index : index,file : queue.getFile(index)});
             } else {
                 var msg = result.msg || EMPTY;
                 //修改队列中文件的状态为error（上传失败）
@@ -311,7 +313,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             }
             //置空当前上传的文件在队列中的索引值
             self.set('curUploadIndex', EMPTY);
-            self.fire(event.COMPLETE);
+            self.fire(event.COMPLETE,{index : index,file : queue.getFile(index)});
             //存在批量上传操作，继续上传
             var uploadFilesStatus = self.get('uploadFilesStatus');
             if (uploadFilesStatus != EMPTY) self._uploaderStatusFile(uploadFilesStatus);
@@ -333,8 +335,11 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
          */
         _uploadProgressHandler:function (ev) {
             var self = this, queue = self.get('queue'),
-                id = self.get('curUploadIndex');
-            queue.fileStatus(id, Uploader.status.PROGRESS, ev);
+                index = self.get('curUploadIndex'),
+                file = queue.getFile(index);
+            S.mix(ev,{file : file});
+            queue.fileStatus(index, Uploader.status.PROGRESS, ev);
+            self.fire(Uploader.event.PROGRESS,ev);
         },
         /**
          * 上传成功后执行的回调函数
