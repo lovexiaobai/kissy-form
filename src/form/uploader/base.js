@@ -2,7 +2,7 @@
  * @fileoverview 异步文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, AjaxType, FlashType, Flash) {
+KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, AjaxType, FlashType) {
     var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploader]:';
 
     /**
@@ -37,7 +37,10 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             COMPLETE:'complete',
             //上传成功
             SUCCESS:'success',
-            UPLOAD_ALL:'uploadAll',
+            //批量上传结束后触发
+            UPLOAD_FILES:'uploadFiles',
+            //取消上传后触发
+            CANCEL:'cancel',
             //上传失败
             ERROR:'error'
         },
@@ -144,7 +147,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             //没有存在需要上传的文件，退出上传
             if (!fileIndexs.length) {
                 self.set('uploadFilesStatus', EMPTY);
-                self.fire(Uploader.event.UPLOAD_ALL);
+                self.fire(Uploader.event.UPLOAD_FILES);
                 return false;
             }
             //开始上传等待中的文件
@@ -297,13 +300,13 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             status = result.status;
             if (status) {
                 //修改队列中文件的状态为success（上传完成）
-                queue.fileStatus(index, queue.constructor.status.SUCCESS);
+                queue.fileStatus(index, Uploader.status.SUCCESS);
                 self._success(result.data);
                 self.fire(event.SUCCESS);
             } else {
                 var msg = result.msg || EMPTY;
                 //修改队列中文件的状态为error（上传失败）
-                queue.fileStatus(index, queue.constructor.status.ERROR, msg);
+                queue.fileStatus(index, Uploader.status.ERROR, msg);
                 self.fire(event.ERROR, {status:status});
             }
             //置空当前上传的文件在队列中的索引值
@@ -320,9 +323,10 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             var self = this, queue = self.get('queue'),
                 index = self.get('curUploadIndex');
             //更改取消上传后的状态
-            queue.fileStatus(index, queue.constructor.status.CANCEL);
+            queue.fileStatus(index, Uploader.status.CANCEL);
             //重置当前上传文件id
             self.set('curUploadIndex', EMPTY);
+            self.fire(Uploader.event.CANCEL,{index : index});
         },
         /**
          * 上传进度监听器
@@ -330,7 +334,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
         _uploadProgressHandler:function (ev) {
             var self = this, queue = self.get('queue'),
                 id = self.get('curUploadIndex');
-            queue.fileStatus(id, queue.constructor.status.PROGRESS, ev);
+            queue.fileStatus(id, Uploader.status.PROGRESS, ev);
         },
         /**
          * 上传成功后执行的回调函数
