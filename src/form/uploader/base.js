@@ -157,8 +157,8 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
             return S.isArray(fpv) && fpv.length > 0;
         },
         /**
-         * 获取上传方式类（iframe方案或ajax方案）
-         * @return {IframeType|AjaxType}
+         * 获取上传方式类（共有iframe、ajax、flash三种方式）
+         * @return {IframeType|AjaxType|FlashType}
          */
         getUploadType : function(type) {
             var self = this,types = Uploader.type,
@@ -290,8 +290,9 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
                 self._success(result.data);
                 self.fire(event.SUCCESS);
             } else {
+                var msg = result.msg || EMPTY;
                 //修改队列中文件的状态为error（上传失败）
-                queue.fileStatus(index, queue.constructor.status.ERROR);
+                queue.fileStatus(index, queue.constructor.status.ERROR,msg);
                 self.fire(event.ERROR, {status : status});
             }
             //置空当前上传的文件在队列中的索引值
@@ -363,6 +364,10 @@ KISSY.add('form/uploader/base',function(S, Base, Node, UrlsInput, IframeType, Aj
          * 是否自动上传
          */
         autoUpload : {value : true},
+        /**
+         * 允许上传的文件最大大小，iframe上传方式不支持大小验证，务必服务器端也对文件大小进行验证
+         */
+        /*maxSize : {value : 5000},*/
         /**
          * 存储文件路径的隐藏域的name名
          */
