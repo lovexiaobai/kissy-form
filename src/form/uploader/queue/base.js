@@ -35,12 +35,18 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          * 支持的事件
          */
         event:{
-            //添加完一个文件后的事件
+            //成功运行后触发
+            RENDER : 'render',
+            //添加完文件后触发，如果是批量添加ev不存在file和index数据
             ADD:'add',
             //删除文件后触发
             REMOVE:'remove',
             //清理队列所有的文件后触发
-            CLEAR:'clear'
+            CLEAR:'clear',
+            //当改变文件状态后触发
+            FILE_STATUS : 'fileStatus',
+            //更新文件数据后触发
+            UPDATE_FILE : 'updateFile'
         },
         /**
          * 文件的状态
@@ -65,6 +71,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         render:function () {
             var self = this, $target = self.get('target');
             $target.addClass(Queue.cls.QUEUE);
+            self.fire(Queue.event.RENDER);
             return self;
         },
         /**
@@ -155,8 +162,8 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             $file = file.target;
             $file.fadeOut(duration, function () {
                 $file.remove();
-                callback && callback.call(self,indexOrFileId, file);
                 self.fire(Queue.event.REMOVE, {index:indexOrFileId, file:file});
+                callback && callback.call(self,indexOrFileId, file);
             });
             //将该id的文件过滤掉
             files = S.filter(files, function (file, i) {
@@ -196,6 +203,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             //状态实例
             oStatus = file['status'];
             if (status) oStatus.change(status, args);
+            self.fire(Queue.event.FILE_STATUS,{index : index,status : status});
             return  oStatus;
         },
         /**
@@ -243,6 +251,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             S.mix(file, data);
             files[index] = file;
             self.set('files', files);
+            self.fire(Queue.event.UPDATE_FILE,{index : index, file : file});
             return file;
         },
         /**
