@@ -11,7 +11,7 @@
     <!--合并源码文件，排除模板js-->
     <target name="concat">
         <concat destfile="render-pkg.js" encoding="${charset}" outputencoding="${charset}">
-            <fileset dir="${src.dir}" includes="**/*.js" excludes="tests/*.js,demo/**/*.js,auth/*.js,themes/*.js"/>
+            <fileset dir="${src.dir}" includes="**/*.js" excludes="tests/*.js,demo/**/*.js,auth/*.js,themes/**/*.js"/>
             <filterchain>
                 <deletecharacters chars="&#xFEFF;"/>
             </filterchain>
