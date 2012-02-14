@@ -15,7 +15,7 @@ KISSY.add('form/uploader/themes/lineQueue/index', function(S, Node, DefaultTheme
 	
 	S.extend(GrayQueue, DefaultTheme, /** @lends GrayQueue.prototype*/{
 		
-	}
+	})
 	
 	return LineQueue;
 	

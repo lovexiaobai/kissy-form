@@ -1,0 +1,1 @@
+KISSY.add("form/uploader/themes/default/index",function(c,f,d,e){function a(b){a.superclass.constructor.call(this,b);this._init()}c.extend(a,d,{_init:function(){var b=this.get("queueTarget");this.set("queue",new e(b))},afterUploaderRender:function(){}},{ATTRS:{queueTarget:{value:""},queue:{value:""}}});return a},{requires:["node","base","../../queue/base","./style.css"]});

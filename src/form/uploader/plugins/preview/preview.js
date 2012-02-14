@@ -5,7 +5,7 @@
  * @requires KISSY 1.2+
  */
 
-KISSY.add(function(S){
+KISSY.add('form/uploader/preview/preview',function(S){
 	
 	var D = S.DOM,
 		E = S.Event,
