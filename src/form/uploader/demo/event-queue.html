@@ -80,7 +80,6 @@
     //加载队列模块
     S.use('form/uploader/queue/base,form/uploader/themes/default/style.css', function (S, Queue) {
         var queue = new Queue('#J_Queue');
-        queue.render();
         queue.on('render',function(ev){
             addMsg(ev, '组件成功运行！');
         });
@@ -99,6 +98,8 @@
         queue.on('updateFile',function(ev){
             addMsg(ev, '更新文件数据，文件名为：' + ev.file.name + '，索引值为：' + ev.index);
         });
+        //运行队列
+        queue.render();
 
         $('#J_Add').on('click', function (ev) {
             //测试文件数据
