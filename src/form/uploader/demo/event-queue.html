@@ -36,7 +36,6 @@
     <h4>事件面板的代码</h4>
     <pre class='brush: js;'>
         var queue = new Queue('#J_Queue');
-        queue.render();
         queue.on('render',function(ev){
             addMsg(ev, '组件成功运行！');
         });
@@ -55,6 +54,8 @@
         queue.on('updateFile',function(ev){
             addMsg(ev, '更新文件数据，文件名为：' + ev.file.name + '，索引值为：' + ev.index);
         });
+
+        queue.render();
     </pre>
 </article>
 <script>

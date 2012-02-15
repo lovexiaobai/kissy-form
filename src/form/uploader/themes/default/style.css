@@ -162,7 +162,7 @@
 }
 
 /**-----进度条------**/
-.ks-uploader-queue .file-status .ks-progress-bar {
+.ks-progress-bar {
     border: 1px solid #FA9515;
     height: 10px;
     background-color: #fff;
