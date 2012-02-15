@@ -85,7 +85,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             return self;
         },
         /**
-         * 上传文件
+         * 上传指定队列索引的文件
          * @param {Number} index 文件对应的在上传队列数组内的索引值
          */
         upload:function (index) {
@@ -118,12 +118,33 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             uploadType.upload(uploadParam);
         },
         /**
-         * 取消上传
+         * 取消当前正在上传的文件的上传
+         * @param {Number} index 队列数组索引
+         * @return {Uploader}
          */
-        cancel:function () {
-            var self = this, uploadType = self.get('uploadType');
-            uploadType.stop();
-            //取消上传后刷新状态，更改路径等操作请看_uploadStopHanlder()
+        cancel:function (index) {
+            var self = this, uploadType = self.get('uploadType'),
+                queue = self.get('queue'),
+                statuses = Uploader.status,
+                status = queue.fileStatus(index);
+            if(S.isNumber(index) && status != statuses.SUCCESS){
+                queue.fileStatus(index,statuses.CANCEL);
+            }else{
+                //取消上传后刷新状态，更改路径等操作请看_uploadStopHanlder()
+                uploadType.stop();
+                //存在批量上传操作，继续上传其他文件
+                self._continueUpload();
+            }
+            return self;
+        },
+        /**
+         * 停止上传动作
+         * @return {Uploader}
+         */
+        stop : function(){
+            var self = this;
+            self.set('uploadFilesStatus',EMPTY);
+            self.cancel();
             return self;
         },
         /**
@@ -315,8 +336,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             self.set('curUploadIndex', EMPTY);
             self.fire(event.COMPLETE,{index : index,file : queue.getFile(index)});
             //存在批量上传操作，继续上传
-            var uploadFilesStatus = self.get('uploadFilesStatus');
-            if (uploadFilesStatus != EMPTY) self._uploaderStatusFile(uploadFilesStatus);
+            self._continueUpload();
         },
         /**
          * 取消上传后调用的方法
@@ -329,6 +349,16 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             //重置当前上传文件id
             self.set('curUploadIndex', EMPTY);
             self.fire(Uploader.event.CANCEL,{index : index});
+        },
+        /**
+         * 如果存在批量上传，则继续上传
+         */
+        _continueUpload : function(){
+            var self = this,
+                uploadFilesStatus = self.get('uploadFilesStatus');
+            if (uploadFilesStatus != EMPTY) {
+                self._uploaderStatusFile(uploadFilesStatus);
+            }
         },
         /**
          * 上传进度监听器
@@ -397,8 +427,6 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
         curUploadIndex:{value:EMPTY},
         uploadType:{value:{}},
         urlsInput:{value:EMPTY},
-        //是否正在上传等待中的文件
-        isUploadWaitFiles:{value:false},
         //存在批量上传文件时，指定的文件状态
         uploadFilesStatus:{value:EMPTY}
     }});
