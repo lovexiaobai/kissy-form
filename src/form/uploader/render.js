@@ -4,7 +4,12 @@
  **/
 KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfButton) {
     var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploaderRender]:',
-        dataName = {CONFIG:'data-config'};
+        dataName = {
+            CONFIG:'data-config',
+            BUTTON_CONFIG : 'data-button-config',
+            THEME_CONFIG : 'data-theme-config',
+            QUEUE_CONFIG : 'data-queue-config'
+        };
 
     /**
      * 解析组件在页面中data-config成为组件的配置
@@ -69,11 +74,16 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
          * @return {Button}
          */
         _initButton:function () {
-            var self = this, target = self.get('buttonTarget'),
+            var self = this,
+                target = self.get('buttonTarget'),
+                //从html标签的伪属性中抓取配置
+                config = parseConfig(target,dataName.BUTTON_CONFIG),
                 name = self.get('name'),
                 type = self.get('type');
+            //合并配置
+            config = S.merge({name:name},config);
             //实例化上传按钮
-            return type != 'flash' && new Button(target, {name:name}) || new SwfButton(target);
+            return type != 'flash' && new Button(target, config) || new SwfButton(target);
         },
         _initThemes:function (callback) {
             var self = this, theme = self.get('theme');
