@@ -7,8 +7,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
         dataName = {
             CONFIG:'data-config',
             BUTTON_CONFIG : 'data-button-config',
-            THEME_CONFIG : 'data-theme-config',
-            QUEUE_CONFIG : 'data-queue-config'
+            THEME_CONFIG : 'data-theme-config'
         };
 
     /**
@@ -17,7 +16,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
      * @param {String} dataConfigName 配置名
      * @return {Object}
      */
-    function parseConfig(hook, dataConfigName) {
+    S.parseConfig = function(hook, dataConfigName) {
         var config = {}, sConfig, DATA_CONFIG = dataConfigName || dataName.CONFIG;
         sConfig = $(hook).attr(DATA_CONFIG);
         if (!S.isString(sConfig)) return {};
@@ -27,7 +26,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
             S.log(LOG_PREFIX + '请检查' + hook + '上' + DATA_CONFIG + '属性内的json格式是否符合规范！');
         }
         return config;
-    }
+    };
 
     /**
      * @name RenderUploader
@@ -40,7 +39,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
     function RenderUploader(buttonTarget, queueTarget, config) {
         var self = this;
         //合并配置
-        config = S.mix(parseConfig(buttonTarget), config);
+        config = S.mix(S.parseConfig(buttonTarget), config);
         //超类初始化
         RenderUploader.superclass.constructor.call(self, config);
         self.set('buttonTarget', buttonTarget);
@@ -77,7 +76,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
             var self = this,
                 target = self.get('buttonTarget'),
                 //从html标签的伪属性中抓取配置
-                config = parseConfig(target,dataName.BUTTON_CONFIG),
+                config = S.parseConfig(target,dataName.BUTTON_CONFIG),
                 name = self.get('name'),
                 type = self.get('type');
             //合并配置
@@ -86,10 +85,15 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
             return type != 'flash' && new Button(target, config) || new SwfButton(target);
         },
         _initThemes:function (callback) {
-            var self = this, theme = self.get('theme');
+            var self = this, theme = self.get('theme'),
+                target = self.get('buttonTarget'),
+                //从html标签的伪属性中抓取配置
+                config = S.parseConfig(target,dataName.THEME_CONFIG);
             S.use(theme + '/index', function (S, Theme) {
                 var queueTarget = self.get('queueTarget'),
-                    theme = new Theme({queueTarget:queueTarget});
+                    theme;
+                S.mix(config,{queueTarget:queueTarget});
+                theme = new Theme(config);
                 callback && callback.call(self, theme);
             })
         },
@@ -98,8 +102,10 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
          * @return {Queue}
          */
         _initQueue:function () {
-            var self = this, target = self.get('queueTarget');
-            return new Queue(target);
+            var self = this, target = self.get('queueTarget'),
+                //从html标签的伪属性中抓取配置
+                config = S.parseConfig(target,dataName.QUEUE_CONFIG);
+            return new Queue(target,config);
         },
         /**
          * 文件上传验证

@@ -335,12 +335,16 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          * @return {Status} 状态实例
          */
         _renderStatus:function (file) {
-            var self = this, $file = file.target, hook = Queue.hook.STATUS, elStatus;
+            var self = this, $file = file.target,
+                hook = Queue.hook.STATUS, elStatus,
+                statusConfig = self.get('statusConfig');
             if (!$file.length) return false;
             //状态层
             elStatus = $file.children(hook);
+            //合并参数
+            S.mix(statusConfig,{queue:self, file:file});
             //实例化状态类
-            return new Status(elStatus, {queue:self, file:file});
+            return new Status(elStatus, statusConfig);
         }
     }, {ATTRS:/** @lends Queue*/{
         /**
@@ -360,6 +364,12 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          * 文件信息数据
          */
         files:{value:[]},
+        /**
+         * 状态类配置，queue和file参数会被组件内部覆盖，传递无效
+         */
+        statusConfig : {
+            value : {}
+        },
         //上传组件实例
         uploader:{value:EMPTY}
     }});
