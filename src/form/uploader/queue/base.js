@@ -37,8 +37,10 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         event:{
             //成功运行后触发
             RENDER : 'render',
-            //添加完文件后触发，如果是批量添加ev不存在file和index数据
+            //添加完文件后触发
             ADD:'add',
+            //批量添加文件后触发
+            ADD_FILES:'addFiles',
             //删除文件后触发
             REMOVE:'remove',
             //清理队列所有的文件后触发
@@ -84,13 +86,12 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             if (files.length > 0) {
                 self._addFiles(files,function(){
                     callback && callback.call(self);
-                    self.fire(event.ADD);
+                    self.fire(event.ADD_FILES,{files : files});
                 });
                 return false;
             } else {
                 return self._addFile(files, function (index, fileData) {
                     callback && callback.call(self, index, fileData);
-                    self.fire(event.ADD, {index:index, file:fileData, target:fileData.target});
                 });
             }
         },
@@ -114,6 +115,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             self.fileStatus(index, Queue.status.WAITING);
             //显示文件信息li元素
             fileData.target.fadeIn(duration, function () {
+                self.fire(Queue.event.ADD, {index:index, file:fileData, target:fileData.target});
                 callback && callback.call(self, index, fileData);
             });
             return fileData;
