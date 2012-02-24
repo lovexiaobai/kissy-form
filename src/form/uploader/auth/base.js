@@ -38,6 +38,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
                 var file = ev.file;
                 self.testAllowExt(file);
                 self.testMaxSize(file);
+                self.testRepeat(file);
             });
             queue.on('remove',function(ev){
                 var file = ev.file,status = file.status,statusType = status.get('curType');
@@ -125,7 +126,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
          * 检验是否达到最大允许上传数
          * @return {Boolean}
          */
-        testMax:function (file) {
+        testMax:function () {
             var self = this, uploader = self.get('uploader'),
                 queue = uploader.get('queue'),
                 len = queue.getFiles('success').length,
@@ -159,6 +160,33 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
                 self._stopUpload(file,msg);
             }
             return isAllow;
+        },
+        /**
+         * 检验文件是否重复（检验文件名，很有可能存在误差，比如不同目录下的相同文件名会被判定为同一文件）
+         * @param {Object} file 文件对象
+         * @return {Boolean}
+         */
+        testRepeat : function(file){
+            if(!S.isObject(file)) return false;
+            var self = this,
+                fileName = file.name,
+                rule = self.getRule('allowRepeat'),
+                isAllowRepeat = rule[0],
+                msg = rule[1],
+                uploader = self.get('uploader'),
+                queue = uploader.get('queue'),
+                //上传成功的文件
+                files = queue.getFiles('success'),
+                isRepeat = false ;
+            //允许重复文件名，直接返回false
+            if(isAllowRepeat) return false;
+            S.each(files,function(f){
+                if(f.name == fileName){
+                    self._stopUpload(file,msg);
+                    return isRepeat = true;
+                }
+            });
+            return isRepeat;
         },
         /**
          * 设置flash按钮的文件格式过滤
