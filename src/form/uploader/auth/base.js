@@ -21,7 +21,14 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
         Auth.superclass.constructor.call(self, config);
         self._init();
     }
-
+    S.mix(Auth,/** @lends Auth*/{
+        /**
+         * 事件
+         */
+        event : {
+            ERROR : 'error'
+        }
+    });
     S.extend(Auth, Base, /** @lends Auth.prototype*/{
         /**
          * 初始化
@@ -75,6 +82,23 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
             return type == uploaderType;
         },
         /**
+         * 检验是否必须上传一个文件
+         * @return {Boolean}
+         */
+        testRequire : function(){
+            var self = this,uploader = self.get('uploader'),
+                urlsInput = uploader.get('urlsInput'),
+                urls = urlsInput.get('urls'),
+                rule = self.getRule('require'),
+                isRequire = rule[0],
+                isHasUrls = urls.length > 0;
+            if(!isRequire) return true;
+            if(!isHasUrls){
+                self.fire(Auth.event.ERROR,{type:'require',msg : rule[1],value : isRequire});
+            }
+            return isHasUrls;
+        },
+        /**
          * 测试是否是允许的文件上传类型
          * @param {Object} file 文件对象
          * @return {Boolean} 是否通过
@@ -97,6 +121,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
                 fileExt = _getFileExt(fileName);
                 msg = S.substitute(allowExts[1],{ext : fileExt});
                 self._stopUpload(file,msg);
+                self.fire(Auth.event.ERROR,{type:'allowExts',msg : msg,value : allowExts[0]});
             }
             /**
              * 是否允许上传
@@ -138,6 +163,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
                 //禁用按钮
                 button.set('disabled',true);
                 uploader.set('isAllowUpload', false);
+                self.fire(Auth.event.ERROR,{type:'max',msg : rule[1],value : rule[0]});
             }else{
                 button.set('disabled',false);
                 uploader.set('isAllowUpload', true);
@@ -158,6 +184,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
             if(!isAllow){
                 msg = S.substitute(rule[1],{maxSize:S.convertByteSize(maxSize),size : file.textSize});
                 self._stopUpload(file,msg);
+                self.fire(Auth.event.ERROR,{type:'maxSize',msg : msg,value : rule[0]});
             }
             return isAllow;
         },
@@ -183,6 +210,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
             S.each(files,function(f){
                 if(f.name == fileName){
                     self._stopUpload(file,msg);
+                    self.fire(Auth.event.ERROR,{type:'allowRepeat',msg : msg,value : rule[0]});
                     return isRepeat = true;
                 }
             });
@@ -239,14 +267,6 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
          * 上传组件实例
          */
         uploader:{ value:EMPTY },
-        /**
-         * 是否开启验证
-         */
-        isAuth:{ value:true },
-        /**
-         * 验证是否通过
-         */
-        isPass:{ value:false },
         /**
          * 规则
          */
