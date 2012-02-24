@@ -2,7 +2,7 @@
  * @fileoverview 运行文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfButton) {
+KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfButton,Auth) {
     var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploaderRender]:',
         dataName = {
             CONFIG:'data-config',
@@ -65,6 +65,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
                 uploader.render();
                 self.set('uploader', uploader);
                 if(theme.afterUploaderRender) theme.afterUploaderRender(uploader);
+                self._auth();
                 self.fire('init', {uploader:uploader});
             });
         },
@@ -98,31 +99,17 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
             })
         },
         /**
-         * 初始化上传文件队列
-         * @return {Queue}
-         */
-        _initQueue:function () {
-            var self = this, target = self.get('queueTarget'),
-                //从html标签的伪属性中抓取配置
-                config = S.parseConfig(target,dataName.QUEUE_CONFIG);
-            return new Queue(target,config);
-        },
-        /**
          * 文件上传验证
          */
         _auth:function () {
-            /*var self = this,buttonTarget = self.get('buttonTarget'),
-             $btn = $(buttonTarget),
-             //Button的实例
-             button = self.get('button'),
-             //TODO:需要修改
-             fileInput = button.fileInput,
-             DATA_NAME = dataName.VALID, valid;
-             if(!$btn.length) return false;
-             valid = $btn.attr(DATA_NAME);
-             //不存在验证配置，直接退出
-             if(!valid) return false;
-             $(fileInput).attr(DATA_NAME,valid);*/
+            var self = this,buttonTarget = self.get('buttonTarget'),
+                uploader = self.get('uploader'),
+                authConfig,
+                auth;
+            if($(buttonTarget).attr('data-auth')){
+                authConfig = S.parseConfig(buttonTarget,'data-auth');
+                auth = new Auth(uploader,authConfig);
+            }
         }
     }, {
         ATTRS:{
@@ -151,4 +138,4 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
         }
     });
     return RenderUploader;
-}, {requires:['base', 'node', './base', './button/base','./button/swfButton']});
+}, {requires:['base', 'node', './base', './button/base','./button/swfButton','./auth/base']});
