@@ -105,6 +105,10 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             }
             //文件上传域，如果是flash上传,input为文件数据对象
             uploadParam = file.input.id || file.input;
+            var status = queue.fileStatus(index).get('curType');
+            if(status === 'error'){
+                return false;
+            }
             //触发文件上传前事件
             self.fire(Uploader.event.START, {index:index, file:file});
             //阻止文件上传
@@ -430,5 +434,19 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
         //存在批量上传文件时，指定的文件状态
         uploadFilesStatus:{value:EMPTY}
     }});
+
+    /**
+     * 转换文件大小字节数
+     * @param {Number} bytes 文件大小字节数
+     * @return {String} 文件大小
+     */
+    S.convertByteSize = function(bytes){
+        var i = -1;
+        do {
+            bytes = bytes / 1024;
+            i++;
+        } while (bytes > 99);
+        return Math.max(bytes, 0.1).toFixed(1) + ['kB', 'MB', 'GB', 'TB', 'PB', 'EB'][i];
+    }
     return Uploader;
 }, {requires:['base', 'node', './urlsInput', './type/iframe', './type/ajax', './type/flash', 'flash']});
