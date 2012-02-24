@@ -1,6 +1,5 @@
 <?php
 $files = array();
-sleep(2);
 $url = 'http://'.$_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/";
 
 // echo $url;
