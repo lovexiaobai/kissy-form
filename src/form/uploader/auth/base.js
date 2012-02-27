@@ -63,6 +63,13 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
             });
         },
         /**
+         * 验证上传数、是否必须上传
+         */
+        testAll : function(){
+            var self = this;
+            return self.testRequire() && self.testMax();
+        },
+        /**
          * 获取指定规则
          * @param {String} ruleName 规则名
          * @return {Array}
@@ -94,7 +101,8 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
                 isHasUrls = urls.length > 0;
             if(!isRequire) return true;
             if(!isHasUrls){
-                self.fire(Auth.event.ERROR,{type:'require',msg : rule[1],value : isRequire});
+                S.log(LOG_PREFIX + rule[1]);
+                self.fire(Auth.event.ERROR,{rule:'require',msg : rule[1],value : isRequire});
             }
             return isHasUrls;
         },
@@ -121,7 +129,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
                 fileExt = _getFileExt(fileName);
                 msg = S.substitute(allowExts[1],{ext : fileExt});
                 self._stopUpload(file,msg);
-                self.fire(Auth.event.ERROR,{type:'allowExts',msg : msg,value : allowExts[0]});
+                self.fire(Auth.event.ERROR,{rule:'allowExts',msg : msg,value : allowExts[0]});
             }
             /**
              * 是否允许上传
@@ -163,7 +171,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
                 //禁用按钮
                 button.set('disabled',true);
                 uploader.set('isAllowUpload', false);
-                self.fire(Auth.event.ERROR,{type:'max',msg : rule[1],value : rule[0]});
+                self.fire(Auth.event.ERROR,{rule:'max',msg : rule[1],value : rule[0]});
             }else{
                 button.set('disabled',false);
                 uploader.set('isAllowUpload', true);
@@ -184,7 +192,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
             if(!isAllow){
                 msg = S.substitute(rule[1],{maxSize:S.convertByteSize(maxSize),size : file.textSize});
                 self._stopUpload(file,msg);
-                self.fire(Auth.event.ERROR,{type:'maxSize',msg : msg,value : rule[0]});
+                self.fire(Auth.event.ERROR,{rule:'maxSize',msg : msg,value : rule[0]});
             }
             return isAllow;
         },
@@ -210,7 +218,7 @@ KISSY.add('form/uploader/auth/base', function (S, Node,Base) {
             S.each(files,function(f){
                 if(f.name == fileName){
                     self._stopUpload(file,msg);
-                    self.fire(Auth.event.ERROR,{type:'allowRepeat',msg : msg,value : rule[0]});
+                    self.fire(Auth.event.ERROR,{rule:'allowRepeat',msg : msg,value : rule[0]});
                     return isRepeat = true;
                 }
             });
