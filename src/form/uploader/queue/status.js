@@ -165,7 +165,7 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
                 $del;
             if (!S.isString(successTpl)) return false;
             //设置为100%进度
-            progressBar.set('value',100);
+            S.isObject(progressBar) && progressBar.set('value',100);
             S.later(function(){
                 //拷贝进度条
                 if(S.isObject(progressBar)){
