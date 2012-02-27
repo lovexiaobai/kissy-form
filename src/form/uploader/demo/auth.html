@@ -27,26 +27,27 @@
     <h4>上传组件验证的demo</h4>
     <div class="demo-wrapper">
         <form action="test.php" id="J_Form">
-            <!-- 按钮 -->
-            <a id="J_UploaderBtn" class="uploader-button"
-               data-config='{"type" : "auto",
-                             "serverConfig":{"action":"upload.php","data":{"dir":"files/"}, "dataType" : "json"},
-                             "name":"Filedata",
-                             "urlsInputName":"imageUrls"}'
-               data-auth='{
-                            "require":[true,"必须至少上传一个文件！"],
-                            "max":[3, "每次最多上传{max}个文件！"],
-                            "maxSize":[1000, "文件大小为{size}，文件太大！"],
-                            "allowRepeat":[false, "该文件已经存在！"],
-                            "allowExts":[
-                                {"desc":"JPG,JPEG,PNG,GIF,BMP", "ext":"*.jpg;*.jpeg;*.png;*.gif;*.bmp"},
-                                "不支持{ext}格式的文件上传！"
-                            ]
-               }'
-               href="#uploaderFile()">
-                选择要上传的图片
-            </a>
-            <p>只允许上传jpg、gif、png、bmp格式，最大允许大小为1.0MB</p>
+            <div class="clearfix">
+                <a id="J_UploaderBtn" class="uploader-button f-l"
+                   data-config='{"type" : "auto",
+                                 "serverConfig":{"action":"upload.php","data":{"dir":"files/"}, "dataType" : "json"},
+                                 "name":"Filedata",
+                                 "urlsInputName":"imageUrls"}'
+                   data-auth='{
+                                "require":[true,"必须至少上传一个文件！"],
+                                "max":[3, "每次最多上传{max}个文件！"],
+                                "maxSize":[1000, "文件大小为{size}，文件太大！"],
+                                "allowRepeat":[false, "该文件已经存在！"],
+                                "allowExts":[
+                                    {"desc":"JPG,JPEG,PNG,GIF,BMP", "ext":"*.jpg;*.jpeg;*.png;*.gif;*.bmp"},
+                                    "不支持{ext}格式的文件上传！"
+                                ]
+                   }'
+                   href="#uploaderFile()">
+                    选择要上传的图片
+                </a>
+                <p class="f-l">只允许上传jpg、gif、png、bmp格式，最大允许大小为1.0MB</p>
+            </div>
             <div id="J_UploaderMsg" class="valid-under uploader-auth-msg" style="height: 24px;display: none;" id="msgbox"><p class="estate error"><span class="label">此项为必填项。</span></p></div>
             <!-- 图片路径隐藏域 -->
             <input type="hidden" value="" id="J_ImageUrls" name="imageUrls" data-valid="{messagebox:'#J_UploaderMsg','uploader-max' : [1]}">
