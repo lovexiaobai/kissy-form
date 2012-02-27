@@ -186,7 +186,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
          * @return {Boolean}
          */
         isSupportAjax:function () {
-            return S.isObject(FormData);
+            return S.isFunction(FormData);
         },
         /**
          * 是否支持flash方案上传
@@ -390,9 +390,6 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             queue.updateFile(fileId, {'sUrl':url});
             //向路径隐藏域添加路径
             urlsInput.add(url);
-        },
-        _error:function () {
-
         }
     }, {ATTRS:/** @lends Uploader*/{
         /**
@@ -447,6 +444,6 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             i++;
         } while (bytes > 99);
         return Math.max(bytes, 0.1).toFixed(1) + ['kB', 'MB', 'GB', 'TB', 'PB', 'EB'][i];
-    }
+    };
     return Uploader;
 }, {requires:['base', 'node', './urlsInput', './type/iframe', './type/ajax', './type/flash', 'flash']});
