@@ -117,7 +117,6 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
             self.set('curUploadIndex', index);
             //改变文件上传状态为start
             queue.fileStatus(index, Uploader.status.START);
-
             //开始上传
             uploadType.upload(uploadParam);
         },

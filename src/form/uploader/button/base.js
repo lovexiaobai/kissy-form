@@ -81,7 +81,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
          * 重置按钮
          * @return {Object} Button的实例
          */
-        _reset : function() {
+        reset : function() {
             var self = this,
                 inputContainer = self.get('inputContainer');
             //移除表单上传域容器
@@ -144,11 +144,9 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             });
             self.fire(Button.event.CHANGE, {
                 files: files,
-                input: $(fileInput).clone().getDOMNode()
+                input: fileInput.getDOMNode()
             });
-            S.log(LOG_PREFIX + 'button change event was fired just now.');
-            // change完之后reset按钮，防止选择同一个文件无法触发change事件
-            self._reset();
+            self.reset();
         },
         /**
          * 设置上传组件的禁用
