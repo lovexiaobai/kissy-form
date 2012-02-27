@@ -30,6 +30,14 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             'beforeRender' : 'beforeRender',
             'afterRender' : 'afterRender',
             'CHANGE' : 'change'
+        },
+        /**
+         * 获取文件名称（从表单域的值中提取）
+         * @param {String} path 文件路径
+         * @return {String}
+         */
+        getFileName : function(path) {
+            return path.replace(/.*(\/|\\)/, "");
         }
     });
 
@@ -132,16 +140,21 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             var self = this,
                 fileInput = self.get('fileInput'),
                 value = $(fileInput).val(),
+                //IE取不到files
                 oFiles = ev.target.files,files = [];
             if (value == EMPTY) {
                 S.log(LOG_PREFIX + 'No file selected.');
                 return false;
             }
-            S.each(oFiles,function(v){
-                if(S.isObject(v)){
-                    files.push({'name' : v.name,'type' : v.type,'size' : v.size});
-                }
-            });
+            if(oFiles){
+                S.each(oFiles,function(v){
+                    if(S.isObject(v)){
+                        files.push({'name' : v.name,'type' : v.type,'size' : v.size});
+                    }
+                });
+            }else{
+                files.push({'name' : Button.getFileName(value)});
+            }
             self.fire(Button.event.CHANGE, {
                 files: files,
                 input: fileInput.getDOMNode()

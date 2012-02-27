@@ -185,7 +185,13 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
          * @return {Boolean}
          */
         isSupportAjax:function () {
-            return S.isFunction(FormData);
+            var isSupport = false;
+            try{
+                isSupport = S.isFunction(FormData);
+            }catch(e){
+                isSupport = false;
+            }
+            return isSupport;
         },
         /**
          * 是否支持flash方案上传
@@ -237,6 +243,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
                     S.log(LOG_PREFIX + 'type参数不合法');
                     return false;
             }
+            if(UploadType) S.log(LOG_PREFIX + '使用' + type+'上传方式');
             self.set('type', type);
             return UploadType;
         },
@@ -478,6 +485,14 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             'beforeRender' : 'beforeRender',
             'afterRender' : 'afterRender',
             'CHANGE' : 'change'
+        },
+        /**
+         * 获取文件名称（从表单域的值中提取）
+         * @param {String} path 文件路径
+         * @return {String}
+         */
+        getFileName : function(path) {
+            return path.replace(/.*(\/|\\)/, "");
         }
     });
 
@@ -580,16 +595,21 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             var self = this,
                 fileInput = self.get('fileInput'),
                 value = $(fileInput).val(),
+                //IE取不到files
                 oFiles = ev.target.files,files = [];
             if (value == EMPTY) {
                 S.log(LOG_PREFIX + 'No file selected.');
                 return false;
             }
-            S.each(oFiles,function(v){
-                if(S.isObject(v)){
-                    files.push({'name' : v.name,'type' : v.type,'size' : v.size});
-                }
-            });
+            if(oFiles){
+                S.each(oFiles,function(v){
+                    if(S.isObject(v)){
+                        files.push({'name' : v.name,'type' : v.type,'size' : v.size});
+                    }
+                });
+            }else{
+                files.push({'name' : Button.getFileName(value)});
+            }
             self.fire(Button.event.CHANGE, {
                 files: files,
                 input: fileInput.getDOMNode()
@@ -2834,6 +2854,9 @@ KISSY.add('form/uploader/type/ajax',function(S, Node, UploadType) {
         var self = this;
         //调用父类构造函数
         AjaxType.superclass.constructor.call(self, config);
+        try{
+            self.set('formData', new FormData());
+        }catch(e){}
         //处理传递给服务器端的参数
         self._processData();
     }
@@ -2949,7 +2972,7 @@ KISSY.add('form/uploader/type/ajax',function(S, Node, UploadType) {
         /**
          * 表单数据对象
          */
-        formData : {value : new FormData()},
+        formData : {value : EMPTY},
         /**
          * ajax配置
          */
@@ -3297,6 +3320,7 @@ KISSY.add('form/uploader/type/iframe',function(S, Node, UploadType) {
                 return false;
             }
             result = doc.body.innerHTML;
+            S.log(LOG_PREFIX + '服务器端输出:'+result);
             //如果不存在json结果集，直接退出
             if (result == EMPTY) return false;
             try {
@@ -3340,7 +3364,7 @@ KISSY.add('form/uploader/type/iframe',function(S, Node, UploadType) {
             if (hiddens == EMPTY) return false;
             form = S.substitute(formTpl, {'action' : action,'target' : id,'hiddenInputs' : hiddens});
             //克隆文件域，并添加到form中
-            $form = $(form).append(fileInput.clone());
+            $form = $(form).append(fileInput);
             $('body').append($form);
             self.set('form', $form);
             return $form;

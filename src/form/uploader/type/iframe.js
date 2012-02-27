@@ -128,6 +128,7 @@ KISSY.add('form/uploader/type/iframe',function(S, Node, UploadType) {
                 return false;
             }
             result = doc.body.innerHTML;
+            S.log(LOG_PREFIX + '服务器端输出:'+result);
             //如果不存在json结果集，直接退出
             if (result == EMPTY) return false;
             try {
@@ -171,7 +172,7 @@ KISSY.add('form/uploader/type/iframe',function(S, Node, UploadType) {
             if (hiddens == EMPTY) return false;
             form = S.substitute(formTpl, {'action' : action,'target' : id,'hiddenInputs' : hiddens});
             //克隆文件域，并添加到form中
-            $form = $(form).append(fileInput.clone());
+            $form = $(form).append(fileInput);
             $('body').append($form);
             self.set('form', $form);
             return $form;

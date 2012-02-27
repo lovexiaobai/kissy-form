@@ -16,6 +16,9 @@ KISSY.add('form/uploader/type/ajax',function(S, Node, UploadType) {
         var self = this;
         //调用父类构造函数
         AjaxType.superclass.constructor.call(self, config);
+        try{
+            self.set('formData', new FormData());
+        }catch(e){}
         //处理传递给服务器端的参数
         self._processData();
     }
@@ -131,7 +134,7 @@ KISSY.add('form/uploader/type/ajax',function(S, Node, UploadType) {
         /**
          * 表单数据对象
          */
-        formData : {value : new FormData()},
+        formData : {value : EMPTY},
         /**
          * ajax配置
          */

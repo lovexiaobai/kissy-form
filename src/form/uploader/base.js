@@ -185,7 +185,13 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
          * @return {Boolean}
          */
         isSupportAjax:function () {
-            return S.isFunction(FormData);
+            var isSupport = false;
+            try{
+                isSupport = S.isFunction(FormData);
+            }catch(e){
+                isSupport = false;
+            }
+            return isSupport;
         },
         /**
          * 是否支持flash方案上传
@@ -237,6 +243,7 @@ KISSY.add('form/uploader/base', function (S, Base, Node, UrlsInput, IframeType, 
                     S.log(LOG_PREFIX + 'type参数不合法');
                     return false;
             }
+            if(UploadType) S.log(LOG_PREFIX + '使用' + type+'上传方式');
             self.set('type', type);
             return UploadType;
         },
