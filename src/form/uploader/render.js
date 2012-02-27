@@ -7,7 +7,8 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
         dataName = {
             CONFIG:'data-config',
             BUTTON_CONFIG : 'data-button-config',
-            THEME_CONFIG : 'data-theme-config'
+            THEME_CONFIG : 'data-theme-config',
+            AUTH : 'data-auth'
         };
 
     /**
@@ -21,7 +22,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
         sConfig = $(hook).attr(DATA_CONFIG);
         if (!S.isString(sConfig)) return {};
         try {
-            config = JSON.parse(sConfig);
+            config = S.JSON.parse(sConfig);
         } catch (err) {
             S.log(LOG_PREFIX + '请检查' + hook + '上' + DATA_CONFIG + '属性内的json格式是否符合规范！');
         }
@@ -104,11 +105,12 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
         _auth:function () {
             var self = this,buttonTarget = self.get('buttonTarget'),
                 uploader = self.get('uploader'),
-                authConfig,
-                auth;
-            if($(buttonTarget).attr('data-auth')){
-                authConfig = S.parseConfig(buttonTarget,'data-auth');
-                auth = new Auth(uploader,authConfig);
+                rules, auth;
+            //存在验证配置
+            if($(buttonTarget).attr(dataName.AUTH)){
+                rules = S.parseConfig(buttonTarget,dataName.AUTH);
+                auth = new Auth(uploader,{rules : rules});
+                self.set('auth',auth);
             }
         }
     }, {
@@ -134,7 +136,14 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
              * Queue（上传队列）的实例
              */
             queue:{value:EMPTY},
-            uploader:{value:EMPTY}
+            /**
+             * 上传组件实例
+             */
+            uploader:{value:EMPTY},
+            /**
+             * 上传验证实例
+             */
+            auth : {value:EMPTY}
         }
     });
     return RenderUploader;
