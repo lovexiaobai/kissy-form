@@ -35,12 +35,20 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          * 支持的事件
          */
         event:{
-            //添加完一个文件后的事件
+            //成功运行后触发
+            RENDER : 'render',
+            //添加完文件后触发
             ADD:'add',
+            //批量添加文件后触发
+            ADD_FILES:'addFiles',
             //删除文件后触发
             REMOVE:'remove',
             //清理队列所有的文件后触发
-            CLEAR:'clear'
+            CLEAR:'clear',
+            //当改变文件状态后触发
+            FILE_STATUS : 'fileStatus',
+            //更新文件数据后触发
+            UPDATE_FILE : 'updateFile'
         },
         /**
          * 文件的状态
@@ -65,6 +73,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
         render:function () {
             var self = this, $target = self.get('target');
             $target.addClass(Queue.cls.QUEUE);
+            self.fire(Queue.event.RENDER);
             return self;
         },
         /**
@@ -77,13 +86,12 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             if (files.length > 0) {
                 self._addFiles(files,function(){
                     callback && callback.call(self);
-                    self.fire(event.ADD);
+                    self.fire(event.ADD_FILES,{files : files});
                 });
                 return false;
             } else {
                 return self._addFile(files, function (index, fileData) {
                     callback && callback.call(self, index, fileData);
-                    self.fire(event.ADD, {index:index, file:fileData, target:fileData.target});
                 });
             }
         },
@@ -107,6 +115,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             self.fileStatus(index, Queue.status.WAITING);
             //显示文件信息li元素
             fileData.target.fadeIn(duration, function () {
+                self.fire(Queue.event.ADD, {index:index, file:fileData, target:fileData.target});
                 callback && callback.call(self, index, fileData);
             });
             return fileData;
@@ -155,8 +164,8 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             $file = file.target;
             $file.fadeOut(duration, function () {
                 $file.remove();
-                callback && callback.call(self,indexOrFileId, file);
                 self.fire(Queue.event.REMOVE, {index:indexOrFileId, file:file});
+                callback && callback.call(self,indexOrFileId, file);
             });
             //将该id的文件过滤掉
             files = S.filter(files, function (file, i) {
@@ -196,17 +205,18 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             //状态实例
             oStatus = file['status'];
             if (status) oStatus.change(status, args);
+            self.fire(Queue.event.FILE_STATUS,{index : index,status : status});
             return  oStatus;
         },
         /**
          * 获取指定索引值的队列中的文件
-         * @param  {Number} id 文件id
+         * @param  {Number} index 文件在队列中的索引
          * @return {Object}
          */
-        getFile:function (id) {
-            if (!S.isNumber(id)) return false;
+        getFile:function (index) {
+            if (!S.isNumber(index)) return false;
             var self = this, files = self.get('files'),
-                file = files[id];
+                file = files[index];
             if (!S.isPlainObject(file)) file = false;
             return file;
         },
@@ -243,6 +253,7 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
             S.mix(file, data);
             files[index] = file;
             self.set('files', files);
+            self.fire(Queue.event.UPDATE_FILE,{index : index, file : file});
             return file;
         },
         /**
@@ -326,12 +337,16 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          * @return {Status} 状态实例
          */
         _renderStatus:function (file) {
-            var self = this, $file = file.target, hook = Queue.hook.STATUS, elStatus;
+            var self = this, $file = file.target,
+                hook = Queue.hook.STATUS, elStatus,
+                statusConfig = self.get('statusConfig');
             if (!$file.length) return false;
             //状态层
             elStatus = $file.children(hook);
+            //合并参数
+            S.mix(statusConfig,{queue:self, file:file});
             //实例化状态类
-            return new Status(elStatus, {queue:self, file:file});
+            return new Status(elStatus, statusConfig);
         }
     }, {ATTRS:/** @lends Queue*/{
         /**
@@ -351,6 +366,12 @@ KISSY.add('form/uploader/queue/base', function (S, Node, Base, Status) {
          * 文件信息数据
          */
         files:{value:[]},
+        /**
+         * 状态类配置，queue和file参数会被组件内部覆盖，传递无效
+         */
+        statusConfig : {
+            value : {}
+        },
         //上传组件实例
         uploader:{value:EMPTY}
     }});

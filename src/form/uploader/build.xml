@@ -8,51 +8,61 @@
     <property name="src.dir" location="."/>
     <property name="uploader.build.dir" location="${form.build.dir}/uploader"/>
 
-
+    <!--合并源码文件，排除模板js-->
     <target name="concat">
         <concat destfile="render-pkg.js" encoding="${charset}" outputencoding="${charset}">
-            <fileset dir="${src.dir}" includes="**/*.js" excludes="tests/*.js,demo/**/*.js,auth/*.js"/>
+            <fileset dir="${src.dir}" includes="**/*.js" excludes="tests/*.js,demo/**/*.js,auth/*.js,themes/**/*.js"/>
             <filterchain>
                 <deletecharacters chars="&#xFEFF;"/>
             </filterchain>
         </concat>
     </target>
+    <!--移动合并后源文件到build目录下-->
     <target name="move">
         <move file="render-pkg.js" tofile="${uploader.build.dir}/render.js"/>
     </target>
+    <!--删除build目录下的所有文件-->
     <target name="clean-build">
         <delete>
-            <fileset dir="${uploader.build.dir}" includes="**/*.js,**/*.css"/>
+            <fileset dir="${uploader.build.dir}" includes="**/*.js,**/*.css,**/*.swf"/>
         </delete>
     </target>
-    <target name="themes">
+    <!--移动uploader.swf-->
+    <target name="move-swf">
+        <copy file="plugins/ajbridge/uploader.swf" todir="${uploader.build.dir}/plugins/ajbridge"/>
+    </target>
+    <!--移动模板的源码文件到build目录下-->
+    <target name="move-theme">
         <copy todir="${uploader.build.dir}/themes" overwrite="true">
             <fileset dir="${src.dir}/themes"/>
         </copy>
         <delete>
-            <fileset dir="${uploader.build.dir}/themes" includes="**/*.js,**/*.html"/>
+            <fileset dir="${uploader.build.dir}/themes" includes="**/*.html"/>
         </delete>
     </target>
-<!--
-    <target name="concat-theme">
+    <!--构建模板，合并模板下的js文件，生成index-pkg.js，删除源文件，将index-pkg.js改成index.js-->
+    <target name="build-theme" depends="move-theme">
         <ac:for param="file">
             <path>
-                 <fileset dir="${src.dir}/themes" includes="**/index.js" excludes="default/index.js"/>
-             </path>
-             <sequential>
-                    <ac:var name="var.dir" unset="true"/>
-                    <dirname  property="var.dir" file="@{file}"/>
-                    <echo>concat ${var.dir}</echo>
-                    <concat destfile="${var.dir}/index-pkg.js" encoding="${charset}" outputencoding="${charset}">
-                             <fileset dir="${var.dir}" includes="*.js"/>
-                             <filterchain>
-                                 <deletecharacters chars="&#xFEFF;"/>
-                             </filterchain>
-                     </concat>
+                <fileset dir="${uploader.build.dir}/themes" includes="**/index.js"/>
+            </path>
+            <sequential>
+                <ac:var name="var.dir" unset="true"/>
+                <dirname property="var.dir" file="@{file}"/>
+                <echo>concat ${var.dir}</echo>
+                <concat destfile="${var.dir}/index-pkg.js" encoding="${charset}" outputencoding="${charset}">
+                    <fileset dir="${var.dir}" includes="*.js"/>
+                    <filterchain>
+                        <deletecharacters chars="&#xFEFF;"/>
+                    </filterchain>
+                </concat>
+                <delete>
+                    <fileset dir="${var.dir}/" includes="*.js" excludes="index-pkg.js"/>
+                </delete>
+                <rename src="${var.dir}/index-pkg.js" dest="${var.dir}/index.js"/>
             </sequential>
         </ac:for>
     </target>
--->
     <!--压缩前去除页面多余空白-->
     <target name="crlf">
         <fixcrlf includes="*.js" srcdir="${uploader.build.dir}" encoding="utf8" eol="crlf"></fixcrlf>
@@ -73,6 +83,6 @@
             <mapper type="regexp" from="^(.*)\.js$" to="\1-min.js"/>
         </apply>
     </target>
-    <target name="build" depends="concat,clean-build,move,themes,minify">
+    <target name="build" depends="concat,clean-build,move,build-theme,minify,move-swf">
     </target>
 </project>

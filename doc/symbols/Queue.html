@@ -245,6 +245,17 @@ a.go-top:active{text-decoration:none;}
                                             
                                             <li class="li">                                                
                                                 Queue.
+                                                <b class="name"><a href="../symbols/Queue.html#.files">files</a></b>
+                                                <span class="type">{}</span>
+                                                
+                                                
+                                                <span class="attr">&lt;static&gt;</span>
+                                                
+                                                <span class="desc">文件信息数据</span>                                                
+                                            </li>
+                                            
+                                            <li class="li">                                                
+                                                Queue.
                                                 <b class="name"><a href="../symbols/Queue.html#.status">status</a></b>
                                                 <span class="type">{}</span>
                                                 
@@ -252,6 +263,28 @@ a.go-top:active{text-decoration:none;}
                                                 <span class="attr">&lt;static&gt;</span>
                                                 
                                                 <span class="desc">文件的状态</span>                                                
+                                            </li>
+                                            
+                                            <li class="li">                                                
+                                                Queue.
+                                                <b class="name"><a href="../symbols/Queue.html#.statusConfig">statusConfig</a></b>
+                                                <span class="type">{}</span>
+                                                
+                                                
+                                                <span class="attr">&lt;static&gt;</span>
+                                                
+                                                <span class="desc">状态类配置，queue和file参数会被组件内部覆盖，传递无效</span>                                                
+                                            </li>
+                                            
+                                            <li class="li">                                                
+                                                Queue.
+                                                <b class="name"><a href="../symbols/Queue.html#.target">target</a></b>
+                                                <span class="type">{}</span>
+                                                
+                                                
+                                                <span class="attr">&lt;static&gt;</span>
+                                                
+                                                <span class="desc">队列元素</span>                                                
                                             </li>
                                             
                                             <li class="li">                                                
@@ -287,7 +320,7 @@ a.go-top:active{text-decoration:none;}
                                             <li class="li">                                                
                                                 
                                                 <b class="name"><a href="../symbols/Queue.html#add">add</a></b>
-                                                <span class="param">(file, callback)</span>
+                                                <span class="param">(files, callback)</span>
                                                 
                                                 
                                                 
@@ -296,8 +329,18 @@ a.go-top:active{text-decoration:none;}
                                             
                                             <li class="li">                                                
                                                 
+                                                <b class="name"><a href="../symbols/Queue.html#clear">clear</a></b>
+                                                <span class="param">()</span>
+                                                
+                                                
+                                                
+                                                <span class="desc">清理队列</span>                                                
+                                            </li>
+                                            
+                                            <li class="li">                                                
+                                                
                                                 <b class="name"><a href="../symbols/Queue.html#fileStatus">fileStatus</a></b>
-                                                <span class="param">(id, status, args)</span>
+                                                <span class="param">(index, status, args)</span>
                                                 
                                                 
                                                 
@@ -307,7 +350,7 @@ a.go-top:active{text-decoration:none;}
                                             <li class="li">                                                
                                                 
                                                 <b class="name"><a href="../symbols/Queue.html#getFile">getFile</a></b>
-                                                <span class="param">(id)</span>
+                                                <span class="param">(index)</span>
                                                 
                                                 
                                                 
@@ -316,18 +359,38 @@ a.go-top:active{text-decoration:none;}
                                             
                                             <li class="li">                                                
                                                 
-                                                <b class="name"><a href="../symbols/Queue.html#getWaitFileIds">getWaitFileIds</a></b>
-                                                <span class="param">()</span>
+                                                <b class="name"><a href="../symbols/Queue.html#getFileIndex">getFileIndex</a></b>
+                                                <span class="param">(fileId)</span>
                                                 
                                                 
                                                 
-                                                <span class="desc">获取等待状态的文件id数组</span>                                                
+                                                <span class="desc">根据文件id来查找文件在队列中的索引</span>                                                
+                                            </li>
+                                            
+                                            <li class="li">                                                
+                                                
+                                                <b class="name"><a href="../symbols/Queue.html#getFiles">getFiles</a></b>
+                                                <span class="param">(status)</span>
+                                                
+                                                
+                                                
+                                                <span class="desc">获取指定状态下的文件</span>                                                
+                                            </li>
+                                            
+                                            <li class="li">                                                
+                                                
+                                                <b class="name"><a href="../symbols/Queue.html#getIndexs">getIndexs</a></b>
+                                                <span class="param">(type)</span>
+                                                
+                                                
+                                                
+                                                <span class="desc">获取等指定状态的文件对应的文件数组index的数组param {String} type 状态类型</span>                                                
                                             </li>
                                             
                                             <li class="li">                                                
                                                 
                                                 <b class="name"><a href="../symbols/Queue.html#remove">remove</a></b>
-                                                <span class="param">(id, callback)</span>
+                                                <span class="param">(indexOrFileId, callback)</span>
                                                 
                                                 
                                                 
@@ -347,7 +410,7 @@ a.go-top:active{text-decoration:none;}
                                             <li class="li">                                                
                                                 
                                                 <b class="name"><a href="../symbols/Queue.html#updateFile">updateFile</a></b>
-                                                <span class="param">(id, data)</span>
+                                                <span class="param">(index, data)</span>
                                                 
                                                 
                                                 
@@ -486,6 +549,36 @@ a.go-top:active{text-decoration:none;}
                                         </li>
                                     
                                         <li class="li">
+                                            <a name=".files"> </a>
+                                            <div class="title">                                                
+                                                <span>Queue.</span>
+                                                <b class="name">files</b>
+                                                
+                                                
+                                                
+                                                <span class="attr">&lt;static&gt;</span>
+                                                
+                                                <span class="desc">
+                                                    文件信息数据
+                                                    
+                                                    
+                                                </span>
+                                            </div>
+                                            
+                                            
+                                            
+                                            <dl>
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                            </dl>
+                                        </li>
+                                    
+                                        <li class="li">
                                             <a name=".status"> </a>
                                             <div class="title">                                                
                                                 <span>Queue.</span>
@@ -497,6 +590,66 @@ a.go-top:active{text-decoration:none;}
                                                 
                                                 <span class="desc">
                                                     文件的状态
+                                                    
+                                                    
+                                                </span>
+                                            </div>
+                                            
+                                            
+                                            
+                                            <dl>
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                            </dl>
+                                        </li>
+                                    
+                                        <li class="li">
+                                            <a name=".statusConfig"> </a>
+                                            <div class="title">                                                
+                                                <span>Queue.</span>
+                                                <b class="name">statusConfig</b>
+                                                
+                                                
+                                                
+                                                <span class="attr">&lt;static&gt;</span>
+                                                
+                                                <span class="desc">
+                                                    状态类配置，queue和file参数会被组件内部覆盖，传递无效
+                                                    
+                                                    
+                                                </span>
+                                            </div>
+                                            
+                                            
+                                            
+                                            <dl>
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                            </dl>
+                                        </li>
+                                    
+                                        <li class="li">
+                                            <a name=".target"> </a>
+                                            <div class="title">                                                
+                                                <span>Queue.</span>
+                                                <b class="name">target</b>
+                                                
+                                                
+                                                
+                                                <span class="attr">&lt;static&gt;</span>
+                                                
+                                                <span class="desc">
+                                                    队列元素
                                                     
                                                     
                                                 </span>
@@ -565,7 +718,7 @@ a.go-top:active{text-decoration:none;}
                                             <div class="title">
                                                 
                                                 <b class="name">add</b>
-                                                <span class="param">(file, callback)</span>
+                                                <span class="param">(files, callback)</span>
                                                 
                                                 
                                                 

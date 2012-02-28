@@ -6,7 +6,6 @@
  */
 
 KISSY.add('form/uploader/plugins/preview/preview', function(S, D, E){
-	
 	var doc = document, 
 		LOG_PRE = '[Plugin: Preview] ',
 		_mode = getPreviewMode(),

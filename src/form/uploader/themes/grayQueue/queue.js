@@ -3,14 +3,14 @@ KISSY.add('form/uploader/themes/grayQueue/queue',function(S, Node, QueueBase, St
 
     /**
      * @name Queue
-     * @class Ä£°åµÄ¶ÓÁĞÀà
+     * @class æ¨¡æ¿çš„é˜Ÿåˆ—ç±»
      * @constructor
      * @extends Base
      * @requires Node
      */
     function Queue(config) {
         var self = this;
-        //µ÷ÓÃ¸¸Àà¹¹Ôìº¯Êı
+        //è°ƒç”¨çˆ¶ç±»æ„é€ å‡½æ•°
         Queue.superclass.constructor.call(self, config);
     }
 
@@ -18,21 +18,21 @@ KISSY.add('form/uploader/themes/grayQueue/queue',function(S, Node, QueueBase, St
     Queue.status = QueueBase.status;
     S.extend(Queue, QueueBase, /** @lends Queue.prototype*/{
         /**
-         * ÔËĞĞStatus
-         * @param {Object} file  ÎÄ¼şÊı¾İ
-         * @return {Status} ×´Ì¬ÊµÀı
+         * è¿è¡ŒStatus
+         * @param {Object} file  æ–‡ä»¶æ•°æ®
+         * @return {Status} çŠ¶æ€å®ä¾‹
          */
         _renderStatus : function(file) {
             var self = this,$file = file.target,elStatus;
             if (!$file.length) return false;
-            //×´Ì¬²ã
+            //çŠ¶æ€å±‚
             elStatus = $file.children('.J_FileStatus');
-            //ÊµÀı»¯×´Ì¬Àà
+            //å®ä¾‹åŒ–çŠ¶æ€ç±»
             return new Status(elStatus, {queue : self,file : file});
         }
     }, {ATTRS : /** @lends Queue*/{
         /**
-         * Ä£°å
+         * æ¨¡æ¿
          */
         tpl : {value :
             '<li id="queue-file-{id}" class="clearfix queue-file" data-name="{name}">' +

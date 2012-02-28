@@ -30,6 +30,14 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             'beforeRender' : 'beforeRender',
             'afterRender' : 'afterRender',
             'CHANGE' : 'change'
+        },
+        /**
+         * 获取文件名称（从表单域的值中提取）
+         * @param {String} path 文件路径
+         * @return {String}
+         */
+        getFileName : function(path) {
+            return path.replace(/.*(\/|\\)/, "");
         }
     });
 
@@ -51,54 +59,37 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
                     return false;
                 }
                 self._createInput();
+                self._setDisabled(self.get('disabled'));
+                self._setMultiple(self.get('multiple'));
                 self.fire(Button.event.afterRender);
-                S.log(LOG_PREFIX + 'button was rendered just now.');
                 return self;
             }
         },
         /**
          * 显示按钮
+         * @return {Object} Button的实例
          */
         show : function() {
-            var self = this,
-                target = self.get('target'),
-                disableCls = self.get('cls').disabled,
-                input = self.get('fileInput'),
-                show = self.fire(Button.event.beforeShow);
-            if (show === false) {
-                S.log(LOG_PREFIX + 'show button event was prevented.');
-            } else {
-                // $(target).show();
-                $(target).removeClass(disableCls);
-                $(input).show();
-                self.fire(Button.event.afterShow);
-                S.log(LOG_PREFIX + 'button showed.');
-            }
+            var self = this, target = self.get('target');
+            target.show();
+            self.fire(Button.event.afterShow);
+            return Button;
         },
         /**
          * 隐藏按钮
+         * @return {Object} Button的实例
          */
         hide : function() {
-            var self = this,
-                target = self.get('target'),
-                disableCls = self.get('cls').disabled,
-                input = self.get('fileInput'),
-                hide = self.fire(Button.event.beforeHide);
-            if (hide === false) {
-                S.log(LOG_PREFIX + 'hide button event was prevented.');
-            } else {
-                // $(target).hide();
-                $(target).addClass(disableCls);
-                $(input).hide();
-                self.fire(Button.event.afterHide);
-                S.log(LOG_PREFIX + 'button showed.');
-            }
+            var self = this, target = self.get('target');
+            target.hide();
+            self.fire(Button.event.afterHide);
+            return Button;
         },
         /**
          * 重置按钮
          * @return {Object} Button的实例
          */
-        _reset : function() {
+        reset : function() {
             var self = this,
                 inputContainer = self.get('inputContainer');
             //移除表单上传域容器
@@ -118,7 +109,6 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
                 target = self.get('target'),
                 name = self.get('name'),
                 tpl = self.get('tpl'),
-                multiple = self.get('multiple'),
                 html,
                 inputContainer,
                 fileInput;
@@ -134,7 +124,6 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             //向body添加表单文件上传域
             $(inputContainer).appendTo(target);
             fileInput = $(inputContainer).children('input');
-            multiple && fileInput.attr('multiple',multiple) || fileInput.removeAttr('multiple');
             //上传框的值改变后触发
             $(fileInput).on('change', self._changeHandler, self);
             //DOM.hide(fileInput);
@@ -151,23 +140,57 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             var self = this,
                 fileInput = self.get('fileInput'),
                 value = $(fileInput).val(),
+                //IE取不到files
                 oFiles = ev.target.files,files = [];
             if (value == EMPTY) {
                 S.log(LOG_PREFIX + 'No file selected.');
                 return false;
             }
-            S.each(oFiles,function(v){
-                if(S.isObject(v)){
-                    files.push({'name' : v.name,'type' : v.type,'size' : v.size});
-                }
-            });
+            if(oFiles){
+                S.each(oFiles,function(v){
+                    if(S.isObject(v)){
+                        files.push({'name' : v.name,'type' : v.type,'size' : v.size});
+                    }
+                });
+            }else{
+                files.push({'name' : Button.getFileName(value)});
+            }
             self.fire(Button.event.CHANGE, {
                 files: files,
-                input: $(fileInput).clone().getDOMNode()
+                input: fileInput.getDOMNode()
             });
-            S.log(LOG_PREFIX + 'button change event was fired just now.');
-            // change完之后reset按钮，防止选择同一个文件无法触发change事件
-            self._reset();
+            self.reset();
+        },
+        /**
+         * 设置上传组件的禁用
+         * @param {Boolean} disabled 是否禁用
+         * @return {Boolean}
+         */
+        _setDisabled : function(disabled){
+            var self = this,
+                cls = self.get('cls'),disabledCls = cls.disabled,
+                $target = self.get('target'),
+                input = self.get('fileInput');
+            if(!$target.length || !S.isBoolean(disabled)) return false;
+            if(!disabled){
+                $target.removeClass(disabledCls);
+                $(input).show();
+            }else{
+                $target.addClass(disabledCls);
+                $(input).hide();
+            }
+            return disabled;
+        },
+        /**
+         * 设置上传组件的禁用
+         * @param {Boolean} multiple 是否禁用
+         * @return {Boolean}
+         */
+        _setMultiple : function(multiple){
+            var self = this,fileInput = self.get('fileInput');
+            if(!fileInput.length) return false;
+            multiple && fileInput.attr('multiple','multiple') || fileInput.removeAttr('multiple');
+            return multiple;
         }
     }, {
         ATTRS : /** @lends Button */{
@@ -214,12 +237,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             disabled : {
                 value : false,
                 setter : function(v) {
-                    var self = this;
-                    if (v) {
-                        self.hide();
-                    } else {
-                        self.show();
-                    }
+                    this._setDisabled(v);
                     return v;
                 }
             },
@@ -229,10 +247,7 @@ KISSY.add('form/uploader/button/base',function(S, Node, Base) {
             multiple : {
                 value : true,
                 setter : function(v){
-                    var self = this,fileInput = self.get('fileInput');
-                    if(fileInput.length){
-                        v && fileInput.attr('multiple','multiple') || fileInput.removeAttr('multiple');
-                    }
+                    this._setMultiple(v);
                     return v;
                 }
             },

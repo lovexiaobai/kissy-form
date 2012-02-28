@@ -164,19 +164,26 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
                 $content,$progressBar,
                 $del;
             if (!S.isString(successTpl)) return false;
-            if(S.isObject(progressBar)){
-                var $wrapper =$target.children();
-                $progressBar = $wrapper.children('.J_ProgressBar').clone(true);
-            }
-            $content = self._changeDom(successTpl);
-            if($progressBar) $content.prepend($progressBar);
-            $del = $content.children('.J_FileDel');
-            //点击删除
-            $del.on('click', function(ev) {
-                ev.preventDefault();
-                //删除队列中的文件
-                queue.remove(id);
-            });
+            //设置为100%进度
+            S.isObject(progressBar) && progressBar.set('value',100);
+            S.later(function(){
+                //拷贝进度条
+                if(S.isObject(progressBar)){
+                   var $wrapper =$target.children();
+                   $progressBar = $wrapper.children('.J_ProgressBar').clone(true);
+                }
+                //改变状态层的内容
+                $content = self._changeDom(successTpl);
+                //将进度条插入到状态层
+                if($progressBar) $content.prepend($progressBar);
+                $del = $content.children('.J_FileDel');
+                //点击删除
+                $del.on('click', function(ev) {
+                    ev.preventDefault();
+                    //删除队列中的文件
+                    queue.remove(id);
+                });
+            },300);
             var $parent = target.parent();
             $parent.removeClass('current-upload-file');
         },
@@ -228,8 +235,10 @@ KISSY.add('form/uploader/queue/status',function(S, Node, Base,ProgressBar) {
          */
         tpl : {value : {
             waiting : '<div class="waiting-status">等待上传，<a href="#Upload" class="J_Upload">点此上传</a> </div>',
-            start : '<div class="start-status clearfix"><div class="f-l  J_ProgressBar uploader-progress"><img class="loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" /></div>' +
-                ' <a class="f-l J_UploadCancel upload-cancel" href="#uploadCancel">取消</a></div> ',
+            start : '<div class="start-status clearfix">' +
+                        '<div class="f-l  J_ProgressBar uploader-progress"><img class="loading" src="http://img01.taobaocdn.com/tps/i1/T1F5tVXjRfXXXXXXXX-16-16.gif" alt="loading" /></div>' +
+                        ' <a class="f-l J_UploadCancel upload-cancel" href="#uploadCancel">取消</a>' +
+                    '</div> ',
             success : ' <div class="success-status"><a href="#fileDel" class="J_FileDel">删除</a></div>',
             cancel : '<div class="cancel-status">已经取消上传，<a href="#reUpload" class="J_ReUpload">点此重新上传</a> </div>',
             error : '<div class="error-status upload-error">{msg}<a href="#fileDel" class="J_FileDel">点此删除</a></div>'

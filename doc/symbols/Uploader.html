@@ -289,6 +289,17 @@ a.go-top:active{text-decoration:none;}
                                             
                                             <li class="li">                                                
                                                 Uploader.
+                                                <b class="name"><a href="../symbols/Uploader.html#.status">status</a></b>
+                                                <span class="type">{}</span>
+                                                
+                                                
+                                                <span class="attr">&lt;static&gt;</span>
+                                                
+                                                <span class="desc">文件上传状态</span>                                                
+                                            </li>
+                                            
+                                            <li class="li">                                                
+                                                Uploader.
                                                 <b class="name"><a href="../symbols/Uploader.html#.type">type</a></b>
                                                 <span class="type">{}</span>
                                                 
@@ -331,21 +342,21 @@ a.go-top:active{text-decoration:none;}
                                             <li class="li">                                                
                                                 
                                                 <b class="name"><a href="../symbols/Uploader.html#cancel">cancel</a></b>
-                                                <span class="param">()</span>
+                                                <span class="param">(index)</span>
                                                 
                                                 
                                                 
-                                                <span class="desc">取消上传</span>                                                
+                                                <span class="desc">取消当前正在上传的文件的上传</span>                                                
                                             </li>
                                             
                                             <li class="li">                                                
                                                 
                                                 <b class="name"><a href="../symbols/Uploader.html#getUploadType">getUploadType</a></b>
-                                                <span class="param">()</span>
+                                                <span class="param">(type)</span>
                                                 
                                                 
                                                 
-                                                <span class="desc">获取上传方式类（iframe方案或ajax方案）</span>                                                
+                                                <span class="desc">获取上传方式类（共有iframe、ajax、flash三种方式）</span>                                                
                                             </li>
                                             
                                             <li class="li">                                                
@@ -360,6 +371,16 @@ a.go-top:active{text-decoration:none;}
                                             
                                             <li class="li">                                                
                                                 
+                                                <b class="name"><a href="../symbols/Uploader.html#isSupportFlash">isSupportFlash</a></b>
+                                                <span class="param">()</span>
+                                                
+                                                
+                                                
+                                                <span class="desc">是否支持flash方案上传</span>                                                
+                                            </li>
+                                            
+                                            <li class="li">                                                
+                                                
                                                 <b class="name"><a href="../symbols/Uploader.html#render">render</a></b>
                                                 <span class="param">()</span>
                                                 
@@ -370,32 +391,32 @@ a.go-top:active{text-decoration:none;}
                                             
                                             <li class="li">                                                
                                                 
+                                                <b class="name"><a href="../symbols/Uploader.html#stop">stop</a></b>
+                                                <span class="param">()</span>
+                                                
+                                                
+                                                
+                                                <span class="desc">停止上传动作</span>                                                
+                                            </li>
+                                            
+                                            <li class="li">                                                
+                                                
                                                 <b class="name"><a href="../symbols/Uploader.html#upload">upload</a></b>
-                                                <span class="param">(fileId)</span>
+                                                <span class="param">(index)</span>
                                                 
                                                 
                                                 
-                                                <span class="desc">上传文件</span>                                                
+                                                <span class="desc">上传指定队列索引的文件</span>                                                
                                             </li>
                                             
                                             <li class="li">                                                
                                                 
-                                                <b class="name"><a href="../symbols/Uploader.html#uploadAll">uploadAll</a></b>
-                                                <span class="param">()</span>
+                                                <b class="name"><a href="../symbols/Uploader.html#uploadFiles">uploadFiles</a></b>
+                                                <span class="param">(status)</span>
                                                 
                                                 
                                                 
-                                                <span class="desc">上传等待中的文件</span>                                                
-                                            </li>
-                                            
-                                            <li class="li">                                                
-                                                
-                                                <b class="name"><a href="../symbols/Uploader.html#uploadWaitFile">uploadWaitFile</a></b>
-                                                <span class="param">()</span>
-                                                
-                                                
-                                                
-                                                <span class="desc">上传等待中的文件</span>                                                
+                                                <span class="desc">批量上传队列中的指定状态下的文件</span>                                                
                                             </li>
                                             
                                         </ul>
@@ -650,6 +671,36 @@ a.go-top:active{text-decoration:none;}
                                         </li>
                                     
                                         <li class="li">
+                                            <a name=".status"> </a>
+                                            <div class="title">                                                
+                                                <span>Uploader.</span>
+                                                <b class="name">status</b>
+                                                
+                                                
+                                                
+                                                <span class="attr">&lt;static&gt;</span>
+                                                
+                                                <span class="desc">
+                                                    文件上传状态
+                                                    
+                                                    
+                                                </span>
+                                            </div>
+                                            
+                                            
+                                            
+                                            <dl>
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                            </dl>
+                                        </li>
+                                    
+                                        <li class="li">
                                             <a name=".type"> </a>
                                             <div class="title">                                                
                                                 <span>Uploader.</span>
@@ -729,7 +780,7 @@ a.go-top:active{text-decoration:none;}
                                             <div class="title">
                                                 
                                                 <b class="name">cancel</b>
-                                                <span class="param">()</span>
+                                                <span class="param">(index)</span>
                                                 
                                                 
                                                 

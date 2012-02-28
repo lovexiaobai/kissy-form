@@ -85,8 +85,9 @@
             button.set('disabled',true);
         })
      </pre>
-    <h5>upload()和uploadAll()</h5>
-    这二个Uploader的方法非常重要，upload(id)上传指定id的文件，uploadAll()上传所有等待中的文件。
+    <h5>upload()和uploadFiles()</h5>
+    <p>这二个Uploader的方法非常重要，upload(index)上传指定index的文件。</p>
+    <p>uploadFiles(status)：批量上传指定状态下的文件，默认status为等待。</p>
     <pre class='brush: js; highlight: [11]'>
         ru.on("init",function(ev){
             var $ = S.Node.all,
@@ -98,7 +99,7 @@
                     queue = uploader.get('queue');
                     //点击上传，开始上传等待中的文件
             $('#J_UploadAll').on('click', function(ev) {
-                            uploader.uploadAll();
+                    uploader.uploadFiles();
             })
         })
      </pre>
@@ -133,7 +134,7 @@
 
             //点击上传，开始上传等待中的文件
             $('#J_UploadAll').on('click', function(ev) {
-                uploader.uploadAll();
+                uploader.uploadFiles();
             })
         })
     })

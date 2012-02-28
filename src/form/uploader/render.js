@@ -2,9 +2,14 @@
  * @fileoverview 运行文件上传组件
  * @author 剑平（明河）<minghe36@126.com>,紫英<daxingplay@gmail.com>
  **/
-KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfButton) {
+KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfButton,Auth) {
     var EMPTY = '', $ = Node.all, LOG_PREFIX = '[uploaderRender]:',
-        dataName = {CONFIG:'data-config'};
+        dataName = {
+            CONFIG:'data-config',
+            BUTTON_CONFIG : 'data-button-config',
+            THEME_CONFIG : 'data-theme-config',
+            AUTH : 'data-auth'
+        };
 
     /**
      * 解析组件在页面中data-config成为组件的配置
@@ -12,17 +17,17 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
      * @param {String} dataConfigName 配置名
      * @return {Object}
      */
-    function parseConfig(hook, dataConfigName) {
+    S.parseConfig = function(hook, dataConfigName) {
         var config = {}, sConfig, DATA_CONFIG = dataConfigName || dataName.CONFIG;
         sConfig = $(hook).attr(DATA_CONFIG);
         if (!S.isString(sConfig)) return {};
         try {
-            config = JSON.parse(sConfig);
+            config = S.JSON.parse(sConfig);
         } catch (err) {
             S.log(LOG_PREFIX + '请检查' + hook + '上' + DATA_CONFIG + '属性内的json格式是否符合规范！');
         }
         return config;
-    }
+    };
 
     /**
      * @name RenderUploader
@@ -35,7 +40,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
     function RenderUploader(buttonTarget, queueTarget, config) {
         var self = this;
         //合并配置
-        config = S.mix(parseConfig(buttonTarget), config);
+        config = S.mix(S.parseConfig(buttonTarget), config);
         //超类初始化
         RenderUploader.superclass.constructor.call(self, config);
         self.set('buttonTarget', buttonTarget);
@@ -61,6 +66,7 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
                 uploader.render();
                 self.set('uploader', uploader);
                 if(theme.afterUploaderRender) theme.afterUploaderRender(uploader);
+                self._auth();
                 self.fire('init', {uploader:uploader});
             });
         },
@@ -69,44 +75,43 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
          * @return {Button}
          */
         _initButton:function () {
-            var self = this, target = self.get('buttonTarget'),
+            var self = this,
+                target = self.get('buttonTarget'),
+                //从html标签的伪属性中抓取配置
+                config = S.parseConfig(target,dataName.BUTTON_CONFIG),
                 name = self.get('name'),
                 type = self.get('type');
+            //合并配置
+            config = S.merge({name:name},config);
             //实例化上传按钮
-            return type != 'flash' && new Button(target, {name:name}) || new SwfButton(target);
+            return type != 'flash' && new Button(target, config) || new SwfButton(target);
         },
         _initThemes:function (callback) {
-            var self = this, theme = self.get('theme');
+            var self = this, theme = self.get('theme'),
+                target = self.get('buttonTarget'),
+                //从html标签的伪属性中抓取配置
+                config = S.parseConfig(target,dataName.THEME_CONFIG);
             S.use(theme + '/index', function (S, Theme) {
                 var queueTarget = self.get('queueTarget'),
-                    theme = new Theme({queueTarget:queueTarget});
+                    theme;
+                S.mix(config,{queueTarget:queueTarget});
+                theme = new Theme(config);
                 callback && callback.call(self, theme);
             })
-        },
-        /**
-         * 初始化上传文件队列
-         * @return {Queue}
-         */
-        _initQueue:function () {
-            var self = this, target = self.get('queueTarget');
-            return new Queue(target);
         },
         /**
          * 文件上传验证
          */
         _auth:function () {
-            /*var self = this,buttonTarget = self.get('buttonTarget'),
-             $btn = $(buttonTarget),
-             //Button的实例
-             button = self.get('button'),
-             //TODO:需要修改
-             fileInput = button.fileInput,
-             DATA_NAME = dataName.VALID, valid;
-             if(!$btn.length) return false;
-             valid = $btn.attr(DATA_NAME);
-             //不存在验证配置，直接退出
-             if(!valid) return false;
-             $(fileInput).attr(DATA_NAME,valid);*/
+            var self = this,buttonTarget = self.get('buttonTarget'),
+                uploader = self.get('uploader'),
+                rules, auth;
+            //存在验证配置
+            if($(buttonTarget).attr(dataName.AUTH)){
+                rules = S.parseConfig(buttonTarget,dataName.AUTH);
+                auth = new Auth(uploader,{rules : rules});
+                self.set('auth',auth);
+            }
         }
     }, {
         ATTRS:{
@@ -131,8 +136,15 @@ KISSY.add('form/uploader/render',function (S, Base, Node, Uploader, Button,SwfBu
              * Queue（上传队列）的实例
              */
             queue:{value:EMPTY},
-            uploader:{value:EMPTY}
+            /**
+             * 上传组件实例
+             */
+            uploader:{value:EMPTY},
+            /**
+             * 上传验证实例
+             */
+            auth : {value:EMPTY}
         }
     });
     return RenderUploader;
-}, {requires:['base', 'node', './base', './button/base','./button/swfButton']});
+}, {requires:['base', 'node', './base', './button/base','./button/swfButton','./auth/base']});
