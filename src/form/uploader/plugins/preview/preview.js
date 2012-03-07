@@ -54,7 +54,7 @@ KISSY.add('form/uploader/plugins/preview/preview', function(S, D, E){
 	 * @param {Number} maxHeight 最大高度
 	 */
 	function showPreviewImage(imgElem, data, width, height){
-		if(_mode == 'filter'){
+		if(_mode != 'filter'){
 			imgElem.src = data;
 		}else{
 			imgElem.src = _transparentImg;
@@ -141,7 +141,7 @@ KISSY.add('form/uploader/plugins/preview/preview', function(S, D, E){
 							S.log(LOG_PRE + 'File Reader Error. Your browser may not fully support html5 file api', 'warning');
 							self.fire(_eventList.error);
 						}
-						reader.readAsDataURL(self.file.files[0]);
+						reader.readAsDataURL(fileInput.files[0]);
 						// alert(reader.readAsDataURL);
 						// S.log(reader, 'dir');
 						break;
