@@ -1,4 +1,9 @@
 <?php
+
+// disable other outputs.
+error_reporting(0);
+sleep(2);
+
 $files = array();
 $url = 'http://'.$_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/";
 
