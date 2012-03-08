@@ -62,8 +62,8 @@ KISSY.add('form/uploader/themes/lineQueue/queue',function(S, Node, QueueBase, St
 							'<div class="tips-upload-waiting">等待上传，请稍候</div>',
 							'<div class="upload-op-mask"></div>',
 							'<div class="upload-operations">',
-								'<a class="J_SetMainPic set-as-main" data-id="files{id}" href="#">设为主图</a>',
-								'<a class="J_DeleltePic del-pic" data-id="files{id}" href="#">删除</a>',
+								'<a class="J_SetMainPic set-as-main" data-file-id="{id}" href="#">设为主图</a>',
+								'<a class="J_DeleltePic del-pic" data-file-id="{id}" href="#">删除</a>',
 							'</div>',
 						'</div>',
 					'</li>'].join('')

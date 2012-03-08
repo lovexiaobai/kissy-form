@@ -78,6 +78,9 @@
     margin-top: 24px;*/
     clear: both;
 }
+.upload-queue .ks-uploader-queue {
+    width: 100%;
+}
 .ks-uploader-queue {
     overflow: hidden;
     /*padding-top: 24px;*/

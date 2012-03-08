@@ -28,9 +28,9 @@
     <p>作者：紫英（橘子）&lt;daxingplay@gmail.com&gt;</p>
     <p>版本：V1.0 Beta</p>
     <div class="demo-wrapper">
-        <form action="test.php">
+        <form id="J_UploaderForm" action="test.php">
             <div class="form-area">
-                <a id="J_UploadBtn" href="#upload()" data-config='{"theme" : "form/uploader/themes/lineQueue", "serverConfig":{"action":"../../demo/upload.php","data":{"dir":"files/"},"dataType" : "json"}, "name":"Filedata", "urlsInputName":"fileUrls"}' class="upload-btn">
+                <a id="J_UploadBtn" href="#upload()" data-config='{"theme" : "form/uploader/themes/lineQueue", "serverConfig":{"action":"../../demo/upload.php","data":{"dir":"files/"},"dataType" : "json"}, "name":"Filedata", "urlsInputName":"fileUrls"}' data-auth='{"max":[3, "每次最多上传{max}个文件！"]}' class="upload-btn">
                     上传图片
                     <input type="file" name="Filedata" hidefoucs="true" class="original-file-input">
                 </a>

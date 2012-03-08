@@ -31,37 +31,32 @@ KISSY.add('form/uploader/themes/lineQueue/index', function(S, Node, DefaultTheme
 		 */
 		afterUploaderRender: function(uploader){
 			var self = this,
+				queueTarget = self.get('queueTarget'),
 				elemButtonTarget = uploader.get('buttonTarget'),
                 queue = uploader.get('queue'),
                 button = uploader.get('button'),
                 elemTempFileInput = $('.original-file-input', elemButtonTarget),
-                elemFileInput = button.get('fileInput'),
-                preview,
-                message;
-            // test
-            S.log(self, 'dir')
-            S.log(uploader, 'dir');
+                elemFileInput = button.get('fileInput');
             
             $(elemTempFileInput).remove();
             S.log(LOG_PRE + 'old input removed.');
             
-            preview = new Preview();
+            // 初始化一些附加模块+插件
+            var preview = new Preview(),
+            	message = new Message({
+	            	'msgContainer': uploader.get('msgContainer')
+	            }),
+	            setMainPic = new SetMainPic('#J_UploaderForm', self.get('queueTarget'));
+            // message.set('msgContainer', '#J_MsgBoxUpload');
+            uploader.set('message', message);
             
             queue.on('add',function(ev){
             	var elemImg = $('.J_ItemPic', ev.target);
-            		// elemWrapper = $('.J_Wrapper', ev.target);
-        		preview.preview(elemFileInput, elemImg);
-        		
-        		// $(elemWrapper).addClass('.uploading');
-        		S.log(LOG_PRE + 'preview done.');
-        		
-                // S.log(ev, 'dir');
+        		preview.preview(ev.file.input, elemImg);
+        		S.log(LOG_PRE + 'preview done for file: ' + ev.file.id);
             });
             
-            message = new Message({
-            	'msgContainer': uploader.get('msgContainer')
-            });
-            uploader.set('message', message);
+            
 
             if(uploader.get('type') == 'ajax'){
             	S.log(LOG_PRE + 'advance queue');
@@ -70,8 +65,50 @@ KISSY.add('form/uploader/themes/lineQueue/index', function(S, Node, DefaultTheme
             
             S.log(message, 'dir');
             
-            var setMainPic = new SetMainPic();
-            S.log(setMainPic);
+            // 删除图片
+            $(queueTarget).delegate('click', '.J_DeleltePic', function(e){
+            	var delBtn = e.currentTarget,
+            		fileid = $(delBtn).attr('data-file-id');
+        		queue.remove(fileid);
+            	// var target = e.target;
+            	// if($(target).hasClass('J_DeleltePic')){
+            		// var fileid = $(target).attr('data-file-id');
+            		// queue.remove(fileid);
+            	// }else if($(target).hasClass('J_DeleltePic')){
+//             		
+            	// }
+            });
+            
+            // 设置主图
+            $(queueTarget).delegate('click', '.J_SetMainPic', function(e){
+            	var setMainPicBtn = e.currentTarget,
+            		// fileid = $(setMainPicBtn).attr('data-file-id'),
+            		// fileIndex = queue.getFileIndex(fileid),
+            		// file = queue.getFile(fileIndex),
+            		curQueueItem = $(setMainPicBtn).parent('li');
+        		setMainPic.setMainPic(curQueueItem);
+            });
+            
+            queue.on('remove', function(e){
+            	setMainPic.setMainPic();
+            });
+            
+            uploader.on('success', function(e){
+            	// debugger;
+            	// var successFiles = queue.getFiles('success'),
+            		// successFilesLength = successFiles ? successFiles.length : 0;
+            	setMainPic.setMainPic();
+            	// message.send();
+            })
+		}
+	}, {
+		ATTRS: {
+			'defaultMsg': {
+				value: '最多上传{max}张照片，每张图片小于5M'
+			},
+			'leftMsg': {
+				value: '还可以上传{left}张图片，每张小于5M。主图将在搜索结果中展示，请认真设置。'
+			}
 		}
 	})
 	

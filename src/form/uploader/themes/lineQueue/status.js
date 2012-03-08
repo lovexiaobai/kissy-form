@@ -103,12 +103,13 @@ KISSY.add('form/uploader/themes/lineQueue/status',function(S, Node, StatusBase, 
 					// AjaxUploader.setMainPic(curQueueItem);
 				// }
 			}, 1000);
+			// S.log(uploader.get('queue'), 'dir');
        },
        /**
          * 上传失败后改成状态层内容
          */
         _error : function(data) {
-            if(!S.isObject(data)){
+            if(!S.isObject(data) || !data.msg){
                 data = {
                 	msg : '文件上传失败！'
             	};
@@ -120,10 +121,10 @@ KISSY.add('form/uploader/themes/lineQueue/status',function(S, Node, StatusBase, 
                 queue = self.get('queue'),
                 message = uploader.get('message');
             message.send(data.msg, 'error');
-            queue.remove(id);
             $(curQueueItem).replaceClass('uploading', 'upload-error');
             setTimeout(function(){
-				$(curQueueItem).remove();
+            	queue.remove(id);
+				// $(curQueueItem).remove();
 			}, 1000);
         }
     }, {ATTRS : /** @lends Status*/{
